@@ -30,6 +30,12 @@ struct SelectRoleView: View {
                             Text("Child")
                                 .frame(width:400)
                         }
+                        .buttonBorderShape(.capsule)
+                        .background(Color.blue)
+                        .cornerRadius(20)
+                        .buttonStyle(BorderedButtonStyle())
+                        .foregroundColor(.white)
+                        .padding(.top, 20)
                         Spacer()
                     }
                     
@@ -44,8 +50,15 @@ struct SelectRoleView: View {
                                 .frame(width:400)
                             
                         }
+                        .buttonBorderShape(.capsule)
+                        .background(Color.blue)
+                        .cornerRadius(20)
+                        .buttonStyle(BorderedButtonStyle())
+                        .foregroundColor(.white)
+                        
                     }
                 }
+                
                 HStack{
                     Spacer()
                     
