@@ -23,8 +23,6 @@ struct SignUpView: View {
         
     }
     var body: some View{
-        
-        
         VStack{
             Spacer()
             HStack{
@@ -37,6 +35,8 @@ struct SignUpView: View {
                     
                     SecureField("Password",
                                 text: $password)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
                 }
                 .frame(width:250, height: 100, alignment: .center)
                 Spacer()

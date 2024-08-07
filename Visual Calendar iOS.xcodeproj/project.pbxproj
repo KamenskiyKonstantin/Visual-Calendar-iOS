@@ -20,6 +20,7 @@
 		ED9E8A882C5E765F0098D8FD /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A872C5E765F0098D8FD /* Realtime */; };
 		ED9E8A8A2C5E765F0098D8FD /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A892C5E765F0098D8FD /* Storage */; };
 		ED9E8A8C2C5E765F0098D8FD /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A8B2C5E765F0098D8FD /* Supabase */; };
+		EDC151E42C60E06C005689AE /* SelectRoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC151E32C60E06C005689AE /* SelectRoleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		ED9E8A7C2C5E72AE0098D8FD /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
 		ED9E8A7E2C5E75ED0098D8FD /* FunctionalClasses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionalClasses.swift; sourceTree = "<group>"; };
 		EDAAAE192C5FEBB300E45598 /* VisualCalendarIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VisualCalendarIOS.entitlements; sourceTree = "<group>"; };
+		EDC151E32C60E06C005689AE /* SelectRoleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectRoleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +96,7 @@
 			children = (
 				ED41F09C2C5BD1D300954ACF /* LoginView.swift */,
 				ED9E8A7C2C5E72AE0098D8FD /* SignUpView.swift */,
+				EDC151E32C60E06C005689AE /* SelectRoleView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -183,6 +186,7 @@
 				ED41F09D2C5BD1D300954ACF /* LoginView.swift in Sources */,
 				ED41F0902C5BD15500954ACF /* ContentView.swift in Sources */,
 				ED9E8A7F2C5E75ED0098D8FD /* FunctionalClasses.swift in Sources */,
+				EDC151E42C60E06C005689AE /* SelectRoleView.swift in Sources */,
 				ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -330,7 +334,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Visual-Calendar.Visual-Calendar-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = I;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -359,7 +363,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Visual-Calendar.Visual-Calendar-iOS";
+				PRODUCT_BUNDLE_IDENTIFIER = I;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

@@ -13,6 +13,7 @@ import Supabase
 class ServerAPIinteractor{
     var client: SupabaseClient
     var auth : AuthClient
+    public var authSuccessFlag: Bool = false
     
     init(){
         client = SupabaseClient(supabaseURL: URL(string: "https://wlviarpvbxdaoytfeqnm.supabase.co")!,
@@ -42,11 +43,16 @@ class ServerAPIinteractor{
             email: email,
             password: password)
             print("User Login Success")
+            print(loginResponse)
+            authSuccessFlag = true
         }
         catch{
             print("an error occured")
             print(error.localizedDescription)
         }
+    
         
     }
 }
+
+

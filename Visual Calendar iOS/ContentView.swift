@@ -8,17 +8,37 @@
 import SwiftUI
 
 struct ContentView: View {
+    @ObservedObject var viewSwitcher: ViewSwitcher
+    @State var APIHandler: ServerAPIinteractor
+    init(){
+        self.viewSwitcher = ViewSwitcher()
+        self.APIHandler = ServerAPIinteractor()
+    }
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        if viewSwitcher.activeView == "login"{
+            LoginView(APIinteractor: APIHandler,
+            viewSwitcher: viewSwitcher)
         }
-        .padding()
+        if viewSwitcher.activeView == "selectRole"{
+            SelectRoleView(viewSwitcher: self.viewSwitcher)
+        }
     }
 }
-
+class ViewSwitcher: ObservableObject{
+    @Published public var activeView: String = "login"
+    func switchToSelectRole(){
+        
+        self.activeView = "selectRole"
+        
+    }
+    
+    func switchToLogin(){
+        //print("switching to LoginView")
+        self.activeView = "login"
+    }
+    
+    
+}
 #Preview {
     ContentView()
 }

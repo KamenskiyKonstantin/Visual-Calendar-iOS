@@ -9,15 +9,6 @@ import SwiftUI
 
 import Foundation
 
-    class LoginViewModel: ObservableObject{
-        @Published var email: String = ""
-        @Published var password: String = ""
-        
-        func Login(){
-            print(email, password)
-        }
-    }
-
 func temp(){
     print("tejn")
 }
@@ -25,13 +16,19 @@ struct LoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var APIinteractor: ServerAPIinteractor
-    init( APIinteractor: ServerAPIinteractor) {
+    @State private var viewSwitcher: ViewSwitcher
+    init( APIinteractor: ServerAPIinteractor, viewSwitcher: ViewSwitcher) {
         self.APIinteractor = APIinteractor
+        self.viewSwitcher = viewSwitcher
     }
     func login(){
         Task{
             await APIinteractor.login(email:email, password:password)
+            if APIinteractor.authSuccessFlag{
+                self.viewSwitcher.switchToSelectRole()
+            }
         }
+       
     }
     var body: some View {
         NavigationStack{
@@ -42,10 +39,17 @@ struct LoginView: View {
                     VStack{
                         TextField("E-mail",
                                   text: $email)
+                        .textFieldStyle(.roundedBorder)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        
                         SecureField("Password",
                                     text: $password)
+                        .textFieldStyle(.roundedBorder)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
                     }
-                    .frame(width:250, height: 100, alignment: .center)
+                    .frame(width:275, height: 100, alignment: .center)
                     Spacer()
                 }
                 HStack{
@@ -55,6 +59,11 @@ struct LoginView: View {
                         Text("Log in")
                             .frame(width:250)
                     }
+                    .buttonBorderShape(.capsule)
+                    .background(Color.blue)
+                    .cornerRadius(20)
+                    .buttonStyle(BorderedButtonStyle())
+                    .foregroundColor(.white)
                     
                     
                 }
@@ -82,6 +91,6 @@ struct LoginView: View {
 
 
 #Preview {
-    LoginView(APIinteractor: ServerAPIinteractor())
+    LoginView(APIinteractor: ServerAPIinteractor(), viewSwitcher: ViewSwitcher())
 }
 
