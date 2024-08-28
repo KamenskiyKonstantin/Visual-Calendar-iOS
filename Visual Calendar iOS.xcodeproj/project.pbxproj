@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1410E82C7F29E300D152A6 /* CalendarView.swift */; };
+		ED1410EB2C7F317100D152A6 /* testview.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1410EA2C7F317100D152A6 /* testview.swift */; };
 		ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */; };
 		ED41F0902C5BD15500954ACF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41F08F2C5BD15500954ACF /* ContentView.swift */; };
 		ED41F0922C5BD15600954ACF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED41F0912C5BD15600954ACF /* Assets.xcassets */; };
@@ -24,6 +26,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		ED1410E82C7F29E300D152A6 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		ED1410EA2C7F317100D152A6 /* testview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = testview.swift; sourceTree = "<group>"; };
 		ED41F08A2C5BD15500954ACF /* Visual Calendar iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Visual Calendar iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Visual_Calendar_iOSApp.swift; sourceTree = "<group>"; };
 		ED41F08F2C5BD15500954ACF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -97,6 +101,8 @@
 				ED41F09C2C5BD1D300954ACF /* LoginView.swift */,
 				ED9E8A7C2C5E72AE0098D8FD /* SignUpView.swift */,
 				EDC151E32C60E06C005689AE /* SelectRoleView.swift */,
+				ED1410E82C7F29E300D152A6 /* CalendarView.swift */,
+				ED1410EA2C7F317100D152A6 /* testview.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -183,8 +189,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				ED9E8A7D2C5E72AE0098D8FD /* SignUpView.swift in Sources */,
+				ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */,
 				ED41F09D2C5BD1D300954ACF /* LoginView.swift in Sources */,
 				ED41F0902C5BD15500954ACF /* ContentView.swift in Sources */,
+				ED1410EB2C7F317100D152A6 /* testview.swift in Sources */,
 				ED9E8A7F2C5E75ED0098D8FD /* FunctionalClasses.swift in Sources */,
 				EDC151E42C60E06C005689AE /* SelectRoleView.swift in Sources */,
 				ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */,

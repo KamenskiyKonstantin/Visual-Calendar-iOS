@@ -59,11 +59,11 @@ struct LoginView: View {
                         Text("Log in")
                             .frame(width:250)
                     }
-                    .buttonBorderShape(.capsule)
-                    .background(Color.blue)
-                    .cornerRadius(20)
-                    .buttonStyle(BorderedButtonStyle())
-                    .foregroundColor(.white)
+                            .buttonBorderShape(.capsule)
+                            .background(Color.blue)
+                            .cornerRadius(20)
+                            .buttonStyle(BorderedButtonStyle())
+                            .foregroundColor(.white)
                     
                     
                 }
