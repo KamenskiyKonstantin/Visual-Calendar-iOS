@@ -16,8 +16,7 @@ struct ContentView: View {
     }
     var body: some View {
         if viewSwitcher.activeView == "login"{
-            LoginView(APIinteractor: APIHandler,
-            viewSwitcher: viewSwitcher)
+            CalendarView()
         }
         if viewSwitcher.activeView == "selectRole"{
             SelectRoleView(viewSwitcher: self.viewSwitcher)
