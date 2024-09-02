@@ -98,6 +98,7 @@
 		ED41F09B2C5BD1C100954ACF /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				EDEB08972C8623C50073C4A9 /* Images */,
 				ED41F09C2C5BD1D300954ACF /* LoginView.swift */,
 				ED9E8A7C2C5E72AE0098D8FD /* SignUpView.swift */,
 				EDC151E32C60E06C005689AE /* SelectRoleView.swift */,
@@ -105,6 +106,13 @@
 				ED1410EA2C7F317100D152A6 /* testview.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		EDEB08972C8623C50073C4A9 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -342,7 +350,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = I;
+				PRODUCT_BUNDLE_IDENTIFIER = com.1000kk.VisualCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -371,7 +379,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = I;
+				PRODUCT_BUNDLE_IDENTIFIER = com.1000kk.VisualCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

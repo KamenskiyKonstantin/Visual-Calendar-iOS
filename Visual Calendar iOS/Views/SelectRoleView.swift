@@ -25,7 +25,7 @@ struct SelectRoleView: View {
                     HStack{
                         Spacer()
                         //TODO: Child button is for test functionality, switchToLogin must be replaced
-                        Button(action:self.viewSwitcher.switchToLogin)
+                        Button(action:self.viewSwitcher.switchToCalendar)
                         {
                             Text("Child")
                                 .frame(width:400)
@@ -90,5 +90,5 @@ struct ConfirmAdultView: View{
 }
 
 #Preview {
-    SelectRoleView(viewSwitcher: ViewSwitcher())
+    SelectRoleView(viewSwitcher: ViewSwitcher(apiHandler: ServerAPIinteractor()))
 }

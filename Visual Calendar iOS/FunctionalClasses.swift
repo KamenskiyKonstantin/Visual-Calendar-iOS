@@ -53,6 +53,23 @@ class ServerAPIinteractor{
     
         
     }
+    
+    func fetchEvents() async {
+        if self.authSuccessFlag{
+            do{
+                var user = try await client.auth.user()
+                var uid = user.id
+                var bucketList = try await client.storage.listBuckets()
+                print(bucketList)
+                
+                
+            }
+            catch{
+                print("error occured")
+                print(error.localizedDescription)
+            }
+        }
+    }
 }
 
 

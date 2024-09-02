@@ -13,15 +13,16 @@ func dateFrom(_ day: Int, _ month: Int, _ year: Int, _ hour: Int = 0, _ minute: 
     return calendar.date(from: dateComponents) ?? .now
 }
 
+let fileManager = FileManager.default
 struct CalendarView: View {
     let daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"]
     let minuteHeight = 2
     let HStackXOffset = CGFloat(Double(50))
     
-    let eventList = [Event (systemImage: "gwrhigjwrh",
+    let eventList = [Event (systemImage: "fork.knife",
                       color: "Teal",
                       dateTimeStart: dateFrom(8,5,2023,0,0),
-                      dateTimeEnd: dateFrom(8,5,2023,1, 30),
+                      dateTimeEnd: dateFrom(8,5,2023,1, 15),
                       minuteHeight: 2),
                      Event (systemImage: "gwrhigjwrh",
                                    color: "Teal",
@@ -123,7 +124,8 @@ class Event{
     let dateTimeEnd: Date
     let minuteHeight : Int
     let dayOfWeek: Int
-    
+    let duration: Int
+
     init(systemImage: String, color: String, dateTimeStart: Date, dateTimeEnd: Date, minuteHeight: Int) {
         self.systemImage = systemImage
         self.color = color
@@ -131,6 +133,8 @@ class Event{
         self.dateTimeEnd = dateTimeEnd
         self.minuteHeight = minuteHeight
         self.dayOfWeek =  Calendar.current.component(.weekday, from: self.dateTimeStart)
+        self.duration = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart) / 60)
+        
     }
     
     func getVisibleObject() -> some View{
@@ -144,17 +148,34 @@ class Event{
                     NavigationLink(
                         destination: CalendarBackgroundView(minuteHeight:1))
                     {
-                        Text(self.systemImage).bold()
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(.teal).opacity(0.5)
+                            .overlay(alignment: .center)
+                            {
+                                if self.duration >= 60{
+                                    Image(systemName: systemImage)
+                                        .resizable()
+                                        .aspectRatio(1/1, contentMode: .fit)
+                                        .padding(10)
+                                }
+                                else{
+                                    Image(systemName: systemImage)
+                                        .resizable()
+                                        .aspectRatio(1/1, contentMode: .fit)
+                                        .padding(5)
+                                }
+                                
+                            }
+                            
+                            
+                            
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 
             }
             .font(.caption)
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: CGFloat(Double(height)), alignment: .top)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(.teal).opacity(0.5)
-            )
             .frame(alignment: .top)
             .offset(x: 0, y: CGFloat(Double(offsetY+30*self.minuteHeight)))
             
@@ -165,7 +186,40 @@ class Event{
     
     
 }
-#Preview {
-    CalendarView()
+struct DetailView: View{
+    let mainImage: String
+    let sideImages: [String]
+    init(mainImage: String, sideImages: [String] = []) {
+        self.mainImage = mainImage
+        self.sideImages = sideImages
+    }
+    
+    var body: some View{
+        VStack{
+            let mainUrl = fileManager.currentDirectoryPath+mainImage
+            Image(mainUrl)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding()
+            Divider()
+            ForEach(sideImages, id: \.self){
+                sideImage in
+                HStack{
+                    Image(sideImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding()
+                    Divider()
+                    
+                }
+            }
+        }
+    }
 }
+#Preview {
+    DetailView(mainImage: "/Images/azbuka_vkusa.svg.png")
+}
+
 

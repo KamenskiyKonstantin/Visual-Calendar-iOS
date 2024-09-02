@@ -9,14 +9,13 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var viewSwitcher: ViewSwitcher
-    @State var APIHandler: ServerAPIinteractor
+    let APIHandler: ServerAPIinteractor = ServerAPIinteractor()
     init(){
-        self.viewSwitcher = ViewSwitcher()
-        self.APIHandler = ServerAPIinteractor()
+        self.viewSwitcher = ViewSwitcher(apiHandler:APIHandler)
     }
     var body: some View {
         if viewSwitcher.activeView == "login"{
-            CalendarView()
+            LoginView(APIinteractor: APIHandler, viewSwitcher: viewSwitcher)
         }
         if viewSwitcher.activeView == "selectRole"{
             SelectRoleView(viewSwitcher: self.viewSwitcher)
@@ -24,6 +23,10 @@ struct ContentView: View {
     }
 }
 class ViewSwitcher: ObservableObject{
+    let apiHandler: ServerAPIinteractor
+    init(apiHandler: ServerAPIinteractor) {
+        self.apiHandler = apiHandler
+    }
     @Published public var activeView: String = "login"
     func switchToSelectRole(){
         
@@ -32,8 +35,13 @@ class ViewSwitcher: ObservableObject{
     }
     
     func switchToLogin(){
-        //print("switching to LoginView")
         self.activeView = "login"
+    }
+    
+    func switchToCalendar(){
+        Task{
+            await apiHandler.fetchEvents()
+        }
     }
     
     
