@@ -219,7 +219,7 @@ struct DetailView: View{
     }
 }
 #Preview {
-    DetailView(mainImage: "/Images/azbuka_vkusa.svg.png")
+    CalendarView()
 }
 
 

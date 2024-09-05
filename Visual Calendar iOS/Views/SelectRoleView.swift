@@ -91,4 +91,5 @@ struct ConfirmAdultView: View{
 
 #Preview {
     SelectRoleView(viewSwitcher: ViewSwitcher(apiHandler: ServerAPIinteractor()))
+    
 }

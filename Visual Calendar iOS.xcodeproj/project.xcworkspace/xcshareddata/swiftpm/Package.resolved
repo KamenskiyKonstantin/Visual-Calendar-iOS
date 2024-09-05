@@ -1,5 +1,5 @@
 {
-  "originHash" : "3d0fccaf27842a972e13f3cc5690c81f44ddb13d55c6b50fae4bc083c8f69191",
+  "originHash" : "4aae2ddbbcb96caca01021009afe4009edf74c30c42bedd750f817428b4ff85c",
   "pins" : [
     {
       "identity" : "supabase-swift",
@@ -26,6 +26,15 @@
       "state" : {
         "revision" : "46072478ca365fe48370993833cb22de9b41567f",
         "version" : "3.5.2"
+      }
+    },
+    {
+      "identity" : "swiftyjson",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SwiftyJSON/SwiftyJSON",
+      "state" : {
+        "revision" : "af76cf3ef710b6ca5f8c05f3a31307d44a3c5828",
+        "version" : "5.0.2"
       }
     },
     {

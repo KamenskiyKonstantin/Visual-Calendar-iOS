@@ -10,8 +10,10 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var viewSwitcher: ViewSwitcher
     let APIHandler: ServerAPIinteractor = ServerAPIinteractor()
+    
     init(){
-        self.viewSwitcher = ViewSwitcher(apiHandler:APIHandler)
+
+            self.viewSwitcher = ViewSwitcher(apiHandler:APIHandler)
     }
     var body: some View {
         if viewSwitcher.activeView == "login"{

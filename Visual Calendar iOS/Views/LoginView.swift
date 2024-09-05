@@ -91,6 +91,7 @@ struct LoginView: View {
 
 
 #Preview {
-    LoginView(APIinteractor: ServerAPIinteractor(), viewSwitcher: ViewSwitcher(apiHandler: ServerAPIinteractor()))
+        LoginView(APIinteractor: ServerAPIinteractor(), viewSwitcher: ViewSwitcher(apiHandler: ServerAPIinteractor()))
+
 }
 

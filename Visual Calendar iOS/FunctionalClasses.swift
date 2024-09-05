@@ -7,7 +7,25 @@
 
 import Foundation
 import Supabase
+import SwiftyJSON
 
+func JSONSave(jsonData: Dictionary<String, Any>, filename:String){
+    do{
+        
+        let fileManager = FileManager.default
+        var path = try fileManager.url(for: .cachesDirectory,
+                                               in: .userDomainMask,
+                                               appropriateFor: nil,
+                                               create: true)
+            .appendingPathComponent(filename)
+        let json = try JSONSerialization.data(withJSONObject: jsonData, options: .prettyPrinted)
+        try json.write(to: path)
+    }
+    catch{
+        print("error occured")
+        print(error.localizedDescription)
+    }
+}
 
 
 class ServerAPIinteractor{
@@ -15,7 +33,7 @@ class ServerAPIinteractor{
     var auth : AuthClient
     public var authSuccessFlag: Bool = false
     
-    init(){
+    init() {
         client = SupabaseClient(supabaseURL: URL(string: "https://wlviarpvbxdaoytfeqnm.supabase.co")!,
                                 supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsdmlhcnB2YnhkYW95dGZlcW5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjIxNTk0MzksImV4cCI6MjAzNzczNTQzOX0.zoQJTA3Tu_fpe24BrxDjhMtlfxfd_3Nx8TM1t8V3PK0")
         auth = client.auth
@@ -59,8 +77,29 @@ class ServerAPIinteractor{
             do{
                 var user = try await client.auth.user()
                 var uid = user.id
+                var result = try await client.storage.from("user_data").list()
                 var bucketList = try await client.storage.listBuckets()
-                print(bucketList)
+                print(bucketList, result)
+                var hasUserFolder = false
+                
+                for fileItem in result{
+                    if fileItem.name == uid.uuidString{
+                        hasUserFolder = true
+                    }
+                    else{
+                        print(fileItem.name)
+                    }
+                }
+                
+                if !hasUserFolder{
+                    let starterJson : [String: Any] = [
+                        "uid": uid.uuidString,
+                        "events": []
+                    ]
+                    JSONSave(jsonData: starterJson, filename: "starter.json")
+                    let json = try JSONSerialization.data(withJSONObject: starterJson, options: .prettyPrinted)
+                    try await client.storage.from("user_data").upload(path: uid.uuidString+"calendar.json", file:json)
+                }
                 
                 
             }

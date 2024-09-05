@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ED095CAB2C8765B800559F3A /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = ED095CAA2C8765B800559F3A /* SwiftyJSON */; };
 		ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1410E82C7F29E300D152A6 /* CalendarView.swift */; };
 		ED1410EB2C7F317100D152A6 /* testview.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1410EA2C7F317100D152A6 /* testview.swift */; };
 		ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */; };
@@ -46,6 +47,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ED9E8A862C5E765F0098D8FD /* PostgREST in Frameworks */,
+				ED095CAB2C8765B800559F3A /* SwiftyJSON in Frameworks */,
 				ED9E8A842C5E765F0098D8FD /* Functions in Frameworks */,
 				ED9E8A8C2C5E765F0098D8FD /* Supabase in Frameworks */,
 				ED9E8A822C5E765F0098D8FD /* Auth in Frameworks */,
@@ -138,6 +140,7 @@
 				ED9E8A872C5E765F0098D8FD /* Realtime */,
 				ED9E8A892C5E765F0098D8FD /* Storage */,
 				ED9E8A8B2C5E765F0098D8FD /* Supabase */,
+				ED095CAA2C8765B800559F3A /* SwiftyJSON */,
 			);
 			productName = "Visual Calendar iOS";
 			productReference = ED41F08A2C5BD15500954ACF /* Visual Calendar iOS.app */;
@@ -169,6 +172,7 @@
 			mainGroup = ED41F0812C5BD15500954ACF;
 			packageReferences = (
 				ED9E8A802C5E765F0098D8FD /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				ED095CA92C8765B800559F3A /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
 			);
 			productRefGroup = ED41F08B2C5BD15500954ACF /* Products */;
 			projectDirPath = "";
@@ -411,6 +415,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		ED095CA92C8765B800559F3A /* XCRemoteSwiftPackageReference "SwiftyJSON" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftyJSON/SwiftyJSON";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.2;
+			};
+		};
 		ED9E8A802C5E765F0098D8FD /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift.git";
@@ -422,6 +434,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		ED095CAA2C8765B800559F3A /* SwiftyJSON */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ED095CA92C8765B800559F3A /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
+			productName = SwiftyJSON;
+		};
 		ED9E8A812C5E765F0098D8FD /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = ED9E8A802C5E765F0098D8FD /* XCRemoteSwiftPackageReference "supabase-swift" */;

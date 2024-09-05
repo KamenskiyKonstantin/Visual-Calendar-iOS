@@ -57,7 +57,6 @@ struct SignUpView: View {
 
 
 #Preview {
-    SignUpView(APIinteractor: ServerAPIinteractor())
+    return SignUpView(APIinteractor: ServerAPIinteractor())
 }
-
 
