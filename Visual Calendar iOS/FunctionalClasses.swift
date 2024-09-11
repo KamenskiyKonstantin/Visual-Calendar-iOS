@@ -9,23 +9,32 @@ import Foundation
 import Supabase
 import SwiftyJSON
 
-func JSONSave(jsonData: Dictionary<String, Any>, filename:String){
-    do{
-        
-        let fileManager = FileManager.default
-        var path = try fileManager.url(for: .cachesDirectory,
-                                               in: .userDomainMask,
-                                               appropriateFor: nil,
-                                               create: true)
-            .appendingPathComponent(filename)
-        let json = try JSONSerialization.data(withJSONObject: jsonData, options: .prettyPrinted)
-        try json.write(to: path)
-    }
-    catch{
-        print("error occured")
-        print(error.localizedDescription)
+
+
+struct CalendarJSON: Codable {
+    let events: [EventJSON]
+    let uid: String
+}
+
+
+struct EventJSON: Codable {
+    let timeStart, timeEnd: [Int]
+    let systemImage, mainImageURL: String
+    let sideImageURLS: [String]
+    let color: String
+    
+    func convertToEvent() -> Event
+    {
+        return Event(systemImage: systemImage,
+        color: color,
+        dateTimeStart: dateFrom(timeStart[0], timeStart[1], timeStart[2], timeStart[3], timeStart[4]),
+        dateTimeEnd: dateFrom(timeEnd[0], timeEnd[1], timeEnd[2], timeEnd[3], timeEnd[4]),
+        minuteHeight: 2,
+        mainImageURL: mainImageURL,
+        sideImagesURL:  sideImageURLS)
     }
 }
+
 
 
 class ServerAPIinteractor{
@@ -72,7 +81,7 @@ class ServerAPIinteractor{
         
     }
     
-    func fetchEvents() async {
+    func fetchEvents() async -> [Event]{
         if self.authSuccessFlag{
             do{
                 var user = try await client.auth.user()
@@ -96,17 +105,30 @@ class ServerAPIinteractor{
                         "uid": uid.uuidString,
                         "events": []
                     ]
-                    JSONSave(jsonData: starterJson, filename: "starter.json")
                     let json = try JSONSerialization.data(withJSONObject: starterJson, options: .prettyPrinted)
-                    try await client.storage.from("user_data").upload(path: uid.uuidString+"calendar.json", file:json)
+                    try await client.storage.from("user_data").upload(path: uid.uuidString+"/calendar.json", file:json)
+                    try await client.storage.from("user_data").upload(path: uid.uuidString+"/images/welcome.txt", file:json)
+
                 }
+                
+                var userCalendar = try await client.storage.from("user_data").download(path: uid.uuidString+"/calendar.json")
+                let calendar = try JSONDecoder().decode(CalendarJSON.self, from: userCalendar)
+                var eventList: [Event] = []
+                for event in calendar.events{
+                    eventList.append(event.convertToEvent())
+                }
+                return eventList
                 
                 
             }
             catch{
                 print("error occured")
                 print(error.localizedDescription)
+                return []
             }
+        }
+        else{
+            return []
         }
     }
 }

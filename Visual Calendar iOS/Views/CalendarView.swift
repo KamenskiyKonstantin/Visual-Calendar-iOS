@@ -18,25 +18,10 @@ struct CalendarView: View {
     let daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"]
     let minuteHeight = 2
     let HStackXOffset = CGFloat(Double(50))
-    
-    let eventList = [Event (systemImage: "fork.knife",
-                      color: "Teal",
-                      dateTimeStart: dateFrom(8,5,2023,0,0),
-                      dateTimeEnd: dateFrom(8,5,2023,1, 15),
-                      minuteHeight: 2),
-                     Event (systemImage: "gwrhigjwrh",
-                                   color: "Teal",
-                                   dateTimeStart: dateFrom(1,9,2024,6,0),
-                                   dateTimeEnd: dateFrom(1,9,2024,7,0),
-                                   minuteHeight: 2),
-                     
-                     Event (systemImage: "gwrhigjwrh",
-                           color: "Teal",
-                           dateTimeStart: dateFrom(9,5,2023,9,0),
-                           dateTimeEnd: dateFrom(9,5,2023,10,0),
-                           minuteHeight: 2),
-                     
-    ]
+    let eventList: [Event]
+    init(eventList: [Event]) {
+        self.eventList = eventList
+    }
     var body: some View {
         NavigationStack{
             VStack (spacing: 0){
@@ -125,12 +110,17 @@ class Event{
     let minuteHeight : Int
     let dayOfWeek: Int
     let duration: Int
+    let mainImageURL: String
+    let sideImagesURL: [String]
 
-    init(systemImage: String, color: String, dateTimeStart: Date, dateTimeEnd: Date, minuteHeight: Int) {
+    init(systemImage: String, color: String, dateTimeStart: Date, dateTimeEnd: Date, minuteHeight: Int,
+         mainImageURL: String, sideImagesURL: [String]) {
         self.systemImage = systemImage
         self.color = color
         self.dateTimeStart = dateTimeStart
         self.dateTimeEnd = dateTimeEnd
+        self.mainImageURL = mainImageURL
+        self.sideImagesURL = sideImagesURL
         self.minuteHeight = minuteHeight
         self.dayOfWeek =  Calendar.current.component(.weekday, from: self.dateTimeStart)
         self.duration = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart) / 60)
@@ -146,7 +136,7 @@ class Event{
         return
             VStack(alignment: .leading) {
                     NavigationLink(
-                        destination: CalendarBackgroundView(minuteHeight:1))
+                        destination: DetailView(mainImage: self.mainImageURL, sideImages: self.sideImagesURL))
                     {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(.teal).opacity(0.5)
@@ -196,22 +186,32 @@ struct DetailView: View{
     
     var body: some View{
         VStack{
-            let mainUrl = fileManager.currentDirectoryPath+mainImage
-            Image(mainUrl)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding()
-            Divider()
-            ForEach(sideImages, id: \.self){
-                sideImage in
-                HStack{
-                    Image(sideImage)
+
+            AsyncImage(url:URL(string:self.mainImage)){
+                asyncImage in
+                if let image = asyncImage.image{
+                    image
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .padding()
-                    Divider()
+                 }
+            }
+                
+            Divider()
+            ForEach(sideImages, id: \.self){
+                sideImage in
+                HStack{
+                    AsyncImage(url:URL(string:sideImage)){
+                        asyncImage in
+                        if let image = asyncImage.image{
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .padding()
+                         }
+                    }
                     
                 }
             }
@@ -219,7 +219,14 @@ struct DetailView: View{
     }
 }
 #Preview {
-    CalendarView()
+    CalendarView(eventList:
+                    [Event (
+                        systemImage: "fork.knife",
+                        color: "Teal",
+                        dateTimeStart: dateFrom(8,5,2023,0,0),
+                        dateTimeEnd: dateFrom(8,5,2023,1, 15),
+                        minuteHeight: 2,
+                        mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"])])
 }
 
 
