@@ -13,14 +13,23 @@ func dateFrom(_ day: Int, _ month: Int, _ year: Int, _ hour: Int = 0, _ minute: 
     return calendar.date(from: dateComponents) ?? .now
 }
 
+func getWeekStartDate(_ date: Date) -> Date {
+    let calendar = Calendar.current
+    let weekStartDate = calendar.startOfDay(for: date.addingTimeInterval(-date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 604800)))
+    let localeWeightedDay = weekStartDate.addingTimeInterval(TimeInterval(TimeZone.current.secondsFromGMT()))
+    return localeWeightedDay
+}
+
 let fileManager = FileManager.default
 struct CalendarView: View {
     let daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"]
     let minuteHeight = 2
     let HStackXOffset = CGFloat(Double(50))
     let eventList: [Event]
+    @State var weekStartDate: Date = getWeekStartDate(.now)
     init(eventList: [Event]) {
         self.eventList = eventList
+        print(weekStartDate)
     }
     var body: some View {
         NavigationStack{
@@ -53,13 +62,16 @@ struct CalendarView: View {
                                 dayOfWeekindex in
                                 ZStack(alignment: .top)
                                 {
+                                    
                                     Color.clear
                                     ForEach(eventList.indices){
+                                        event in
+                                        var currentEvent = eventList[event]
+                                        var timeSinceWeekStart = currentEvent.dateTimeStart.timeIntervalSince(self.weekStartDate)
+                                        var daysSinceWeekStart = Int(floor(timeSinceWeekStart / (60 * 60 * 24)))
                                         
-                                        event_index in
-                                        
-                                        if dayOfWeekindex == eventList[event_index].dayOfWeek{
-                                            eventList[event_index].getVisibleObject()
+                                        if dayOfWeekindex - 1 == daysSinceWeekStart{
+                                            eventList[event].getVisibleObject()
                                         }
 
                                     }
@@ -108,8 +120,8 @@ class Event{
     let dateTimeStart: Date
     let dateTimeEnd: Date
     let minuteHeight : Int
-    let dayOfWeek: Int
     let duration: Int
+    let dayOfWeek: Int
     let mainImageURL: String
     let sideImagesURL: [String]
 
@@ -122,7 +134,7 @@ class Event{
         self.mainImageURL = mainImageURL
         self.sideImagesURL = sideImagesURL
         self.minuteHeight = minuteHeight
-        self.dayOfWeek =  Calendar.current.component(.weekday, from: self.dateTimeStart)
+        self.dayOfWeek = Calendar.current.component(.weekday, from: self.dateTimeStart)
         self.duration = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart) / 60)
         
     }

@@ -69,8 +69,8 @@ class ServerAPIinteractor{
             let loginResponse = try await auth.signIn(
             email: email,
             password: password)
-            print("User Login Success")
-            print(loginResponse)
+//            print("User Login Success")
+//            print(loginResponse)
             authSuccessFlag = true
         }
         catch{
@@ -95,9 +95,6 @@ class ServerAPIinteractor{
                     if fileItem.name == uid.uuidString{
                         hasUserFolder = true
                     }
-                    else{
-                        print(fileItem.name)
-                    }
                 }
                 
                 if !hasUserFolder{
@@ -110,7 +107,6 @@ class ServerAPIinteractor{
                     try await client.storage.from("user_data").upload(path: uid.uuidString+"/images/welcome.txt", file:json)
 
                 }
-                
                 var userCalendar = try await client.storage.from("user_data").download(path: uid.uuidString+"/calendar.json")
                 let calendar = try JSONDecoder().decode(CalendarJSON.self, from: userCalendar)
                 var eventList: [Event] = []

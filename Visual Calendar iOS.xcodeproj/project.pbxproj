@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -29,6 +29,7 @@
 /* Begin PBXFileReference section */
 		ED1410E82C7F29E300D152A6 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		ED1410EA2C7F317100D152A6 /* testview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = testview.swift; sourceTree = "<group>"; };
+		ED3503502C9B3F8F002BE9D4 /* Visual Calendar iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Visual Calendar iOS.entitlements"; sourceTree = "<group>"; };
 		ED41F08A2C5BD15500954ACF /* Visual Calendar iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Visual Calendar iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Visual_Calendar_iOSApp.swift; sourceTree = "<group>"; };
 		ED41F08F2C5BD15500954ACF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -40,6 +41,12 @@
 		EDAAAE192C5FEBB300E45598 /* VisualCalendarIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VisualCalendarIOS.entitlements; sourceTree = "<group>"; };
 		EDC151E32C60E06C005689AE /* SelectRoleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectRoleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		ED3503562C9B3FF2002BE9D4 /* Visual Calendar */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Visual Calendar"; sourceTree = "<group>"; };
+		ED3503672C9B3FF3002BE9D4 /* Visual CalendarTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Visual CalendarTests"; sourceTree = "<group>"; };
+		ED3503712C9B3FF3002BE9D4 /* Visual CalendarUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Visual CalendarUITests"; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		ED41F0872C5BD15500954ACF /* Frameworks */ = {
@@ -64,6 +71,9 @@
 			children = (
 				EDAAAE192C5FEBB300E45598 /* VisualCalendarIOS.entitlements */,
 				ED41F08C2C5BD15500954ACF /* Visual Calendar iOS */,
+				ED3503562C9B3FF2002BE9D4 /* Visual Calendar */,
+				ED3503672C9B3FF3002BE9D4 /* Visual CalendarTests */,
+				ED3503712C9B3FF3002BE9D4 /* Visual CalendarUITests */,
 				ED41F08B2C5BD15500954ACF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -79,6 +89,7 @@
 		ED41F08C2C5BD15500954ACF /* Visual Calendar iOS */ = {
 			isa = PBXGroup;
 			children = (
+				ED3503502C9B3F8F002BE9D4 /* Visual Calendar iOS.entitlements */,
 				ED41F09B2C5BD1C100954ACF /* Views */,
 				ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */,
 				ED9E8A7E2C5E75ED0098D8FD /* FunctionalClasses.swift */,
@@ -153,7 +164,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1540;
+				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1540;
 				TargetAttributes = {
 					ED41F0892C5BD15500954ACF = {
@@ -338,6 +349,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Visual Calendar iOS/Visual Calendar iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Visual Calendar iOS/Preview Content\"";
@@ -367,6 +379,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Visual Calendar iOS/Visual Calendar iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Visual Calendar iOS/Preview Content\"";
