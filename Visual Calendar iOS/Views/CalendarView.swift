@@ -34,31 +34,42 @@ struct CalendarView: View {
     }
     var body: some View {
         NavigationStack{
-            ZStack{
+            ZStack(alignment: .topLeading){
                 HStack{
                     Button(action: self.goToPreviousWeek)
                     {
                         Image(systemName: "chevron.left")
+                            .fontWeight(.bold)
                     }
+                    .padding(10)
+                    .frame(maxWidth: self.HStackXOffset)
+                    
                     Spacer()
                     Button(action: self.goToNextWeek)
                     {
                         Image(systemName: "chevron.right")
+                            .fontWeight(.bold)
                     }
+                    .padding(10)
+                    .frame(maxWidth: self.HStackXOffset)
+                    
                 }
-                //Color.clear
+                
                 VStack (spacing: 0){
                     HStack(spacing: 0){
                         
                         Color.black
                             .opacity(0)
-                            .frame(width:125)
+                            .frame(width:self.HStackXOffset)
                         
                         ForEach(daysOfWeek.indices, id: \.self){
                             index in
                             Text(daysOfWeek[index])
                                 .frame(maxWidth: .infinity)
                         }
+                        Color.black
+                            .opacity(0)
+                            .frame(width:self.HStackXOffset)
                     }
                     .padding(.horizontal, 5)
                     .frame(height: 50)
@@ -70,7 +81,7 @@ struct CalendarView: View {
                             {
                                 Color.black
                                     .opacity(0)
-                                    .frame(width:125)
+                                    .frame(width:self.HStackXOffset)
                                 
                                 ForEach(daysOfWeek.indices, id:\.self){
                                     dayOfWeekindex in
@@ -93,22 +104,29 @@ struct CalendarView: View {
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                                     
                                 }
+                                Color.black
+                                    .opacity(0)
+                                    .frame(width:self.HStackXOffset)
                             }
                             .padding(.horizontal, 5)
-    CalendarBackgroundView(minuteHeight: self.minuteHeight)
+                            CalendarBackgroundView(minuteHeight: self.minuteHeight)
                         }
                     }
                 }
-                HStack{
-                    Button(action: self.goToPreviousWeek)
-                    {
-                        Image(systemName: "chevron.left")
-                    }
-                    Spacer()
-                    Button(action: self.goToNextWeek)
-                    {
-                        Image(systemName: "chevron.right")
-                    }
+
+            }
+            .overlay(alignment: .bottomTrailing){
+                NavigationLink(destination: CalendarBackgroundView(minuteHeight: self.minuteHeight)){
+                    RoundedRectangle(cornerRadius: 10)
+                        .foregroundColor(.teal).opacity(0.5)
+                        .overlay(alignment: .center){
+                            Image(systemName: "plus")
+                                .resizable()
+                                .scaledToFit()
+                                .padding(20)
+                        }
+                        .padding(10)
+                        .frame(width: 125, height: 125)
                 }
             }
             
@@ -270,10 +288,17 @@ struct DetailView: View{
                     [Event (
                         systemImage: "fork.knife",
                         color: "Teal",
-                        dateTimeStart: dateFrom(8,5,2023,0,0),
-                        dateTimeEnd: dateFrom(8,5,2023,1, 15),
+                        dateTimeStart: dateFrom(19,9,2024,0,0),
+                        dateTimeEnd: dateFrom(19,9,2024,1, 15),
                         minuteHeight: 2,
-                        mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"])])
+                        mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"]),
+                     Event (
+                         systemImage: "fork.knife",
+                         color: "Teal",
+                         dateTimeStart: dateFrom(11,9,2024,0,0),
+                         dateTimeEnd: dateFrom(11,9,2024,1, 15),
+                         minuteHeight: 2,
+                         mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"])])
 }
 
 
