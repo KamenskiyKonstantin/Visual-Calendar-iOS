@@ -20,7 +20,8 @@ func getWeekStartDate(_ date: Date) -> Date {
     return localeWeightedDay
 }
 
-let fileManager = FileManager.default
+
+
 struct CalendarView: View {
     let daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"]
     let minuteHeight = 2
@@ -33,61 +34,95 @@ struct CalendarView: View {
     }
     var body: some View {
         NavigationStack{
-            VStack (spacing: 0){
-                HStack(spacing: 0){
-                    
-                    Color.black
-                        .opacity(0)
-                        .frame(width:125)
-                    
-                    ForEach(daysOfWeek.indices){
-                        index in
-                        Text(daysOfWeek[index])
-                            .frame(maxWidth: .infinity)
+            ZStack{
+                HStack{
+                    Button(action: self.goToPreviousWeek)
+                    {
+                        Image(systemName: "chevron.left")
+                    }
+                    Spacer()
+                    Button(action: self.goToNextWeek)
+                    {
+                        Image(systemName: "chevron.right")
                     }
                 }
-                .padding(.horizontal, 5)
-                .frame(height: 50)
-                
-                
-                ScrollView(.vertical){
-                    ZStack(alignment: .topLeading){
-                        HStack
-                        {
-                            Color.black
-                                .opacity(0)
-                                .frame(width:125)
-                            
-                            ForEach(daysOfWeek.indices){
-                                dayOfWeekindex in
-                                ZStack(alignment: .top)
-                                {
-                                    
-                                    Color.clear
-                                    ForEach(eventList.indices){
-                                        event in
-                                        var currentEvent = eventList[event]
-                                        var timeSinceWeekStart = currentEvent.dateTimeStart.timeIntervalSince(self.weekStartDate)
-                                        var daysSinceWeekStart = Int(floor(timeSinceWeekStart / (60 * 60 * 24)))
-                                        
-                                        if dayOfWeekindex - 1 == daysSinceWeekStart{
-                                            eventList[event].getVisibleObject()
-                                        }
-
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                
-                            }
+                //Color.clear
+                VStack (spacing: 0){
+                    HStack(spacing: 0){
+                        
+                        Color.black
+                            .opacity(0)
+                            .frame(width:125)
+                        
+                        ForEach(daysOfWeek.indices, id: \.self){
+                            index in
+                            Text(daysOfWeek[index])
+                                .frame(maxWidth: .infinity)
                         }
-                        .padding(.horizontal, 5)
-CalendarBackgroundView(minuteHeight: self.minuteHeight)
+                    }
+                    .padding(.horizontal, 5)
+                    .frame(height: 50)
+                    
+                    
+                    ScrollView(.vertical){
+                        ZStack(alignment: .topLeading){
+                            HStack
+                            {
+                                Color.black
+                                    .opacity(0)
+                                    .frame(width:125)
+                                
+                                ForEach(daysOfWeek.indices, id:\.self){
+                                    dayOfWeekindex in
+                                    ZStack(alignment: .top)
+                                    {
+                                        
+                                        Color.clear
+                                        ForEach(eventList.indices, id: \.self){
+                                            event in
+                                            let currentEvent: Event = eventList[event]
+                                            let timeSinceWeekStart: TimeInterval = currentEvent.dateTimeStart.timeIntervalSince(self.weekStartDate)
+                                            let daysSinceWeekStart: Int = Int(floor(timeSinceWeekStart / (60 * 60 * 24)))
+                                            
+                                            if dayOfWeekindex - 1 == daysSinceWeekStart{
+                                                eventList[event].getVisibleObject()
+                                            }
+
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    
+                                }
+                            }
+                            .padding(.horizontal, 5)
+    CalendarBackgroundView(minuteHeight: self.minuteHeight)
+                        }
+                    }
+                }
+                HStack{
+                    Button(action: self.goToPreviousWeek)
+                    {
+                        Image(systemName: "chevron.left")
+                    }
+                    Spacer()
+                    Button(action: self.goToNextWeek)
+                    {
+                        Image(systemName: "chevron.right")
                     }
                 }
             }
             
         }
     }
+    
+    func goToNextWeek(){
+        self.weekStartDate = self.weekStartDate.addingTimeInterval(60 * 60 * 24 * 7)
+    }
+    func goToPreviousWeek(){
+        self.weekStartDate = self.weekStartDate.addingTimeInterval(-60 * 60 * 24 * 7)
+    }
+    
+    
 }
 
 struct CalendarBackgroundView: View{
