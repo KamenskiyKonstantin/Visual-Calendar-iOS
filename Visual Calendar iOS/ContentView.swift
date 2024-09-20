@@ -52,7 +52,7 @@ class ViewSwitcher: ObservableObject{
     func switchToCalendar(){
         if apiHandler.authSuccessFlag {
             Task{
-                calendarView = CalendarView(eventList: await apiHandler.fetchEvents())
+                calendarView = await CalendarView(eventList: await apiHandler.fetchEvents())
                 self.activeView = "calendar"
             }
             

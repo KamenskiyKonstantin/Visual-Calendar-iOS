@@ -14,8 +14,8 @@ struct CalendarPageView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: hourSpacing) {
-            ForEach(hours.indices) { index in
-                let hour = hours[index]
+            ForEach(hours, id: \.self) {
+                hour in
                 HStack {
                     Text(hour)
                         .font(Font.caption)

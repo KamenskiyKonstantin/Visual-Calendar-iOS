@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		ED095CAB2C8765B800559F3A /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = ED095CAA2C8765B800559F3A /* SwiftyJSON */; };
 		ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1410E82C7F29E300D152A6 /* CalendarView.swift */; };
-		ED1410EB2C7F317100D152A6 /* testview.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1410EA2C7F317100D152A6 /* testview.swift */; };
 		ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */; };
 		ED41F0902C5BD15500954ACF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41F08F2C5BD15500954ACF /* ContentView.swift */; };
 		ED41F0922C5BD15600954ACF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED41F0912C5BD15600954ACF /* Assets.xcassets */; };
@@ -24,11 +23,11 @@
 		ED9E8A8A2C5E765F0098D8FD /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A892C5E765F0098D8FD /* Storage */; };
 		ED9E8A8C2C5E765F0098D8FD /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A8B2C5E765F0098D8FD /* Supabase */; };
 		EDC151E42C60E06C005689AE /* SelectRoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDC151E32C60E06C005689AE /* SelectRoleView.swift */; };
+		EDD987D72C9D454C0063CF00 /* SymbolPicker in Frameworks */ = {isa = PBXBuildFile; productRef = EDD987D62C9D454C0063CF00 /* SymbolPicker */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		ED1410E82C7F29E300D152A6 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
-		ED1410EA2C7F317100D152A6 /* testview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = testview.swift; sourceTree = "<group>"; };
 		ED3503502C9B3F8F002BE9D4 /* Visual Calendar iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Visual Calendar iOS.entitlements"; sourceTree = "<group>"; };
 		ED41F08A2C5BD15500954ACF /* Visual Calendar iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Visual Calendar iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Visual_Calendar_iOSApp.swift; sourceTree = "<group>"; };
@@ -53,6 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EDD987D72C9D454C0063CF00 /* SymbolPicker in Frameworks */,
 				ED9E8A862C5E765F0098D8FD /* PostgREST in Frameworks */,
 				ED095CAB2C8765B800559F3A /* SwiftyJSON in Frameworks */,
 				ED9E8A842C5E765F0098D8FD /* Functions in Frameworks */,
@@ -116,7 +116,6 @@
 				ED9E8A7C2C5E72AE0098D8FD /* SignUpView.swift */,
 				EDC151E32C60E06C005689AE /* SelectRoleView.swift */,
 				ED1410E82C7F29E300D152A6 /* CalendarView.swift */,
-				ED1410EA2C7F317100D152A6 /* testview.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -152,6 +151,7 @@
 				ED9E8A892C5E765F0098D8FD /* Storage */,
 				ED9E8A8B2C5E765F0098D8FD /* Supabase */,
 				ED095CAA2C8765B800559F3A /* SwiftyJSON */,
+				EDD987D62C9D454C0063CF00 /* SymbolPicker */,
 			);
 			productName = "Visual Calendar iOS";
 			productReference = ED41F08A2C5BD15500954ACF /* Visual Calendar iOS.app */;
@@ -184,6 +184,7 @@
 			packageReferences = (
 				ED9E8A802C5E765F0098D8FD /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				ED095CA92C8765B800559F3A /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
+				EDD987D52C9D454C0063CF00 /* XCRemoteSwiftPackageReference "SymbolPicker" */,
 			);
 			productRefGroup = ED41F08B2C5BD15500954ACF /* Products */;
 			projectDirPath = "";
@@ -215,7 +216,6 @@
 				ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */,
 				ED41F09D2C5BD1D300954ACF /* LoginView.swift in Sources */,
 				ED41F0902C5BD15500954ACF /* ContentView.swift in Sources */,
-				ED1410EB2C7F317100D152A6 /* testview.swift in Sources */,
 				ED9E8A7F2C5E75ED0098D8FD /* FunctionalClasses.swift in Sources */,
 				EDC151E42C60E06C005689AE /* SelectRoleView.swift in Sources */,
 				ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */,
@@ -444,6 +444,14 @@
 				minimumVersion = 2.5.1;
 			};
 		};
+		EDD987D52C9D454C0063CF00 /* XCRemoteSwiftPackageReference "SymbolPicker" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/xnth97/SymbolPicker.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -481,6 +489,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = ED9E8A802C5E765F0098D8FD /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		EDD987D62C9D454C0063CF00 /* SymbolPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EDD987D52C9D454C0063CF00 /* XCRemoteSwiftPackageReference "SymbolPicker" */;
+			productName = SymbolPicker;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

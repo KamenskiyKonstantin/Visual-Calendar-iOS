@@ -66,7 +66,7 @@ class ServerAPIinteractor{
     func login(email: String, password:String) async{
         
         do{
-            let loginResponse = try await auth.signIn(
+            let _ = try await auth.signIn(
             email: email,
             password: password)
 //            print("User Login Success")
@@ -84,10 +84,10 @@ class ServerAPIinteractor{
     func fetchEvents() async -> [Event]{
         if self.authSuccessFlag{
             do{
-                var user = try await client.auth.user()
-                var uid = user.id
-                var result = try await client.storage.from("user_data").list()
-                var bucketList = try await client.storage.listBuckets()
+                let user = try await client.auth.user()
+                let uid = user.id
+                let result = try await client.storage.from("user_data").list()
+                let bucketList = try await client.storage.listBuckets()
                 print(bucketList, result)
                 var hasUserFolder = false
                 
@@ -107,7 +107,7 @@ class ServerAPIinteractor{
                     try await client.storage.from("user_data").upload(path: uid.uuidString+"/images/welcome.txt", file:json)
 
                 }
-                var userCalendar = try await client.storage.from("user_data").download(path: uid.uuidString+"/calendar.json")
+                let userCalendar = try await client.storage.from("user_data").download(path: uid.uuidString+"/calendar.json")
                 let calendar = try JSONDecoder().decode(CalendarJSON.self, from: userCalendar)
                 var eventList: [Event] = []
                 for event in calendar.events{

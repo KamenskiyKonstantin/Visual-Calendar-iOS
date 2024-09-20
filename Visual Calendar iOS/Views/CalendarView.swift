@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+import SymbolPicker
 func dateFrom(_ day: Int, _ month: Int, _ year: Int, _ hour: Int = 0, _ minute: Int = 0) -> Date {
     let calendar = Calendar.current
     let dateComponents = DateComponents(year: year, month: month, day: day, hour: hour, minute: minute)
@@ -20,6 +20,97 @@ func getWeekStartDate(_ date: Date) -> Date {
     return localeWeightedDay
 }
 
+struct EventEditor: View{
+    @State private var isSymbolPickerShown: Bool = false
+    @State private var selectedSymbol: String = "pencil"
+    @State private var dateStart: Date = .now
+    @State private var dateEnd: Date = .now
+    @State private var color: Color = .teal
+    @State private var mainImage: String = "Select image"
+    private var imageURLS:[String:String]
+    
+    init(_ imageURLS: [String:String]){
+        self.imageURLS = imageURLS
+    }
+    var body : some View {
+            VStack{
+                Divider()
+                    .overlay(alignment: .center, content: {Text("Time interval")})
+                
+                DatePicker(selection: $dateStart){
+                    Text("Start date")
+                }
+                .padding(.horizontal, 10)
+                DatePicker(selection: $dateEnd){
+                    Text("End date")
+                }
+                .padding(.horizontal, 10)
+                
+                Divider()
+                    .overlay(alignment: .center, content: {Text("Appearance")})
+                HStack{
+                    Button(action: {isSymbolPickerShown = true})
+                    {
+                        Image(systemName: selectedSymbol)
+                            .fontWeight(.bold)
+                            .fontWidth(.expanded)
+                        Text("Edit icon")
+                    }
+                    .sheet(isPresented: $isSymbolPickerShown) {
+                        SymbolPicker(symbol: $selectedSymbol)
+                    }
+                    .padding(.top, 20)
+                    .padding(.horizontal, 10)
+                    Spacer()
+                }
+                
+                ColorPicker("Background color", selection:$color)
+                    .padding(.horizontal, 10)
+                Divider()
+                    .overlay(alignment: .center, content: {Text("Content")})
+                HStack{
+                    Text("Main image")
+                    Spacer()
+                    Button(action:{print("Add image")})
+                    {
+                        RoundedRectangle(cornerRadius: 5)
+                            .foregroundColor(.clear).opacity(0.5)
+                            .overlay(alignment: .center){
+                                Image(systemName: "plus")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding(5)
+                            }
+                            .padding(10)
+                            .frame(width: 50, height: 50)
+                    }
+                    if imageURLS.count > 0{
+                        if mainImage == "Select image"{
+                            Text(mainImage)
+                        }
+                        Picker(selection: $mainImage, label: Text("Main image")){
+                            ForEach(["cola", "abobus"], id: \.self){
+                                key in
+                                Text(key).tag(key)
+                                    
+                            }
+                        }
+                        .navigationTitle("Select image")
+                        .fontWeight(.bold)
+                        .overlay(alignment: .leading) {
+                            
+                        }
+                        
+                    }
+                    
+                }
+                .padding(.horizontal, 10)
+                
+                //Spacer()
+            }
+                
+    }
+}
 
 
 struct CalendarView: View {
@@ -284,21 +375,22 @@ struct DetailView: View{
     }
 }
 #Preview {
-    CalendarView(eventList:
-                    [Event (
-                        systemImage: "fork.knife",
-                        color: "Teal",
-                        dateTimeStart: dateFrom(19,9,2024,0,0),
-                        dateTimeEnd: dateFrom(19,9,2024,1, 15),
-                        minuteHeight: 2,
-                        mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"]),
-                     Event (
-                         systemImage: "fork.knife",
-                         color: "Teal",
-                         dateTimeStart: dateFrom(11,9,2024,0,0),
-                         dateTimeEnd: dateFrom(11,9,2024,1, 15),
-                         minuteHeight: 2,
-                         mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"])])
+//    CalendarView(eventList:
+//                    [Event (
+//                        systemImage: "fork.knife",
+//                        color: "Teal",
+//                        dateTimeStart: dateFrom(19,9,2024,0,0),
+//                        dateTimeEnd: dateFrom(19,9,2024,0, 30),
+//                        minuteHeight: 2,
+//                        mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"]),
+//                     Event (
+//                         systemImage: "fork.knife",
+//                         color: "Teal",
+//                         dateTimeStart: dateFrom(11,9,2024,0,0),
+//                         dateTimeEnd: dateFrom(11,9,2024,1, 15),
+//                         minuteHeight: 2,
+//                         mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"])])
+    EventEditor(["b":"a"])
 }
 
 
