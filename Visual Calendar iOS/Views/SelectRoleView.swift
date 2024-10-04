@@ -24,7 +24,6 @@ struct SelectRoleView: View {
                 VStack{
                     HStack{
                         Spacer()
-                        //TODO: Child button is for test functionality, switchToLogin must be replaced
                         Button(action:self.viewSwitcher.switchToCalendar)
                         {
                             Text("Child")

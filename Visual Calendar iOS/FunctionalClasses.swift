@@ -127,6 +127,23 @@ class ServerAPIinteractor{
             return []
         }
     }
+    
+    func upsertImage(image:Data, filename: String) async
+    
+    {
+        do{
+            let uid = try await client.auth.user().id
+            try await client.storage.from("user_data").upload(path: uid.uuidString+"/images/"+filename, file: image, options: FileOptions(
+                cacheControl: "0",
+                contentType: "image/png",
+                upsert: true
+            ))
+            print("uploaded")
+        }
+        catch{
+            print(error.localizedDescription)
+        }
+    }
 }
 
 

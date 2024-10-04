@@ -20,6 +20,24 @@ func getWeekStartDate(_ date: Date) -> Date {
     return localeWeightedDay
 }
 
+struct NameEditor: View{
+    @Binding var name: String
+    var callback: () -> Void
+    init(_ name: Binding<String>, callback: @escaping () -> Void){
+        _name = name
+        self.callback = callback
+    }
+    var body: some View{
+        VStack{
+            Text("Please name your file")
+            TextField("Name", text: $name)
+            Button("Ok"){
+                self.callback()
+            }
+        }
+    }
+}
+
 struct EventEditor: View{
     @State private var isSymbolPickerShown: Bool = false
     @State private var selectedSymbol: String = "pencil"
@@ -27,12 +45,47 @@ struct EventEditor: View{
     @State private var dateEnd: Date = .now
     @State private var color: Color = .teal
     @State private var mainImage: String = "Select image"
-    private var imageURLS:[String:String]
+    @State private var fileImporterPresented: Bool = false
+    @State private var imageURLS:[String:String]
+    @State private var isNameEditorShown: Bool = false
+    @State private var addedFilename: String = "Unnamed"
+    @State private var addedOriginalFilename: String = ""
+    private var APIHandler: ServerAPIinteractor
     
-    init(_ imageURLS: [String:String]){
+    
+    init(imageURLS: [String:String], APIHandler: ServerAPIinteractor){
         self.imageURLS = imageURLS
+        self.APIHandler = APIHandler
+    }
+    func fileCallback (_ result: Result<URL, any Error>) {
+        do{
+            let file: URL = try result.get()
+            isNameEditorShown.toggle()
+            self.addedOriginalFilename = file.lastPathComponent
+            imageURLS[file.lastPathComponent] = file.absoluteString
+            
+            
+                
+        }
+        catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    func terminateNameEditor(){
+        isNameEditorShown = false
+        self.imageURLS[addedFilename] = self.imageURLS[addedOriginalFilename]
+        self.imageURLS.removeValue(forKey: addedOriginalFilename)
+        Task{
+            try await self.APIHandler.upsertImage(image: Data(contentsOf: URL(string: self.imageURLS[addedFilename]!)!),
+                filename: "\(addedFilename).\(addedOriginalFilename.split(separator: ".").last!)")
+        }
+        
+        
+         
     }
     var body : some View {
+        NavigationStack{
             VStack{
                 Divider()
                     .overlay(alignment: .center, content: {Text("Time interval")})
@@ -70,8 +123,26 @@ struct EventEditor: View{
                     .overlay(alignment: .center, content: {Text("Content")})
                 HStack{
                     Text("Main image")
-                    Spacer()
-                    Button(action:{print("Add image")})
+                    
+                    if imageURLS.count > 0{
+                        Picker(selection: $mainImage, label: Text("Select image"))
+                        {
+                            ForEach(imageURLS.keys.sorted(), id: \.self){
+                                key in
+                                Text(key).tag(key)
+                                
+                            }
+                        }
+
+                        .buttonBorderShape(.capsule)
+                        .pickerStyle(NavigationLinkPickerStyle())
+                        .padding(.horizontal, 10)
+                    }
+                    
+                }
+                .padding(.horizontal, 10)
+                HStack{
+                    Button(action:{fileImporterPresented = true})
                     {
                         RoundedRectangle(cornerRadius: 5)
                             .foregroundColor(.clear).opacity(0.5)
@@ -84,30 +155,13 @@ struct EventEditor: View{
                             .padding(10)
                             .frame(width: 50, height: 50)
                     }
-                    if imageURLS.count > 0{
-                        if mainImage == "Select image"{
-                            Text(mainImage)
-                        }
-                        Picker(selection: $mainImage, label: Text("Main image")){
-                            ForEach(["cola", "abobus"], id: \.self){
-                                key in
-                                Text(key).tag(key)
-                                    
-                            }
-                        }
-                        .navigationTitle("Select image")
-                        .fontWeight(.bold)
-                        .overlay(alignment: .leading) {
-                            
-                        }
-                        
-                    }
-                    
+                    Spacer()
                 }
-                .padding(.horizontal, 10)
-                
-                //Spacer()
             }
+        }
+        .fileImporter(isPresented: $fileImporterPresented, allowedContentTypes: [.directory, .png], onCompletion: fileCallback)
+        .sheet(isPresented: $isNameEditorShown){ NameEditor($addedFilename, callback: terminateNameEditor)}
+            
                 
     }
 }
@@ -118,10 +172,11 @@ struct CalendarView: View {
     let minuteHeight = 2
     let HStackXOffset = CGFloat(Double(50))
     let eventList: [Event]
+    let APIHandler: ServerAPIinteractor
     @State var weekStartDate: Date = getWeekStartDate(.now)
-    init(eventList: [Event]) {
+    init(eventList: [Event], APIHandler: ServerAPIinteractor) {
         self.eventList = eventList
-        print(weekStartDate)
+        self.APIHandler = APIHandler
     }
     var body: some View {
         NavigationStack{
@@ -207,7 +262,9 @@ struct CalendarView: View {
 
             }
             .overlay(alignment: .bottomTrailing){
-                NavigationLink(destination: CalendarBackgroundView(minuteHeight: self.minuteHeight)){
+                NavigationLink(destination:
+                                EventEditor(imageURLS:["a": "b"],
+                                            APIHandler:self.APIHandler)){
                     RoundedRectangle(cornerRadius: 10)
                         .foregroundColor(.teal).opacity(0.5)
                         .overlay(alignment: .center){
@@ -390,7 +447,7 @@ struct DetailView: View{
 //                         dateTimeEnd: dateFrom(11,9,2024,1, 15),
 //                         minuteHeight: 2,
 //                         mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"])])
-    EventEditor(["b":"a"])
+    //EventEditor(["b":"a"])
 }
 
 

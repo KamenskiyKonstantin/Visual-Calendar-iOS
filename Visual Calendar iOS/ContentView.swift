@@ -10,11 +10,9 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var viewSwitcher: ViewSwitcher
     let APIHandler: ServerAPIinteractor = ServerAPIinteractor()
-    let calendarView: CalendarView
     
     
     init(){
-        self.calendarView = CalendarView(eventList: [])
         self.viewSwitcher = ViewSwitcher(apiHandler:APIHandler)
     }
     
@@ -33,10 +31,12 @@ struct ContentView: View {
 class ViewSwitcher: ObservableObject{
     
     let apiHandler: ServerAPIinteractor
-    var calendarView: CalendarView = CalendarView(eventList: [])
+    var calendarView: CalendarView
     
     init(apiHandler: ServerAPIinteractor) {
         self.apiHandler = apiHandler
+        self.calendarView = CalendarView(eventList: [],
+                                         APIHandler: ServerAPIinteractor())
     }
     @Published public var activeView: String = "login"
     func switchToSelectRole(){
@@ -52,7 +52,7 @@ class ViewSwitcher: ObservableObject{
     func switchToCalendar(){
         if apiHandler.authSuccessFlag {
             Task{
-                calendarView = await CalendarView(eventList: await apiHandler.fetchEvents())
+                calendarView = await CalendarView(eventList: await apiHandler.fetchEvents(), APIHandler: apiHandler)
                 self.activeView = "calendar"
             }
             
