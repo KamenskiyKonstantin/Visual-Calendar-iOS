@@ -36,7 +36,8 @@ class ViewSwitcher: ObservableObject{
     init(apiHandler: ServerAPIinteractor) {
         self.apiHandler = apiHandler
         self.calendarView = CalendarView(eventList: [],
-                                         APIHandler: ServerAPIinteractor())
+                                         APIHandler: ServerAPIinteractor(),
+                                         imageList: [:])
     }
     @Published public var activeView: String = "login"
     func switchToSelectRole(){
@@ -52,7 +53,7 @@ class ViewSwitcher: ObservableObject{
     func switchToCalendar(){
         if apiHandler.authSuccessFlag {
             Task{
-                calendarView = await CalendarView(eventList: await apiHandler.fetchEvents(), APIHandler: apiHandler)
+                calendarView = await CalendarView(eventList: await apiHandler.fetchEvents(), APIHandler: apiHandler, imageList: await apiHandler.fetchImageURLS())
                 self.activeView = "calendar"
             }
             

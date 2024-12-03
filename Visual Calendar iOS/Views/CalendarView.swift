@@ -20,6 +20,17 @@ func getWeekStartDate(_ date: Date) -> Date {
     return localeWeightedDay
 }
 
+func DateToIntList(date: Date) -> [Int]{
+    let calendar = Calendar.current
+    let components = calendar.dateComponents([.day, .month, .year, .hour, .minute], from: date)
+    let day = components.day
+    let month = components.month
+    let year = components.year
+    let hour = components.hour
+    let minute = components.minute
+    return [day!, month!, year!, hour!, minute!]
+}
+
 struct NameEditor: View{
     @Binding var name: String
     var callback: () -> Void
@@ -46,16 +57,21 @@ struct EventEditor: View{
     @State private var color: Color = .teal
     @State private var mainImage: String = "Select image"
     @State private var fileImporterPresented: Bool = false
+    @State private var sideImages: [String] = []
     @State private var imageURLS:[String:String]
     @State private var isNameEditorShown: Bool = false
     @State private var addedFilename: String = "Unnamed"
     @State private var addedOriginalFilename: String = ""
+    
+    @Environment(\.dismiss) private var dismiss
     private var APIHandler: ServerAPIinteractor
+    let updateCallback: ([String:Any]) -> Void
     
     
-    init(imageURLS: [String:String], APIHandler: ServerAPIinteractor){
+    init(imageURLS: [String:String], APIHandler: ServerAPIinteractor, callback: @escaping ([String:Any]) -> Void){
         self.imageURLS = imageURLS
         self.APIHandler = APIHandler
+        updateCallback = callback
     }
     func fileCallback (_ result: Result<URL, any Error>) {
         do{
@@ -63,7 +79,6 @@ struct EventEditor: View{
             isNameEditorShown.toggle()
             self.addedOriginalFilename = file.lastPathComponent
             imageURLS[file.lastPathComponent] = file.absoluteString
-            
             
                 
         }
@@ -74,16 +89,38 @@ struct EventEditor: View{
     
     func terminateNameEditor(){
         isNameEditorShown = false
-        self.imageURLS[addedFilename] = self.imageURLS[addedOriginalFilename]
-        self.imageURLS.removeValue(forKey: addedOriginalFilename)
-        Task{
-            try await self.APIHandler.upsertImage(image: Data(contentsOf: URL(string: self.imageURLS[addedFilename]!)!),
-                filename: "\(addedFilename).\(addedOriginalFilename.split(separator: ".").last!)")
-        }
         
+        Task{
+            try await self.APIHandler.upsertImage(image: Data(contentsOf: URL(string: self.imageURLS[addedOriginalFilename]!)!),
+                filename: "\(addedFilename).\(addedOriginalFilename.split(separator: ".").last!)")
+            self.imageURLS.removeValue(forKey: addedOriginalFilename)
+            self.imageURLS = await self.APIHandler.fetchImageURLS()
+        }
         
          
     }
+    
+    
+    
+    func generateEvent() -> [String:Any]{
+        
+        var sideURLS:[String] = []
+        for url in self.sideImages {
+            if (self.imageURLS.keys.contains(url)) {
+                sideURLS.append(imageURLS[url]!)
+            }
+        }
+        
+        return [
+            "timeStart":DateToIntList(date: self.dateStart),
+            "timeEnd":DateToIntList(date: self.dateEnd),
+            "color": String(self.color.description),
+            "systemImage":self.selectedSymbol,
+            "mainImageURL":self.imageURLS[self.mainImage] ?? "",
+            "sideImageURLS":sideURLS
+        ]
+    }
+    
     var body : some View {
         NavigationStack{
             VStack{
@@ -122,6 +159,22 @@ struct EventEditor: View{
                 Divider()
                     .overlay(alignment: .center, content: {Text("Content")})
                 HStack{
+                    Button(action:{fileImporterPresented = true})
+                    {
+                        RoundedRectangle(cornerRadius: 5)
+                            .foregroundColor(.clear).opacity(0.5)
+                            .overlay(alignment: .center){
+                                Image(systemName: "plus")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding(5)
+                            }
+                            .padding(10)
+                            .frame(width: 50, height: 50)
+                    }
+                    Spacer()
+                }
+                HStack{
                     Text("Main image")
                     
                     if imageURLS.count > 0{
@@ -141,28 +194,58 @@ struct EventEditor: View{
                     
                 }
                 .padding(.horizontal, 10)
-                HStack{
-                    Button(action:{fileImporterPresented = true})
-                    {
-                        RoundedRectangle(cornerRadius: 5)
-                            .foregroundColor(.clear).opacity(0.5)
-                            .overlay(alignment: .center){
-                                Image(systemName: "plus")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .padding(5)
+                ScrollView(.vertical){
+                    ForEach(sideImages.indices, id: \.self){ imageIndex in
+                        HStack{
+                            Text("Side image \(imageIndex + 1)")
+                            
+                            if imageURLS.count > 0{
+                                Picker(selection: $sideImages[imageIndex], label: Text("Select image"))
+                                {
+                                    ForEach(imageURLS.keys.sorted(), id: \.self){
+                                        key in
+                                        Text(key).tag(key)
+                                        
+                                    }
+                                }
+
+                                .buttonBorderShape(.capsule)
+                                .pickerStyle(NavigationLinkPickerStyle())
+                                .padding(.horizontal, 10)
                             }
-                            .padding(10)
-                            .frame(width: 50, height: 50)
+                            
+                        }
+                        .padding(.horizontal, 10)
+                        
                     }
-                    Spacer()
+                    Button("Add side image"){
+                        sideImages.append("")
+                    }
+                    .padding(10)
+                    .buttonBorderShape(.capsule)
                 }
+                Button ("Submit"){
+                    self.updateEvents()
+                }
+                .buttonStyle(.bordered)
+                .padding(10)
+                .background(Color.blue)
+                .buttonBorderShape(.capsule)
+                
             }
         }
         .fileImporter(isPresented: $fileImporterPresented, allowedContentTypes: [.directory, .png], onCompletion: fileCallback)
         .sheet(isPresented: $isNameEditorShown){ NameEditor($addedFilename, callback: terminateNameEditor)}
             
                 
+    }
+    
+    func updateEvents()
+    {
+        
+        self.updateCallback(self.generateEvent())
+        dismiss()
+        
     }
 }
 
@@ -171,12 +254,14 @@ struct CalendarView: View {
     let daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"]
     let minuteHeight = 2
     let HStackXOffset = CGFloat(Double(50))
-    let eventList: [Event]
+    @State var eventList: [Event]
     let APIHandler: ServerAPIinteractor
+    let imageList: [String:String]
     @State var weekStartDate: Date = getWeekStartDate(.now)
-    init(eventList: [Event], APIHandler: ServerAPIinteractor) {
+    init(eventList: [Event], APIHandler: ServerAPIinteractor, imageList: [String:String]) {
         self.eventList = eventList
         self.APIHandler = APIHandler
+        self.imageList = imageList
     }
     var body: some View {
         NavigationStack{
@@ -263,8 +348,9 @@ struct CalendarView: View {
             }
             .overlay(alignment: .bottomTrailing){
                 NavigationLink(destination:
-                                EventEditor(imageURLS:["a": "b"],
-                                            APIHandler:self.APIHandler)){
+                                EventEditor(imageURLS:imageList,
+                                            APIHandler:self.APIHandler,
+                                            callback:self.updateEvents)){
                     RoundedRectangle(cornerRadius: 10)
                         .foregroundColor(.teal).opacity(0.5)
                         .overlay(alignment: .center){
@@ -286,6 +372,17 @@ struct CalendarView: View {
     }
     func goToPreviousWeek(){
         self.weekStartDate = self.weekStartDate.addingTimeInterval(-60 * 60 * 24 * 7)
+        print(self.weekStartDate)
+    }
+    
+    func updateEvents(event: [String:Any]){
+        var newJSON = [event]
+        for item in self.eventList{
+            newJSON.append(item.getDictionary())
+        }
+        self.eventList.append(Event(dictionary: event))
+        
+        self.APIHandler.upsertEvents(events: newJSON)
     }
     
     
@@ -340,6 +437,19 @@ class Event{
         
     }
     
+    init(dictionary: [String:Any]){
+        self.systemImage = dictionary["systemImage"] as! String
+        self.color = dictionary["color"] as! String
+        let timeStart = dictionary["timeStart"] as! [Int]
+        let timeEnd = dictionary["timeEnd"] as! [Int]
+        self.dateTimeStart = dateFrom(timeStart[0], timeStart[1], timeStart[2], timeStart[3], timeStart[4])
+        self.dateTimeEnd = dateFrom(timeEnd[0], timeEnd[1], timeEnd[2], timeEnd[3], timeEnd[4])
+        self.minuteHeight = 2
+        self.mainImageURL = dictionary["mainImageURL"] as! String
+        self.sideImagesURL = dictionary["sideImageURLS"] as! [String]
+        self.dayOfWeek = Calendar.current.component(.weekday, from: self.dateTimeStart)
+        self.duration = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart) / 60)
+    }
     func getVisibleObject() -> some View{
         let height = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart)) / 60 * self.minuteHeight
         let hour = Calendar.current.component(.hour, from: self.dateTimeStart)
@@ -385,6 +495,17 @@ class Event{
 
             
             
+    }
+    
+    func getDictionary() -> [String: Any] {
+        return  [
+            "timeStart":DateToIntList(date: self.dateTimeStart),
+            "timeEnd":DateToIntList(date: self.dateTimeEnd),
+            "color":self.color,
+            "systemImage":self.systemImage,
+            "mainImageURL":self.mainImageURL,
+            "sideImageURLS":self.sideImagesURL
+        ]
     }
     
     
@@ -436,7 +557,7 @@ struct DetailView: View{
 //                    [Event (
 //                        systemImage: "fork.knife",
 //                        color: "Teal",
-//                        dateTimeStart: dateFrom(19,9,2024,0,0),
+//                        dateTimeStart: dateFrom(19,9    ,2024,0,0),
 //                        dateTimeEnd: dateFrom(19,9,2024,0, 30),
 //                        minuteHeight: 2,
 //                        mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"]),
@@ -446,8 +567,9 @@ struct DetailView: View{
 //                         dateTimeStart: dateFrom(11,9,2024,0,0),
 //                         dateTimeEnd: dateFrom(11,9,2024,1, 15),
 //                         minuteHeight: 2,
-//                         mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"])])
-    //EventEditor(["b":"a"])
+//                         mainImageURL: "abobus", sideImagesURL: ["abobusMnogo"])],
+//                 APIHandler: ServerAPIinteractor(), imageList:[:])
+    EventEditor(imageURLS:["b":"a"], APIHandler: ServerAPIinteractor(), callback: { _ in print("none") })
 }
 
 

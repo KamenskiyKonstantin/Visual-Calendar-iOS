@@ -103,8 +103,17 @@ class ServerAPIinteractor{
                         "events": []
                     ]
                     let json = try JSONSerialization.data(withJSONObject: starterJson, options: .prettyPrinted)
-                    try await client.storage.from("user_data").upload(path: uid.uuidString+"/calendar.json", file:json)
-                    try await client.storage.from("user_data").upload(path: uid.uuidString+"/images/welcome.txt", file:json)
+                    try await client.storage.from("user_data").upload(path: uid.uuidString+"/calendar.json", file:json, options: FileOptions(
+                        cacheControl: "0",
+                        contentType: "application/json",
+                        upsert: true
+                    ))
+                    try await client.storage.from("user_data").upload(path: uid.uuidString+"/images/welcome.txt", file:json,
+                                                                      options: FileOptions(
+                                                                          cacheControl: "0",
+                                                                          contentType: "application/json",
+                                                                          upsert: true
+                                                                      ))
 
                 }
                 let userCalendar = try await client.storage.from("user_data").download(path: uid.uuidString+"/calendar.json")
@@ -142,6 +151,47 @@ class ServerAPIinteractor{
         }
         catch{
             print(error.localizedDescription)
+        }
+    }
+    //
+    func fetchImageURLS() async -> [String:String]{
+        var imageURLS: [String:String] = [:]
+        do{
+            let uid = try await client.auth.user().id
+            let imageList = try await client.storage.from("user_data").list(path: uid.uuidString+"/images")
+           
+            
+            for image in imageList{
+                print(image.name)
+                let url = try client.storage.from("user_data").getPublicURL(path:  uid.uuidString+"/images/"+image.name)
+                imageURLS[String(image.name.split(separator: ".").first!)] = url.absoluteString
+                
+            }
+            
+            
+        }
+    
+        catch{
+            print(error.localizedDescription)
+        }
+        return imageURLS
+    }
+    
+    func upsertEvents(events: [[String:Any]]){
+        Task{
+            let uid = try await client.auth.user().id
+            let jsonData: [String:Any] =
+            [
+                "uid":uid.uuidString,
+                "events":events
+            ]
+            print(jsonData, JSONSerialization.isValidJSONObject(jsonData))
+            let json = try JSONSerialization.data(withJSONObject: jsonData, options: .prettyPrinted)
+            try await client.storage.from("user_data").upload(path: uid.uuidString+"/calendar.json", file:json, options: FileOptions(
+                cacheControl: "0",
+                contentType: "application/json",
+                upsert: true
+            ))
         }
     }
 }
