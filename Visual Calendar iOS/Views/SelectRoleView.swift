@@ -24,7 +24,7 @@ struct SelectRoleView: View {
                 VStack{
                     HStack{
                         Spacer()
-                        Button(action:self.viewSwitcher.switchToCalendar)
+                        Button(action:{self.viewSwitcher.switchToCalendar(isAdult: false)})
                         {
                             Text("Child")
                                 .frame(width:400)
@@ -41,7 +41,7 @@ struct SelectRoleView: View {
                     HStack{
                         NavigationLink
                         {
-                            ConfirmAdultView()
+                            ConfirmAdultView(viewSwitcher: viewSwitcher)
                         }
                     label:
                         {
@@ -71,18 +71,61 @@ struct SelectRoleView: View {
 }
 
 struct ConfirmAdultView: View{
+    @State var userAnswer: String = ""
+    
     var verificationValA: Int = Int.random(in: 10...100)
     var verificationValB: Int = Int.random(in: 10...100)
+    
+    var viewSwitcher: ViewSwitcher
+    
+    @State var isAlertPresented: Bool = false
+    
+    
     var body: some View{
         VStack{
             Spacer()
             HStack{
                 Spacer()
-                Text("Please verify that you are an adult by solving this equation")
+                VStack{
+                    Spacer()
+                    Text("Please verify that you are an adult by solving this equation")
+                    Text("\(verificationValA) + \(verificationValB) = ?")
+                    TextField("Answer", text: $userAnswer)
+                        .padding(10)
+                        .frame(width: 200)
+                    
+                    Button("Submit", action: checkAnswer)
+                        .buttonBorderShape(.capsule)
+                        .frame(width: 200)
+                        .padding(10)
+                        .background(Color.accentColor)
+                        .foregroundColor(Color.white)
+                        .cornerRadius(20)
+                    Spacer()
+                    
+                    
+                }
+                
                 Spacer()
             }
-            //TODO: add captcha
             Spacer()
+        }
+        .sheet(isPresented: $isAlertPresented) {
+            messageBox(text: "Incorrect answer", isVisible: $isAlertPresented)
+        }
+        
+    }
+    
+    func checkAnswer(){
+        if userAnswer.isEmpty{
+            isAlertPresented.toggle()
+        }
+        else{
+            if Int(userAnswer)! == verificationValA + verificationValB {
+                viewSwitcher.switchToCalendar(isAdult:true)
+            }else{
+                isAlertPresented.toggle()
+            }
         }
     }
     

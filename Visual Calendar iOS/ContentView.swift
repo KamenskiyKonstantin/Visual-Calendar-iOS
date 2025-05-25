@@ -17,46 +17,48 @@ struct ContentView: View {
     }
     
     var body: some View {
-        if viewSwitcher.activeView == "login"{
-            LoginView(APIinteractor: APIHandler, viewSwitcher: viewSwitcher)
-        }
-        if viewSwitcher.activeView == "selectRole"{
-            SelectRoleView(viewSwitcher: self.viewSwitcher)
-        }
-        if viewSwitcher.activeView == "calendar"{
-            viewSwitcher.calendarView
+        Group {
+            switch viewSwitcher.activeView {
+            case "login":
+                LoginView(APIinteractor: APIHandler, viewSwitcher: viewSwitcher)
+            case "selectRole":
+                SelectRoleView(viewSwitcher: viewSwitcher)
+            case "calendar":
+                CalendarView(eventList: APIHandler.eventList, APIHandler: APIHandler, imageList: APIHandler.images, viewSwitcher: self.viewSwitcher)
+            default:
+                Text("Unknown View") // Fallback for unexpected states
+            }
         }
     }
+    
 }
 class ViewSwitcher: ObservableObject{
     
     let apiHandler: ServerAPIinteractor
-    var calendarView: CalendarView
+    
+    @Published public var activeView: String = "login"
     
     init(apiHandler: ServerAPIinteractor) {
         self.apiHandler = apiHandler
-        self.calendarView = CalendarView(eventList: [],
-                                         APIHandler: ServerAPIinteractor(),
-                                         imageList: [:])
     }
-    @Published public var activeView: String = "login"
+    
     func switchToSelectRole(){
-        
         self.activeView = "selectRole"
-        
     }
     
     func switchToLogin(){
         self.activeView = "login"
     }
     
-    func switchToCalendar(){
+    @MainActor
+    func switchToCalendar(isAdult: Bool = false){
+        
         if apiHandler.authSuccessFlag {
-            Task{
-                calendarView = await CalendarView(eventList: await apiHandler.fetchEvents(), APIHandler: apiHandler, imageList: await apiHandler.fetchImageURLS())
-                self.activeView = "calendar"
+            Task {
+                await apiHandler.fetchEvents()
+                await apiHandler.fetchImageURLS()
             }
-            
+            self.activeView = "calendar"
         }
     }
     

@@ -10,6 +10,30 @@ import Supabase
 import SwiftyJSON
 
 
+func dateFrom(_ day: Int, _ month: Int, _ year: Int, _ hour: Int = 0, _ minute: Int = 0) -> Date {
+    let calendar = Calendar.current
+    let dateComponents = DateComponents(year: year, month: month, day: day, hour: hour, minute: minute)
+    return calendar.date(from: dateComponents) ?? .now
+}
+
+func getWeekStartDate(_ date: Date) -> Date {
+    let calendar = Calendar.current
+    let weekStartDate = calendar.startOfDay(for: date.addingTimeInterval(-date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 604800)))
+    let localeWeightedDay = weekStartDate.addingTimeInterval(TimeInterval(TimeZone.current.secondsFromGMT()))
+    return localeWeightedDay
+}
+
+func DateToIntList(date: Date) -> [Int]{
+    let calendar = Calendar.current
+    let components = calendar.dateComponents([.day, .month, .year, .hour, .minute], from: date)
+    let day = components.day
+    let month = components.month
+    let year = components.year
+    let hour = components.hour
+    let minute = components.minute
+    return [day!, month!, year!, hour!, minute!]
+}
+
 
 struct CalendarJSON: Codable {
     let events: [EventJSON]
@@ -41,6 +65,9 @@ class ServerAPIinteractor{
     var client: SupabaseClient
     var auth : AuthClient
     public var authSuccessFlag: Bool = false
+    
+    public var eventList: [Event] = []
+    public var images: [String:String] = [:]
     
     init() {
         client = SupabaseClient(supabaseURL: URL(string: "https://wlviarpvbxdaoytfeqnm.supabase.co")!,
@@ -81,7 +108,18 @@ class ServerAPIinteractor{
         
     }
     
-    func fetchEvents() async -> [Event]{
+    func logout() async{
+        do{
+            try await auth.signOut()
+            authSuccessFlag = false
+        }
+        catch{
+            print("an error occured")
+            print(error.localizedDescription)
+        }
+    }
+    
+    func fetchEvents() async {
         if self.authSuccessFlag{
             do{
                 let user = try await client.auth.user()
@@ -122,18 +160,18 @@ class ServerAPIinteractor{
                 for event in calendar.events{
                     eventList.append(event.convertToEvent())
                 }
-                return eventList
+                self.eventList = eventList
                 
                 
             }
             catch{
                 print("error occured")
                 print(error.localizedDescription)
-                return []
+                return
             }
         }
         else{
-            return []
+            return
         }
     }
     
@@ -154,7 +192,7 @@ class ServerAPIinteractor{
         }
     }
     //
-    func fetchImageURLS() async -> [String:String]{
+    func fetchImageURLS() async {
         var imageURLS: [String:String] = [:]
         do{
             let uid = try await client.auth.user().id
@@ -174,7 +212,8 @@ class ServerAPIinteractor{
         catch{
             print(error.localizedDescription)
         }
-        return imageURLS
+        self.images.removeAll()
+        self.images = imageURLS
     }
     
     func upsertEvents(events: [[String:Any]]){
