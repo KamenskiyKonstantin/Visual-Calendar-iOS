@@ -73,8 +73,8 @@ struct SelectRoleView: View {
 struct ConfirmAdultView: View{
     @State var userAnswer: String = ""
     
-    var verificationValA: Int = Int.random(in: 10...100)
-    var verificationValB: Int = Int.random(in: 10...100)
+    var verificationValA: Int = Int.random(in: 1...10)
+    var verificationValB: Int = Int.random(in: 1...10)
     
     var viewSwitcher: ViewSwitcher
     
@@ -132,6 +132,6 @@ struct ConfirmAdultView: View{
 }
 
 #Preview {
-    SelectRoleView(viewSwitcher: ViewSwitcher(apiHandler: ServerAPIinteractor()))
+    SelectRoleView(viewSwitcher: ViewSwitcher(api: APIHandler()))
     
 }

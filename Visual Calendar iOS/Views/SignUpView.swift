@@ -9,16 +9,16 @@
 import SwiftUI
 
 struct SignUpView: View {
-    @State var APIinteractor: ServerAPIinteractor
+    @State var APIinteractor: APIHandler
     @State var email: String = ""
     @State var password: String = ""
-    init(APIinteractor: ServerAPIinteractor) {
+    init(APIinteractor: APIHandler) {
         self.APIinteractor = APIinteractor
     }
     
     func signup() {
         Task{
-            await self.APIinteractor.signUp(email:email, password:password)
+            try await self.APIinteractor.signUp(email:email, password:password)
         }
         
     }
@@ -57,6 +57,6 @@ struct SignUpView: View {
 
 
 #Preview {
-    return SignUpView(APIinteractor: ServerAPIinteractor())
+    return SignUpView(APIinteractor: APIHandler())
 }
 

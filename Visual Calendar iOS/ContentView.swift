@@ -9,61 +9,77 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var viewSwitcher: ViewSwitcher
-    let APIHandler: ServerAPIinteractor = ServerAPIinteractor()
-    
-    
+    let api: APIHandler = APIHandler()
     init(){
-        self.viewSwitcher = ViewSwitcher(apiHandler:APIHandler)
+        self.viewSwitcher = ViewSwitcher(api:api)
+    }
+    
+    var currentView: some View {
+        switch viewSwitcher.activeView {
+            case .login:
+                AnyView(LoginView(APIinteractor: api, viewSwitcher: viewSwitcher))
+            case .selectRole:
+                AnyView(SelectRoleView(viewSwitcher: viewSwitcher))
+            case let .calendar(isAdult):
+                AnyView(CalendarView(api: api,
+                             viewSwitcher: viewSwitcher,
+                             imageList: api.images,
+                             isParentMode: isAdult,))
+        }
     }
     
     var body: some View {
-        Group {
-            switch viewSwitcher.activeView {
-            case "login":
-                LoginView(APIinteractor: APIHandler, viewSwitcher: viewSwitcher)
-            case "selectRole":
-                SelectRoleView(viewSwitcher: viewSwitcher)
-            case "calendar":
-                CalendarView(eventList: APIHandler.eventList, APIHandler: APIHandler, imageList: APIHandler.images, viewSwitcher: self.viewSwitcher)
-            default:
-                Text("Unknown View") // Fallback for unexpected states
-            }
-        }
-    }
-    
-}
-class ViewSwitcher: ObservableObject{
-    
-    let apiHandler: ServerAPIinteractor
-    
-    @Published public var activeView: String = "login"
-    
-    init(apiHandler: ServerAPIinteractor) {
-        self.apiHandler = apiHandler
-    }
-    
-    func switchToSelectRole(){
-        self.activeView = "selectRole"
-    }
-    
-    func switchToLogin(){
-        self.activeView = "login"
-    }
-    
-    @MainActor
-    func switchToCalendar(isAdult: Bool = false){
+        currentView
         
-        if apiHandler.authSuccessFlag {
-            Task {
-                await apiHandler.fetchEvents()
-                await apiHandler.fetchImageURLS()
-            }
-            self.activeView = "calendar"
-        }
+    }
+}
+
+enum ActiveView {
+    case login
+    case selectRole
+    case calendar(isAdult: Bool)
+}
+
+@MainActor
+class ViewSwitcher: ObservableObject {
+    let api: APIHandler
+    
+    @Published var activeView: ActiveView = .login
+    
+    init(api: APIHandler) {
+        self.api = api
     }
     
+    func switchToSelectRole() {
+        activeView = .selectRole
+    }
     
+    func switchToLogin() {
+        activeView = .login
+    }
+    
+    func switchToCalendar(isAdult: Bool = false) {
+        guard api.isAuthenticated else {
+            activeView = .login
+            return
+        }
+        
+        Task {
+            do {
+                try await api.fetchEvents()
+                try await api.fetchImageURLs()
+                await MainActor.run {
+                    activeView = .calendar(isAdult: isAdult)
+                }
+                
+            } catch {
+                print(error)
+                activeView = .login
+            }
+        }
+    }
 }
+    
 #Preview {
     ContentView()
 }

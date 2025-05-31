@@ -10,32 +10,28 @@ import SwiftUI
 struct WeekNavigationView: View {
     let goToPreviousWeek: () -> Void
     let goToNextWeek: () -> Void
-    
     let HStackXOffset: CGFloat = defaultHStackOffset
-    
-    init(goToPreviousWeek: @escaping () -> Void, goToNextWeek: @escaping () -> Void) {
-        self.goToPreviousWeek = goToPreviousWeek
-        self.goToNextWeek = goToNextWeek
-    }
-
     var body: some View {
-        HStack {
-            Button(action: goToPreviousWeek) {
-                Image(systemName: "chevron.left")
-                    .fontWeight(.bold)
-            }
-            .padding(10)
-            .frame(maxWidth: HStackXOffset)
+        VStack(alignment: .leading) {
+            
+            HStack {
+                Button(action: goToPreviousWeek) {
+                    Image(systemName: "chevron.left")
+                        .fontWeight(.bold)
+                }
+                .padding(10)
+                .frame(maxWidth: HStackXOffset)
+                Spacer()
 
-            Spacer()
-
-            Button(action: goToNextWeek) {
-                Image(systemName: "chevron.right")
-                    .fontWeight(.bold)
+                Button(action: goToNextWeek) {
+                    Image(systemName: "chevron.right")
+                        .fontWeight(.bold)
+                }
+                .padding(10)
+                .frame(maxWidth: HStackXOffset)
             }
-            .padding(10)
-            .frame(maxWidth: HStackXOffset)
         }
+        
     }
 }
 
@@ -50,9 +46,28 @@ struct daysOfWeekHeader: View {
             Color.clear
                 .frame(width:self.HStackXOffset)
             
-            ForEach(getWeekDates(startingFrom: weekStartDate), id: \.self) { date in
-                Text(dateFormatter.string(from: date))
-                    .frame(maxWidth: .infinity)
+            ForEach(0..<7, id: \.self) { date in
+                VStack{
+                    
+                    let currentDate = Calendar.current.date(byAdding: .day, value: date, to: self.weekStartDate)!
+                    if Calendar.current.isDateInToday(currentDate) {
+                        Text(currentDate.getFormattedDate())
+                            .foregroundStyle(Color(.systemGreen))
+                            .frame(maxWidth: .infinity)
+                        Text(daysOfWeek[date])
+                            .foregroundStyle(Color(.systemGreen))
+                            .frame(maxWidth: .infinity)
+                    }
+                    else{
+                        Text(currentDate.getFormattedDate())
+                            .frame(maxWidth: .infinity)
+                        Text(daysOfWeek[date])
+                            .frame(maxWidth: .infinity)
+                        
+                    }
+                    
+                    
+                }
             }
             Color.clear
                 .frame(width:self.HStackXOffset)
@@ -66,22 +81,23 @@ struct WeekdayHeader: View {
     let goToPreviousWeek: () -> Void
     let goToNextWeek: () -> Void
     var daysOfWeek: [String] = defaultDaysOfWeek
-    let weekStartDate: Date
+    @Binding var weekStartDate: Date
     
-    init(goToPreviousWeek: @escaping () -> Void, goToNextWeek: @escaping () -> Void, daysOfWeek: [String] = defaultDaysOfWeek,
-         weekStartDate: Date) {
-        self.goToPreviousWeek = goToPreviousWeek
-        self.goToNextWeek = goToNextWeek
-        self.daysOfWeek = daysOfWeek
-        self.weekStartDate = weekStartDate
-    }
     
     
     var body: some View {
-        ZStack{
-            WeekNavigationView(goToPreviousWeek: goToPreviousWeek, goToNextWeek: goToNextWeek)
-            daysOfWeekHeader(daysOfWeek: daysOfWeek, weekStartDate: weekStartDate)
+        VStack{
+            HStack{
+                Spacer()
+                Text(self.weekStartDate.description)
+                Spacer()
+            }
+            ZStack{
+                WeekNavigationView(goToPreviousWeek: goToPreviousWeek, goToNextWeek: goToNextWeek)
+                daysOfWeekHeader(daysOfWeek: daysOfWeek, weekStartDate: weekStartDate)
+            }
         }
+       
     }
 }
 

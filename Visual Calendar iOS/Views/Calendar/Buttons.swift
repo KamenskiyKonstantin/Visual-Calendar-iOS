@@ -8,17 +8,17 @@
 import SwiftUI
 
 struct EditButtonView: View {
-    var imageList: [String:String]
-    var APIHandler: ServerAPIinteractor
-    var updateEvents: ([String:Any]) -> Void
+    var imageList: [String:[String:String]]
+    @ObservedObject var APIHandler: APIHandler
+    var updateEvents: (Event) async throws-> Void
     
     var body: some View {
         NavigationLink(destination:
                         EventEditor(imageURLS: imageList,
                                     APIHandler:APIHandler,
-                                    callback:updateEvents)){
+                                    updateCallback:updateEvents)){
             RoundedRectangle(cornerRadius: 10)
-                .foregroundColor(.teal).opacity(0.5)
+                .foregroundColor(Color(.systemGreen)).opacity(0.5)
                 .overlay(alignment: .center){
                     Image(systemName: "plus")
                         .resizable()
@@ -40,12 +40,17 @@ struct LogoutButtonView: View {
         Button(action: {
             logoutFormShown = true
         }) {
-            Image(systemName: "power")
+            RoundedRectangle(cornerRadius: 10)
+                .foregroundColor(Color(.systemRed)).opacity(0.5)
+                .overlay(alignment: .center){
+                    Image(systemName: "power")
+                        .resizable()
+                        .scaledToFit()
+                        .padding(20)
+                }
+                
+                .padding(10)
+                .frame(width: 125, height: 125)
         }
-        .background(Color.red)
-        .opacity(0.5)
-        .padding()
-        .cornerRadius(20)
-        .frame(width: 200, height: 200)
     }
 }

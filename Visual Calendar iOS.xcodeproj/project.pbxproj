@@ -14,6 +14,8 @@
 		ED41F0922C5BD15600954ACF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED41F0912C5BD15600954ACF /* Assets.xcassets */; };
 		ED41F0952C5BD15600954ACF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED41F0942C5BD15600954ACF /* Preview Assets.xcassets */; };
 		ED41F09D2C5BD1D300954ACF /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41F09C2C5BD1D300954ACF /* LoginView.swift */; };
+		ED4ABE462DE472DC0036B16F /* Sections.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4ABE452DE472DC0036B16F /* Sections.swift */; };
+		ED4ABE482DE72E2D0036B16F /* BaseExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4ABE472DE72E2D0036B16F /* BaseExtensions.swift */; };
 		ED6DB6E22D422D9F00F518A2 /* EventEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6DB6E12D422D9F00F518A2 /* EventEditor.swift */; };
 		ED86AFFD2D42684A00F5B89C /* UtilsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED86AFFC2D42684A00F5B89C /* UtilsUI.swift */; };
 		ED97F3932DE2E1C6007D316B /* WeekdayHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3922DE2E1C6007D316B /* WeekdayHeader.swift */; };
@@ -21,6 +23,7 @@
 		ED97F3972DE2E968007D316B /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3962DE2E968007D316B /* Buttons.swift */; };
 		ED97F3992DE2E990007D316B /* CalendarTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3982DE2E990007D316B /* CalendarTable.swift */; };
 		ED97F39B2DE2EAE4007D316B /* CalendarHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F39A2DE2EAE4007D316B /* CalendarHelpers.swift */; };
+		ED97F39E2DE2F6C6007D316B /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F39D2DE2F6C6007D316B /* Event.swift */; };
 		ED9E8A7D2C5E72AE0098D8FD /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9E8A7C2C5E72AE0098D8FD /* SignUpView.swift */; };
 		ED9E8A7F2C5E75ED0098D8FD /* FunctionalClasses.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9E8A7E2C5E75ED0098D8FD /* FunctionalClasses.swift */; };
 		ED9E8A822C5E765F0098D8FD /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A812C5E765F0098D8FD /* Auth */; };
@@ -42,6 +45,8 @@
 		ED41F0912C5BD15600954ACF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		ED41F0942C5BD15600954ACF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		ED41F09C2C5BD1D300954ACF /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		ED4ABE452DE472DC0036B16F /* Sections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sections.swift; sourceTree = "<group>"; };
+		ED4ABE472DE72E2D0036B16F /* BaseExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseExtensions.swift; sourceTree = "<group>"; };
 		ED6DB6E12D422D9F00F518A2 /* EventEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditor.swift; sourceTree = "<group>"; };
 		ED86AFFC2D42684A00F5B89C /* UtilsUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsUI.swift; sourceTree = "<group>"; };
 		ED97F3922DE2E1C6007D316B /* WeekdayHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekdayHeader.swift; sourceTree = "<group>"; };
@@ -49,6 +54,7 @@
 		ED97F3962DE2E968007D316B /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
 		ED97F3982DE2E990007D316B /* CalendarTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTable.swift; sourceTree = "<group>"; };
 		ED97F39A2DE2EAE4007D316B /* CalendarHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarHelpers.swift; sourceTree = "<group>"; };
+		ED97F39D2DE2F6C6007D316B /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
 		ED9E8A7C2C5E72AE0098D8FD /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
 		ED9E8A7E2C5E75ED0098D8FD /* FunctionalClasses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FunctionalClasses.swift; sourceTree = "<group>"; };
 		EDAAAE192C5FEBB300E45598 /* VisualCalendarIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VisualCalendarIOS.entitlements; sourceTree = "<group>"; };
@@ -106,8 +112,9 @@
 				ED3503502C9B3F8F002BE9D4 /* Visual Calendar iOS.entitlements */,
 				ED41F09B2C5BD1C100954ACF /* Views */,
 				ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */,
-				ED9E8A7E2C5E75ED0098D8FD /* FunctionalClasses.swift */,
 				ED41F08F2C5BD15500954ACF /* ContentView.swift */,
+				ED9E8A7E2C5E75ED0098D8FD /* FunctionalClasses.swift */,
+				ED4ABE472DE72E2D0036B16F /* BaseExtensions.swift */,
 				ED41F0912C5BD15600954ACF /* Assets.xcassets */,
 				ED41F0932C5BD15600954ACF /* Preview Content */,
 			);
@@ -138,14 +145,24 @@
 			isa = PBXGroup;
 			children = (
 				ED97F3922DE2E1C6007D316B /* WeekdayHeader.swift */,
-				ED1410E82C7F29E300D152A6 /* CalendarView.swift */,
 				ED97F3982DE2E990007D316B /* CalendarTable.swift */,
-				ED6DB6E12D422D9F00F518A2 /* EventEditor.swift */,
+				ED1410E82C7F29E300D152A6 /* CalendarView.swift */,
+				ED97F3A12DE4720F007D316B /* EventEditor */,
 				ED97F3962DE2E968007D316B /* Buttons.swift */,
 				ED97F3942DE2E22F007D316B /* CalendarConstants.swift */,
 				ED97F39A2DE2EAE4007D316B /* CalendarHelpers.swift */,
+				ED97F39D2DE2F6C6007D316B /* Event.swift */,
 			);
 			path = Calendar;
+			sourceTree = "<group>";
+		};
+		ED97F3A12DE4720F007D316B /* EventEditor */ = {
+			isa = PBXGroup;
+			children = (
+				ED6DB6E12D422D9F00F518A2 /* EventEditor.swift */,
+				ED4ABE452DE472DC0036B16F /* Sections.swift */,
+			);
+			path = EventEditor;
 			sourceTree = "<group>";
 		};
 		EDEB08972C8623C50073C4A9 /* Images */ = {
@@ -194,7 +211,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1540;
+				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					ED41F0892C5BD15500954ACF = {
 						CreatedOnToolsVersion = 15.4;
@@ -242,13 +259,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				ED97F3952DE2E22F007D316B /* CalendarConstants.swift in Sources */,
+				ED4ABE462DE472DC0036B16F /* Sections.swift in Sources */,
 				ED9E8A7D2C5E72AE0098D8FD /* SignUpView.swift in Sources */,
 				ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */,
 				ED97F3972DE2E968007D316B /* Buttons.swift in Sources */,
+				ED97F39E2DE2F6C6007D316B /* Event.swift in Sources */,
 				ED41F09D2C5BD1D300954ACF /* LoginView.swift in Sources */,
 				ED86AFFD2D42684A00F5B89C /* UtilsUI.swift in Sources */,
 				ED41F0902C5BD15500954ACF /* ContentView.swift in Sources */,
 				ED9E8A7F2C5E75ED0098D8FD /* FunctionalClasses.swift in Sources */,
+				ED4ABE482DE72E2D0036B16F /* BaseExtensions.swift in Sources */,
 				ED6DB6E22D422D9F00F518A2 /* EventEditor.swift in Sources */,
 				ED97F39B2DE2EAE4007D316B /* CalendarHelpers.swift in Sources */,
 				ED97F3932DE2E1C6007D316B /* WeekdayHeader.swift in Sources */,
@@ -296,6 +316,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = BAZD9675JV;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -359,6 +380,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = BAZD9675JV;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -389,7 +411,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Visual Calendar iOS/Preview Content\"";
-				DEVELOPMENT_TEAM = BAZD9675JV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -419,7 +440,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Visual Calendar iOS/Preview Content\"";
-				DEVELOPMENT_TEAM = BAZD9675JV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

@@ -18,34 +18,28 @@ struct CalendarView: View {
     let HStackXOffset = defaultHStackOffset
     
     // MARK: Dependencies
-    let APIHandler: ServerAPIinteractor
-    let imageList: [String: String]
+    @ObservedObject var api: APIHandler
     let viewSwitcher: ViewSwitcher
+    let imageList: [String:[String: String]]
+    
     
     // MARK: State Properties
-    @State var eventList: [Event]
-    @State var weekStartDate: Date = getWeekStartDate(.now)
+    @State var weekStartDate: Date = Date().startOfWeek()
     @State var isParentMode: Bool
     @State var logoutFormShown: Bool = false
     
-    
-    
-    init(eventList: [Event], APIHandler: ServerAPIinteractor, imageList: [String:String], isParentMode: Bool = false, viewSwitcher: ViewSwitcher ){
-        self.eventList = eventList
-        self.APIHandler = APIHandler
-        self.imageList = imageList
-        self.isParentMode = isParentMode
-        self.viewSwitcher = viewSwitcher
-    }
     var body: some View {
         NavigationStack{
             VStack{
                 WeekdayHeader(goToPreviousWeek: goToPreviousWeek,
                               goToNextWeek: goToNextWeek,
-                              weekStartDate: weekStartDate)
+                              weekStartDate: $weekStartDate)
                 ScrollView(.vertical){
                     ZStack(alignment: .topLeading){
-                        CalendarTable(minuteHeight: minuteHeight, APIHandler: APIHandler, eventList: eventList, weekStartDate: weekStartDate)
+                        CalendarTable(
+                            minuteHeight: minuteHeight,
+                            api: api,
+                            weekStartDate: $weekStartDate)
                         CalendarBackgroundView(minuteHeight: minuteHeight)
                     }
                 }
@@ -54,22 +48,34 @@ struct CalendarView: View {
                             "Are you sure you want to proceed?",
                             isPresented: $logoutFormShown,
                             titleVisibility: .visible
-                        ) {
+            ) {
                             Button("OK") {
                                 Task{
-                                    await APIHandler.logout()
+                                    try await api.logout()
+                                    viewSwitcher.switchToLogin()
                                 }
-                                viewSwitcher.switchToLogin()
                             }
                             Button("Cancel", role: .cancel){
                                 logoutFormShown = false
                             }
                         }
+            
             .overlay(alignment: .bottomTrailing){
                 if (isParentMode) {
-                    EditButtonView(imageList: imageList, APIHandler: APIHandler, updateEvents: updateEvents)
+                    EditButtonView(
+                        imageList: imageList,
+                        APIHandler: api,
+                        updateEvents: self.updateEvents)
                 }
             }
+            .overlay(alignment: .topTrailing){
+                Button(action:{Task{await refetchEvents()}}){
+                    Image(systemName: "arrow.clockwise.circle")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                }
+            }
+            
             .overlay(alignment: .bottomLeading, content: {
                 LogoutButtonView(logoutFormShown: $logoutFormShown)
             })
@@ -86,23 +92,33 @@ struct CalendarView: View {
         print(self.weekStartDate)
     }
     
-    func updateEvents(event: [String:Any]){
-        var newJSON = [event]
-        for item in self.eventList{
-            newJSON.append(item.getDictionary())
+    func updateEvents(event: Event) async throws{
+        print("Updater received event: \(event.getString())")
+        let newEvents: [Event] = api.eventList+[event]
+        print("New events: \(newEvents)")
+        try await api.upsertEvents(newEvents)
+        try await api.fetchEvents()
+    }
+    
+    func refetchEvents() async {
+        do {
+            try await api.fetchEvents()
         }
-        self.eventList.append(Event(dictionary: event))
-        
-        self.APIHandler.upsertEvents(events: newJSON)
+        catch{
+            print("Error fetching events: \(error)")
+        }
     }
     
     
 }
 
 struct CalendarBackgroundView: View{
-    let hours = ["12 am", "1 am", "2 am", "3 am", "4 am", "5 am",
-                 "6 am", "7 am", "8 am", "9 am", "10 am", "11 am",
-                 "12 pm"]
+    let hours = [
+        "00:00", "01:00", "02:00", "03:00", "04:00", "05:00",
+        "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
+        "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
+        "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"
+    ]
     let minuteHeight: Int
     init(minuteHeight: Int) {
         self.minuteHeight = minuteHeight
@@ -168,22 +184,30 @@ struct DetailView: View{
     }
 }
 #Preview {
-    CalendarView(eventList:
-                    [Event (
-                        systemImage: "fork.knife",
-                        color: "Teal",
-                        dateTimeStart: dateFrom(22,5,2025,0,0),
-                        dateTimeEnd: dateFrom(22,5,2025,0, 30),
-                        minuteHeight: 2,
-                        mainImageURL: "test", sideImagesURL: ["test"]),
-                     Event (
-                         systemImage: "fork.knife",
-                         color: "Teal",
-                         dateTimeStart: dateFrom(23,5,2025,1,0),
-                         dateTimeEnd: dateFrom(23,5,2025,10, 15),
-                         minuteHeight: 2,
-                         mainImageURL: "test", sideImagesURL: ["test"])],
-                 APIHandler: ServerAPIinteractor(), imageList:[:], isParentMode: false, viewSwitcher: ViewSwitcher(apiHandler: ServerAPIinteractor()))
+    CalendarView(api: APIHandler(eventList:
+                                    [Event (
+                                        systemImage: "fork.knife",
+                                        dateTimeStart: Date.from(day: 22, month: 5,year:2025,hour:0,minute:0),
+                                        dateTimeEnd: Date.from(day: 22,month: 5,year: 2025, hour:0, minute:30),
+                                        minuteHeight: 2,
+                                        mainImageURL: "test", sideImagesURL: ["test"]),
+                                     Event (
+                                         systemImage: "plus",
+                                         dateTimeStart: Date.from(day: 23, month: 5,year:2025,hour:1,minute:15),
+                                         dateTimeEnd: Date.from(day: 23, month: 5,year:2025,hour:10,minute:15),
+                                         minuteHeight: 2,
+                                         mainImageURL: "test", sideImagesURL: ["test"]),
+                                     Event (
+                                        systemImage: "fork.knife",
+                                        dateTimeStart: Date.from(day: 23, month: 5,year:2025,hour:0,minute:0),
+                                        dateTimeEnd: Date.from(day: 22, month: 5,year:2025,hour:2,minute:30),
+                                        minuteHeight: 2,
+                                        mainImageURL: "test", sideImagesURL: ["test"]),
+                                    ],),
+                 viewSwitcher: ViewSwitcher(api: APIHandler()),
+                 imageList:[:],
+
+                 isParentMode: true)
 
 }
 

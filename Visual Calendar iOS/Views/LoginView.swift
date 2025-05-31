@@ -15,17 +15,18 @@ func temp(){
 struct LoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
-    @State private var APIinteractor: ServerAPIinteractor
-    @State private var viewSwitcher: ViewSwitcher
-    init( APIinteractor: ServerAPIinteractor, viewSwitcher: ViewSwitcher) {
-        self.APIinteractor = APIinteractor
-        self.viewSwitcher = viewSwitcher
-    }
+    @State var APIinteractor: APIHandler
+    @State var viewSwitcher: ViewSwitcher
     func login(){
         Task{
-            await APIinteractor.login(email:email, password:password)
-            if APIinteractor.authSuccessFlag{
-                self.viewSwitcher.switchToSelectRole()
+            do{
+                try await APIinteractor.login(email:email, password:password)
+                if APIinteractor.isAuthenticated{
+                    self.viewSwitcher.switchToSelectRole()
+                }
+            }
+            catch{
+                print(error)
             }
         }
        
@@ -91,7 +92,7 @@ struct LoginView: View {
 
 
 #Preview {
-        LoginView(APIinteractor: ServerAPIinteractor(), viewSwitcher: ViewSwitcher(apiHandler: ServerAPIinteractor()))
+        LoginView(APIinteractor: APIHandler(), viewSwitcher: ViewSwitcher(api: APIHandler()))
 
 }
 
