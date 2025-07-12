@@ -7,71 +7,81 @@
 
 import SwiftUI
 
+public enum CalendarMode {
+    case Week
+    case Day
+}
+
+
 struct CalendarTable: View {
     let minuteHeight: Int
     @ObservedObject var api: APIHandler
-    @Binding var weekStartDate: Date
-
-    let HStackXOffset: CGFloat = defaultHStackOffset
-
-    // Computed property to group events by day index (0-6)
-    private var eventsPerDay: [[Event]] {
-        var weekBuckets: [[Event]] = Array(repeating: [], count: 7)
-        let calendar = Calendar.current
-
-        for event in api.eventList {
-            let dayIndex = calendar.dateComponents([.day], from: weekStartDate, to: event.dateTimeStart).day ?? -1
-            if (0...6).contains(dayIndex) {
-                weekBuckets[dayIndex].append(event)
-            }
-        }
-        return weekBuckets
-    }
-
-    // Enumerate the days with their events for easy ForEach
+    @Binding var currentDate: Date
+    @Binding var mode: CalendarMode
+    @Binding var deleteMode: Bool
+    
+    
     private var daysWithEvents: [(Int, [Event])] {
         eventsPerDay.enumerated().map { ($0.offset, $0.element) }
     }
-
-    // Calculate day offset from week start
+    
     private func dayOffset(for event: Event) -> Int {
-        let timeSinceWeekStart = event.dateTimeStart.timeIntervalSince(weekStartDate)
+        let timeSinceWeekStart = event.dateTimeStart.timeIntervalSince(currentDate)
         return Int(floor(timeSinceWeekStart / (60 * 60 * 24)))
     }
-
+    
     var body: some View {
-        HStack {
-            Color.clear
-                .frame(width: HStackXOffset)
+        if mode == .Week {
+            weekView
+        } else {
+            dayView
+        }
+    }
 
+    private var weekView: some View {
+        HStack {
             ForEach(daysWithEvents, id: \.0) { dayOfWeekIndex, eventsForDay in
                 ZStack(alignment: .top) {
                     Color.clear
-
+                    
                     ForEach(eventsForDay, id: \.self) { event in
-                        if dayOfWeekIndex == dayOffset(for: event) {
-                            event.getVisibleObject()
-                        }
+                        event.getVisibleObject(deleteMode: deleteMode, deletionAPI: api)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-
-            Color.clear
-                .frame(width: HStackXOffset)
+            .padding(.horizontal, 5)
         }
-        .padding(.horizontal, 5)
     }
+
+    private var dayView: some View {
+        HStack {
+            ZStack(alignment: .top) {
+                Color.clear
+                ForEach(eventsAtGivenDay(currentDate), id: \.self) { event in
+                    event.getVisibleObject(deleteMode: deleteMode, deletionAPI: api)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+    
 }
 
-extension Event: Hashable, Equatable {
-    static func == (lhs: Event, rhs: Event) -> Bool {
-            return lhs.dateTimeStart == rhs.dateTimeStart && lhs.systemImage == rhs.systemImage
-        }
 
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(dateTimeStart)
-            hasher.combine(systemImage)
+extension CalendarTable {
+    private var eventsPerDay: [[Event]] {
+        let calendar = Calendar.current
+        return (0..<7).map { offset in
+            guard let targetDate = calendar.date(byAdding: .day, value: offset, to: currentDate) else {
+                return []
+            }
+            return eventsAtGivenDay(targetDate)
         }
+    }
+    
+    private func eventsAtGivenDay(_ date: Date) -> [Event] {
+        api.eventList.filter { $0.occurs(on: date) }
+    }
+    
 }
-

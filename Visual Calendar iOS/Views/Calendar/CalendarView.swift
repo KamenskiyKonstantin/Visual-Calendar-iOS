@@ -7,42 +7,54 @@
 
 import SwiftUI
 
-
-// MARK: Date-Time transformations—
-
-
 struct CalendarView: View {
     // MARK: Constants
-    let daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"]
     let minuteHeight = 2
     let HStackXOffset = defaultHStackOffset
     
     // MARK: Dependencies
     @ObservedObject var api: APIHandler
     let viewSwitcher: ViewSwitcher
-    let imageList: [String:[String: String]]
-    
     
     // MARK: State Properties
-    @State var weekStartDate: Date = Date().startOfWeek()
+    @State var currentDate: Date = Date().startOfWeek()
+    
     @State var isParentMode: Bool
+    @State var deleteMode: Bool = false
+    
+    @State var mode: CalendarMode = .Week
+    
+    
+    //MARK: Sheet showers
     @State var logoutFormShown: Bool = false
+    
     
     var body: some View {
         NavigationStack{
-            VStack{
-                WeekdayHeader(goToPreviousWeek: goToPreviousWeek,
-                              goToNextWeek: goToNextWeek,
-                              weekStartDate: $weekStartDate)
+            VStack (spacing:0){
+                WeekdayHeader(
+                    decreaseCurrentDate: decreaseCurrentDate,
+                    increaseCurrentDate: increaseCurrentDate,
+                    HStackXOffset: HStackXOffset,
+                    currentDate: $currentDate,
+                    mode: $mode
+                )
                 ScrollView(.vertical){
                     ZStack(alignment: .topLeading){
-                        CalendarTable(
-                            minuteHeight: minuteHeight,
-                            api: api,
-                            weekStartDate: $weekStartDate)
+                        HStack{
+                            Color.clear.frame(width: HStackXOffset)
+                            CalendarTable(
+                                minuteHeight: minuteHeight,
+                                api: api,
+                                currentDate: $currentDate,
+                                mode: $mode,
+                                deleteMode: $deleteMode)
+                            Color.clear.frame(width: HStackXOffset)
+                        }
                         CalendarBackgroundView(minuteHeight: minuteHeight)
                     }
                 }
+                
             }
             .confirmationDialog(
                             "Are you sure you want to proceed?",
@@ -59,37 +71,36 @@ struct CalendarView: View {
                                 logoutFormShown = false
                             }
                         }
-            
-            .overlay(alignment: .bottomTrailing){
-                if (isParentMode) {
-                    EditButtonView(
-                        imageList: imageList,
-                        APIHandler: api,
-                        updateEvents: self.updateEvents)
-                }
-            }
-            .overlay(alignment: .topTrailing){
-                Button(action:{Task{await refetchEvents()}}){
-                    Image(systemName: "arrow.clockwise.circle")
-                        .resizable()
-                        .frame(width: 30, height: 30)
-                }
-            }
-            
-            .overlay(alignment: .bottomLeading, content: {
-                LogoutButtonView(logoutFormShown: $logoutFormShown)
-            })
-            
+            .overlay(alignment: .bottom,
+                     content: {ButtonPanel(
+                        logoutFormShown: $logoutFormShown,
+                        calendarMode: $mode,
+                        currentDate: $currentDate,
+                        deleteMode: $deleteMode,
+                        api: api,
+                        isParentMode: isParentMode,
+                        updateEvents: updateEvents)})
+
         }
             
     }
     
-    func goToNextWeek(){
-        self.weekStartDate = self.weekStartDate.addingTimeInterval(60 * 60 * 24 * 7)
+    func increaseCurrentDate(){
+        if mode == .Week{
+            self.currentDate = self.currentDate.addingTimeInterval(60 * 60 * 24 * 7)
+        }
+        else if mode == .Day{
+            self.currentDate = self.currentDate.addingTimeInterval(60 * 60 * 24)
+        }
+        
     }
-    func goToPreviousWeek(){
-        self.weekStartDate = self.weekStartDate.addingTimeInterval(-60 * 60 * 24 * 7)
-        print(self.weekStartDate)
+    func decreaseCurrentDate(){
+        if mode == .Week{
+            self.currentDate = self.currentDate.addingTimeInterval(-60 * 60 * 24 * 7)
+        }
+        else if mode == .Day{
+            self.currentDate = self.currentDate.addingTimeInterval(-60 * 60 * 24)
+        }
     }
     
     func updateEvents(event: Event) async throws{
@@ -129,6 +140,7 @@ struct CalendarBackgroundView: View{
                 hour in
                 HStack{
                     Text(hour)
+                        .padding(.leading, 10)
                     VStack{
                         Divider()
                     }
@@ -138,6 +150,8 @@ struct CalendarBackgroundView: View{
         }
     }
 }
+
+
 
 
 
@@ -183,32 +197,6 @@ struct DetailView: View{
         }
     }
 }
-#Preview {
-    CalendarView(api: APIHandler(eventList:
-                                    [Event (
-                                        systemImage: "fork.knife",
-                                        dateTimeStart: Date.from(day: 22, month: 5,year:2025,hour:0,minute:0),
-                                        dateTimeEnd: Date.from(day: 22,month: 5,year: 2025, hour:0, minute:30),
-                                        minuteHeight: 2,
-                                        mainImageURL: "test", sideImagesURL: ["test"]),
-                                     Event (
-                                         systemImage: "plus",
-                                         dateTimeStart: Date.from(day: 23, month: 5,year:2025,hour:1,minute:15),
-                                         dateTimeEnd: Date.from(day: 23, month: 5,year:2025,hour:10,minute:15),
-                                         minuteHeight: 2,
-                                         mainImageURL: "test", sideImagesURL: ["test"]),
-                                     Event (
-                                        systemImage: "fork.knife",
-                                        dateTimeStart: Date.from(day: 23, month: 5,year:2025,hour:0,minute:0),
-                                        dateTimeEnd: Date.from(day: 22, month: 5,year:2025,hour:2,minute:30),
-                                        minuteHeight: 2,
-                                        mainImageURL: "test", sideImagesURL: ["test"]),
-                                    ],),
-                 viewSwitcher: ViewSwitcher(api: APIHandler()),
-                 imageList:[:],
 
-                 isParentMode: true)
-
-}
 
 

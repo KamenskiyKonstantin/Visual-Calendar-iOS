@@ -6,27 +6,48 @@
 //
 
 import SwiftUI
-import SymbolPicker
+import MCEmojiPicker
+
 
 struct EventEditor: View {
+    // MARK: - Symbol Picker State
     @State private var isSymbolPickerShown = false
-    @State private var selectedSymbol = "pencil"
+    @State private var selectedSymbol = "😀"
+    
+    // MARK: - Color State
     @State private var backgroundColor: String = ""
     @State private var textColor: String = ""
+    
+    // MARK: - Date State
     @State private var dateStart = Date()
     @State private var dateEnd = Date()
-    @State private var mainImage = ""
+    @State private var repeatType: EventRepetitionType = .once
+    
+    // MARK: - Image State
+    @State private var mainImageURL = ""
+    @State private var sideImagesURL: [String] = []
+    
+    // MARK: - File Import State
     @State private var fileImporterPresented = false
-    @State private var sideImages: [String] = []
-    @State public var imageURLS: [String: [String: String]]
     @State private var isNameEditorShown = false
     @State private var addedFilename = "Unnamed"
-    @State private var addedOriginalFilename = ""
+    @State private var addedFilePath = ""
     
+    // MARK: - Event Details State
+    @State private var title: String = ""
+    @State private var saveAsPreset: Bool = false
+    
+    // MARK: - Validation State
     @State private var validationError: String? = nil
+    
+    // MARK: - Preset Upload Warning and Result State
+    @State private var showPresetUploadWarning = false
+    @State private var isForced:Bool = false
+    
 
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var APIHandler: APIHandler
+    
     let updateCallback: (Event) async throws-> Void
     
     func validateInput() -> Bool {
@@ -34,7 +55,7 @@ struct EventEditor: View {
             validationError = "Start time must be before end time."
             return false
         }
-        if mainImage.isEmpty {
+        if mainImageURL.isEmpty {
             validationError = "Please select a main image."
             return false
         }
@@ -42,48 +63,24 @@ struct EventEditor: View {
             validationError = "Please select a background color."
             return false
         }
-        if textColor.isEmpty {
-            validationError = "Please select a foreground color."
-            return false
-        }
 
         validationError = nil
         return true
-    }
-    
-    func findImageURL(imageName: String) -> String? {
-        for (_, value) in imageURLS {
-            for (image_name, image_url) in value {
-                if image_name == imageName {
-                    return image_url
-                }
-            }
-        }
-        return nil
-    }
-    
-    func convertImageListToURLLists(imageNames: [String]) -> [String] {
-        var result: [String] = []
-        for imageName in imageNames {
-            if let imageURL = findImageURL(imageName: imageName) {
-                result.append(imageURL)
-            }
-        }
-        return result
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                EventDateSection(dateStart: $dateStart, dateEnd: $dateEnd)
+                
+                TitleManagement(title:$title, api: APIHandler, saveAsPreset: $saveAsPreset, applyPreset: applyPreset)
+                EventDateSection(dateStart: $dateStart, dateEnd: $dateEnd, repeatType: $repeatType)
 
                 EventAppearanceSection(selectedSymbol: $selectedSymbol, isSymbolPickerShown: $isSymbolPickerShown, backgroundColor: $backgroundColor, textColor: $textColor)
-
                 EventContentSection(
                     fileImporterPresented: $fileImporterPresented,
-                    imageURLS: $imageURLS,
-                    mainImage: $mainImage,
-                    sideImages: $sideImages
+                    mainImage: $mainImageURL,
+                    sideImages: $sideImagesURL,
+                    api: APIHandler
                 )
 
                 Section {
@@ -93,82 +90,72 @@ struct EventEditor: View {
                             .font(.caption)
                     }
                     Button("Submit") {
-                        updateEvents()
+                        beginSubmission(force: false)
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.blue)
                 }
             }
             .navigationTitle("Edit Event")
-            .sheet(isPresented: $isSymbolPickerShown) {
-                SymbolPicker(symbol: $selectedSymbol)
-            }
             .fileImporter(isPresented: $fileImporterPresented, allowedContentTypes: [.image], onCompletion: fileCallback)
             .sheet(isPresented: $isNameEditorShown) {
                 NameEditor($addedFilename, callback: terminateNameEditor)
             }
+            .sheet(isPresented: $showPresetUploadWarning) {
+                DuplicatePresetWarning(
+                    isPresented: $showPresetUploadWarning,
+                    onContinue: {
+                        forceSubmission()
+                    }
+                )
+            }
         }
     }
-
-    // MARK: - Helper Methods
 
     func fileCallback(_ result: Result<URL, Error>) {
         do {
             let file = try result.get()
-            addedOriginalFilename = file.lastPathComponent
-            if imageURLS["User"] == nil {
-                imageURLS["User"] = [:]
-            }
-            imageURLS["User"]?[addedOriginalFilename] = file.absoluteString
+            addedFilePath = file.absoluteString
             isNameEditorShown = true
         } catch {
             print(error.localizedDescription)
         }
     }
-
-    func terminateNameEditor() {
-        Task {
-            guard let urlString = imageURLS["User"]?[addedOriginalFilename],
-                  let url = URL(string: urlString),
-                  let data = try? Data(contentsOf: url) else {
+    
+    func forceSubmission() {
+        beginSubmission(force: true)
+    }
+    
+    func beginSubmission(force: Bool = false) {
+        if !saveAsPreset {
+            updateEvents()
+            return
+        }
+        Task{
+            try await APIHandler.fetchPresets()
+            if APIHandler.presets.keys.contains(title) && !force{
+                showPresetUploadWarning = true
                 return
             }
-
-            let ext = addedOriginalFilename.split(separator: ".").last ?? "png"
-            let newName = "\(addedFilename).\(ext)"
-
-            try await APIHandler.upsertImage(imageData: data, filename: newName)
-            try await APIHandler.fetchImageURLs()
-            await MainActor.run {
-                imageURLS = APIHandler.images
-                isNameEditorShown = false
-            }
+            let current_preset = Preset(
+                selectedSymbol: selectedSymbol,
+                backgroundColor: backgroundColor,
+                mainImageURL: mainImageURL,
+                sideImageURLs: sideImagesURL,
+                )
+            try await APIHandler.upsertPresets(title: title, preset: current_preset)
+            updateEvents()
             
         }
         
     }
-
-    func generateEvent() -> Event {
-        let event: Event = Event(
-            systemImage: selectedSymbol,
-            dateTimeStart: dateStart,
-            dateTimeEnd: dateEnd,
-            minuteHeight: defaultMinuteHeight,
-            mainImageURL: findImageURL(imageName: mainImage) ?? "",
-            sideImagesURL: convertImageListToURLLists(imageNames: sideImages),
-            id:UUID(),
-            bgcolor: backgroundColor,
-            textcolor: textColor,
-            )
-        return event
-            
-    }
-
+    
     func updateEvents() {
         guard validateInput() else { return }
+        print(repeatType)
         let event = generateEvent()
+        print(event.repetitionType)
         Task {
-            
                 var currentEvents = APIHandler.eventList
                 
 
@@ -178,9 +165,7 @@ struct EventEditor: View {
                     currentEvents.append(event) // Add new
                 }
             do {
-                // 3. Save to server
                 try await APIHandler.upsertEvents(currentEvents)
-                
                 await MainActor.run {
                     dismiss()
                 }
@@ -190,12 +175,117 @@ struct EventEditor: View {
             
         }
     }
+    
+    struct UploadResultMessage: Identifiable {
+        let id = UUID()
+        let message: String
+    }
+}
+
+private extension EventEditor {
+    func applyPreset(title: String, preset: Preset) {
+        self.title = title
+        selectedSymbol = preset.selectedSymbol
+        backgroundColor = preset.backgroundColor
+        mainImageURL = preset.mainImageURL
+        sideImagesURL = preset.sideImageURLs
+    }
+    
+    func handleURL(_ url: URL) -> Data? {
+        guard url.startAccessingSecurityScopedResource() else {
+            print("Permission denied to access file.")
+            return nil
+        }
+
+        defer {
+            url.stopAccessingSecurityScopedResource()
+        }
+
+        do {
+            let data = try Data(contentsOf: url)
+            print("Loaded \(data.count) bytes.")
+            return data
+            
+        } catch {
+            print("Error loading file: \(error)")
+            return nil
+        }
+        
+    }
+    
+    func terminateNameEditor() {
+        Task {
+            // fetch file as data
+            print("Filepath fetched: \(addedFilePath)")
+            guard let url = URL(string: addedFilePath) else {
+                print("Invalid URL: \(addedFilePath)")
+                return
+            }
+            
+            
+
+            guard let data = handleURL(url) else {
+                print("Failed to load file.")
+                return
+            }
+
+            _ = addedFilePath.split(separator: "/").last?.split(separator: ".").last ?? "png"
+            let newName = "\(addedFilename)"
+            print("File otained, name acquired, uploading with name: \(newName)")
+
+            try await APIHandler.upsertImage(imageData: data, filename: newName)
+            try await APIHandler.fetchImageURLs()
+            
+            await MainActor.run {
+                isNameEditorShown = false
+            }
+            
+        }
+    }
+}
+
+private extension EventEditor {
+    func generateEvent() -> Event {
+        let event: Event = Event(
+            systemImage: selectedSymbol,
+            dateTimeStart: dateStart,
+            dateTimeEnd: dateEnd,
+            minuteHeight: defaultMinuteHeight,
+            mainImageURL: mainImageURL,
+            sideImagesURL: sideImagesURL,
+            id:UUID(),
+            bgcolor: backgroundColor,
+            textcolor: textColor,
+            repetitionType: repeatType.displayName,
+            )
+        return event
+            
+    }
 }
 
 
-
-#Preview {
-    EventEditor(imageURLS:["User":["b":"a"]], APIHandler: APIHandler(), updateCallback: { _ in print("none") })
+struct DuplicatePresetWarning: View {
+    @Binding var isPresented: Bool
+    var onContinue: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("A preset with this title already exists. Do you want to overwrite it?")
+                .padding()
+            HStack {
+                Button("Cancel") {
+                    isPresented = false
+                }
+                .buttonStyle(.bordered)
+                Spacer()
+                Button("Continue") {
+                    isPresented = false
+                    onContinue()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding([.leading, .trailing, .bottom])
+        }
+        .presentationDetents([.fraction(0.3)])
+    }
 }
-
-

@@ -23,7 +23,6 @@ struct ContentView: View {
             case let .calendar(isAdult):
                 AnyView(CalendarView(api: api,
                              viewSwitcher: viewSwitcher,
-                             imageList: api.images,
                              isParentMode: isAdult,))
         }
     }
@@ -67,13 +66,18 @@ class ViewSwitcher: ObservableObject {
         Task {
             do {
                 try await api.fetchEvents()
+                try await api.addLibrary("StandardLibrary")
                 try await api.fetchImageURLs()
+                try await api.fetchExistingLibraries()
+                try await api.fetchPresets()
+                
                 await MainActor.run {
                     activeView = .calendar(isAdult: isAdult)
                 }
                 
             } catch {
-                print(error)
+                print("Error switching to main app: \(error.localizedDescription)")
+                try await api.logout()
                 activeView = .login
             }
         }

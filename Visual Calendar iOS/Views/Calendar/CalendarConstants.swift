@@ -8,5 +8,5 @@
 import Foundation
 
 public var defaultDaysOfWeek: [String] = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"]
-public var defaultHStackOffset: CGFloat = 50
+public var defaultHStackOffset: CGFloat = 60
 public var defaultMinuteHeight: Int = 2

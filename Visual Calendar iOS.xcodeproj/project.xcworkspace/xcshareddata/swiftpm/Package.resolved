@@ -1,6 +1,15 @@
 {
-  "originHash" : "383c34134554727843678752d3a23a3a00e12e97848c69da0a68fa21ce3aaaa9",
+  "originHash" : "4a0bc9aa47f6e3e25ccab34b8f4376cae48faf4293c0813a9ae39dc7a1db9b45",
   "pins" : [
+    {
+      "identity" : "mcemojipicker?tab=readme-ov-file#usage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/izyumkin/MCEmojiPicker?tab=readme-ov-file#usage",
+      "state" : {
+        "revision" : "e0b4903b75ae1cc418d276d84d1cb946b8a1d73c",
+        "version" : "1.2.3"
+      }
+    },
     {
       "identity" : "supabase-swift",
       "kind" : "remoteSourceControl",

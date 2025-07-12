@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		ED095CAB2C8765B800559F3A /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = ED095CAA2C8765B800559F3A /* SwiftyJSON */; };
+		ED1323C92DEC34C600671162 /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = ED1323C82DEC34C600671162 /* MCEmojiPicker */; };
 		ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1410E82C7F29E300D152A6 /* CalendarView.swift */; };
 		ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */; };
 		ED41F0902C5BD15500954ACF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41F08F2C5BD15500954ACF /* ContentView.swift */; };
@@ -65,6 +66,7 @@
 		ED3503562C9B3FF2002BE9D4 /* Visual Calendar */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Visual Calendar"; sourceTree = "<group>"; };
 		ED3503672C9B3FF3002BE9D4 /* Visual CalendarTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Visual CalendarTests"; sourceTree = "<group>"; };
 		ED3503712C9B3FF3002BE9D4 /* Visual CalendarUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Visual CalendarUITests"; sourceTree = "<group>"; };
+		ED85DCF42DF2BF01002FA1B8 /* APIHelpers */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = APIHelpers; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +82,7 @@
 				ED9E8A822C5E765F0098D8FD /* Auth in Frameworks */,
 				ED9E8A8A2C5E765F0098D8FD /* Storage in Frameworks */,
 				ED9E8A882C5E765F0098D8FD /* Realtime in Frameworks */,
+				ED1323C92DEC34C600671162 /* MCEmojiPicker in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,6 +112,7 @@
 		ED41F08C2C5BD15500954ACF /* Visual Calendar iOS */ = {
 			isa = PBXGroup;
 			children = (
+				ED85DCF42DF2BF01002FA1B8 /* APIHelpers */,
 				ED3503502C9B3F8F002BE9D4 /* Visual Calendar iOS.entitlements */,
 				ED41F09B2C5BD1C100954ACF /* Views */,
 				ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */,
@@ -188,6 +192,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				ED85DCF42DF2BF01002FA1B8 /* APIHelpers */,
+			);
 			name = "Visual Calendar iOS";
 			packageProductDependencies = (
 				ED9E8A812C5E765F0098D8FD /* Auth */,
@@ -198,6 +205,7 @@
 				ED9E8A8B2C5E765F0098D8FD /* Supabase */,
 				ED095CAA2C8765B800559F3A /* SwiftyJSON */,
 				EDD987D62C9D454C0063CF00 /* SymbolPicker */,
+				ED1323C82DEC34C600671162 /* MCEmojiPicker */,
 			);
 			productName = "Visual Calendar iOS";
 			productReference = ED41F08A2C5BD15500954ACF /* Visual Calendar iOS.app */;
@@ -231,6 +239,7 @@
 				ED9E8A802C5E765F0098D8FD /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				ED095CA92C8765B800559F3A /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
 				EDD987D52C9D454C0063CF00 /* XCRemoteSwiftPackageReference "SymbolPicker" */,
+				ED1323C72DEC34C600671162 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */,
 			);
 			productRefGroup = ED41F08B2C5BD15500954ACF /* Products */;
 			projectDirPath = "";
@@ -492,6 +501,14 @@
 				minimumVersion = 5.0.2;
 			};
 		};
+		ED1323C72DEC34C600671162 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/izyumkin/MCEmojiPicker?tab=readme-ov-file#usage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.3;
+			};
+		};
 		ED9E8A802C5E765F0098D8FD /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift.git";
@@ -515,6 +532,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = ED095CA92C8765B800559F3A /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
 			productName = SwiftyJSON;
+		};
+		ED1323C82DEC34C600671162 /* MCEmojiPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ED1323C72DEC34C600671162 /* XCRemoteSwiftPackageReference "MCEmojiPicker" */;
+			productName = MCEmojiPicker;
 		};
 		ED9E8A812C5E765F0098D8FD /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
