@@ -10,13 +10,13 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var api: APIHandler
     @EnvironmentObject var warningManager: GlobalWarningHandler
-    @StateObject var viewSwitcher: ViewSwitcher = .init(api: APIHandler())
+    @EnvironmentObject var viewSwitcher: ViewSwitcher
 
     
     var currentView: some View {
         switch viewSwitcher.activeView {
             case .login:
-                AnyView(LoginView(APIinteractor: api, viewSwitcher: viewSwitcher))
+                AnyView(LoginView() )
             case .selectRole:
                 AnyView(SelectRoleView(viewSwitcher: viewSwitcher))
             case let .calendar(isAdult):
@@ -62,7 +62,8 @@ class ViewSwitcher: ObservableObject {
     }
     
     func switchToSelectRole() {
-        activeView = .selectRole    }
+        activeView = .selectRole
+    }
     
     func switchToLogin() {
         activeView = .login

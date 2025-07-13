@@ -12,11 +12,12 @@ import Foundation
 struct LoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
-    @State var APIinteractor: APIHandler
-    @State var viewSwitcher: ViewSwitcher
+    
     @State private var isCheckingSession = true
     
     @EnvironmentObject var warningManager: GlobalWarningHandler
+    @EnvironmentObject var APIinteractor: APIHandler
+    @EnvironmentObject var viewSwitcher: ViewSwitcher
     
 
     
