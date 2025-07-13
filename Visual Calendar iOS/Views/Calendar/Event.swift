@@ -105,7 +105,7 @@ func emojiStringToEnum(_ emojiString: String) -> EventReaction {
     }
 }
 
-class Event{
+class Event: ObservableObject{
     let id: UUID
     let backgroundColor: String
     let textColor: String
@@ -119,7 +119,7 @@ class Event{
     let sideImagesURL: [String]
     
     let repetitionType: EventRepetitionType
-    var reaction: EventReaction
+    @Published var reaction: EventReaction
     
 
     init(systemImage: String, dateTimeStart: Date, dateTimeEnd: Date, minuteHeight: Int,
@@ -180,107 +180,7 @@ class Event{
         
     }
     
-    func getVisibleObject(deleteMode: Bool = false, api: APIHandler) -> some View{
-        let height = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart)) / 60 * self.minuteHeight
-        let hour = Calendar.current.component(.hour, from: self.dateTimeStart)
-        let minute = Calendar.current.component(.minute, from: self.dateTimeStart)
-        let offsetY = (hour*60+minute)*self.minuteHeight
         
-        return
-            VStack(alignment: .leading) {
-                if !deleteMode{
-                    NavigationLink(
-                        destination: DetailView(event: self, api: api))
-                    {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(colorFromName(self.backgroundColor))
-                            .stroke(colorFromName(self.textColor), lineWidth: 1)
-                            
-                            .overlay(alignment: .center)
-                            {
-                                if self.duration >= 60{
-                                    if let emojiImage = emojiToImage(systemImage, fontSize: 20) {
-                                        Image(uiImage: emojiImage)
-                                            .resizable()
-                                            .aspectRatio(1/1, contentMode: .fit)
-                                            .padding(10)
-                                    }
-                                }
-                                else{
-                                    if let emojiImage = emojiToImage(systemImage, fontSize: 20) {
-                                        Image(uiImage: emojiImage)
-                                            .resizable()
-                                            .aspectRatio(1/1, contentMode: .fit)
-                                            .padding(5)
-                                    }
-                                }
-                                
-                            }
-                            .overlay(alignment: .bottomTrailing, content: {
-                                // add emoji from reaction
-                                if let reactionImage = emojiToImage(reaction.emoji, fontSize: 1) {
-                                    Image(uiImage: reactionImage)
-                                        .resizable()
-                                        .aspectRatio(1/1, contentMode: .fit)
-                                        .padding(5)
-                                }
-                            })
-                            
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                else{
-                    Button(action: {
-                        Task{
-                            do{
-                                try await api.deleteEvent(self.id)
-                            }
-                            catch {
-                                print("Error deleting event: \(error)")
-                            }
-                        }
-                    })
-                    {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(colorFromName(self.backgroundColor))
-                        .stroke(Color(.systemRed), lineWidth: 1)
-                        .overlay(alignment: .center)
-                        {
-                            if self.duration >= 60{
-                                if let emojiImage = emojiToImage(systemImage, fontSize: 20) {
-                                    Image(uiImage: emojiImage)
-                                        .resizable()
-                                        .aspectRatio(1/1, contentMode: .fit)
-                                        .padding(10)
-                                }
-                            }
-                            else{
-                                if let emojiImage = emojiToImage(systemImage, fontSize: 20) {
-                                    Image(uiImage: emojiImage)
-                                        .resizable()
-                                        .aspectRatio(1/1, contentMode: .fit)
-                                        .padding(5)
-                                }
-                            }
-                        }
-                        
-                    } // visual 
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                
-                }
-                    
-                    
-                
-            }
-            .font(.caption)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: CGFloat(Double(height)), alignment: .top)
-            .frame(alignment: .top)
-            .offset(x: 0, y: CGFloat(Double(offsetY+30*self.minuteHeight)))
-            
-            
-    }
-    
     func getDictionary() -> [String: Any] {
         return  [
             "timeStart":self.dateTimeStart.toIntList(),
@@ -330,6 +230,85 @@ func emojiToImage(_ emoji: String, fontSize: CGFloat) -> UIImage? {
             height: textSize.height
         )
         emoji.draw(in: rect, withAttributes: attributes)
+    }
+}
+
+extension Event{
+    
+    
+    func getVisibleObject(deleteMode: Bool = false, api: APIHandler) -> some View {
+        let height = Int(dateTimeEnd.timeIntervalSince(dateTimeStart)) / 60 * minuteHeight
+        let hour = Calendar.current.component(.hour, from: dateTimeStart)
+        let minute = Calendar.current.component(.minute, from: dateTimeStart)
+        let offsetY = (hour * 60 + minute) * minuteHeight
+        
+        // Shared rounded rectangle content
+        @ViewBuilder
+        func rectangleView(strokeColor: Color) -> some View {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(colorFromName(backgroundColor))
+                .stroke(strokeColor, lineWidth: 1)
+                .overlay(alignment: .center) {
+
+                    if let emojiImage = emojiToImage(systemImage, fontSize: 64) {
+                        Image(uiImage: emojiImage)
+                        
+                            .resizable()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding(duration >= 60 ? 10 : 5)
+                            .aspectRatio(1, contentMode: .fit)
+                        
+                    }
+
+                }
+                .overlay(alignment: .bottomTrailing) {
+                    if reaction != .none, let reactionImage = emojiToImage(reaction.emoji, fontSize: 16) {
+                        Image(uiImage: reactionImage)
+                            .resizable()
+                            .aspectRatio(1, contentMode: .fit)
+                            .frame(width: 20, height: 20)
+                            .padding(3)
+                            .background(Color.white.opacity(0.9))
+                            .clipShape(RoundedRectangle(cornerRadius: 5))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.8)
+                            )
+                    }
+                }
+            
+        }
+        
+
+        return VStack(alignment: .leading) {
+            if deleteMode {
+                Button {
+                    Task {
+                        do {
+                            try await api.deleteEvent(self.id)
+                        } catch {
+                            print("Error deleting event: \(error)")
+                        }
+                    }
+                } label: {
+                    rectangleView(strokeColor: .red)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            } else {
+                NavigationLink(destination: DetailView(event: self, api: api)) {
+                    rectangleView(strokeColor: colorFromName(textColor))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .font(.caption)
+        .frame(
+            maxWidth: .infinity,
+            minHeight: CGFloat(height), maxHeight: CGFloat(height),
+            alignment: .topLeading
+        )
+        .offset(y: CGFloat(offsetY + 30 * minuteHeight))
     }
 }
 

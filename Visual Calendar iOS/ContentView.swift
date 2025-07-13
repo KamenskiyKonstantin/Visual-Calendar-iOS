@@ -138,6 +138,3 @@ class GlobalWarningHandler: ObservableObject {
 
 
     
-#Preview {
-    ContentView()
-}

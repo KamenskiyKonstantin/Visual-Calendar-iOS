@@ -156,23 +156,12 @@ struct CalendarBackgroundView: View{
 
 
 struct DetailView: View{
-    let event: Event
+    @StateObject var event: Event
     let api: APIHandler
 
     var body: some View{
         VStack{
-            HStack{
-                ForEach(EventReaction.allCases, id:\.self){
-                    reaction in
-                    Button(action: {self.updateEventReaction(reaction)}) {
-                        if let image = emojiToImage(reaction.emoji, fontSize: 30){
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-                        }
-                    }
-                }
-            }
+            
 
             AsyncImage(url:URL(string:event.mainImageURL)){
                 asyncImage in
@@ -199,7 +188,37 @@ struct DetailView: View{
                                 .padding()
                          }
                     }
+                    Spacer()
                     
+                }
+            }
+            
+            HStack(spacing: 12) {
+                ForEach(EventReaction.allCases.filter { $0 != .none }, id: \.self) { reaction in
+                    Button(action: {
+                        let newReaction = (self.event.reaction == reaction) ? .none : reaction
+                        self.updateEventReaction(newReaction)
+                    }) {
+                        if let image = emojiToImage(reaction.emoji, fontSize: 36) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 44, height: 44)
+                                .padding(8)
+                                .background(
+                                    self.event.reaction == reaction
+                                    ? Color.blue.opacity(0.2)
+                                    : Color.gray.opacity(0.1)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(self.event.reaction == reaction ? Color.blue : Color.clear, lineWidth: 1.5)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle()) // Avoids default tap effect
                 }
             }
 
@@ -207,7 +226,7 @@ struct DetailView: View{
     }
     
     func updateEventReaction(_ newReaction: EventReaction) {
-        var new_event = event
+        let new_event = event
         new_event.reaction = newReaction
         Task{
             do{
@@ -218,7 +237,10 @@ struct DetailView: View{
                 else {
                     return
                 }
+                event.reaction = newReaction
                 try await api.upsertEvents(events)
+                
+                
             }
             catch {
                 print("Error updating event reaction: \(error.localizedDescription)")
