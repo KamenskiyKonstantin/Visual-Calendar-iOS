@@ -15,16 +15,22 @@ struct LoginView: View {
     @State var APIinteractor: APIHandler
     @State var viewSwitcher: ViewSwitcher
     @State private var isCheckingSession = true
+    
+    @EnvironmentObject var warningManager: GlobalWarningHandler
+    
+
+    
     func login(){
         Task{
             do{
                 try await APIinteractor.login(email:email, password:password)
                 if APIinteractor.isAuthenticated{
+                    print("Logged in, redirecting...")
                     self.viewSwitcher.switchToSelectRole()
                 }
             }
             catch{
-                print(error.localizedDescription)
+                warningManager.showWarning("Wrong email or password")
             }
         }
        
@@ -88,16 +94,9 @@ struct LoginView: View {
             if APIinteractor.isAuthenticated {
                 viewSwitcher.switchToSelectRole()
             } else {
-                print("No session found or restore failed")
+                warningManager.showWarning("Could not restore session")
             }
             isCheckingSession = false
         }
     }
 }
-
-
-#Preview {
-        LoginView(APIinteractor: APIHandler(), viewSwitcher: ViewSwitcher(api: APIHandler()))
-
-}
-

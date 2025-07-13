@@ -9,12 +9,20 @@ import SwiftUI
 
 @main
 struct Visual_Calendar_iOSApp: App {
+    private let api = APIHandler()
+    private let warningManager = GlobalWarningHandler()
+    private let viewSwitcher: ViewSwitcher
+
+    init() {
+        self.viewSwitcher = ViewSwitcher(api: api)
+    }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(api)
+                .environmentObject(warningManager)
+                .environmentObject(viewSwitcher)
         }
     }
 }
-
-

@@ -8,11 +8,10 @@
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject var viewSwitcher: ViewSwitcher
-    let api: APIHandler = APIHandler()
-    init(){
-        self.viewSwitcher = ViewSwitcher(api:api)
-    }
+    @EnvironmentObject var api: APIHandler
+    @EnvironmentObject var warningManager: GlobalWarningHandler
+    @StateObject var viewSwitcher: ViewSwitcher = .init(api: APIHandler())
+
     
     var currentView: some View {
         switch viewSwitcher.activeView {
@@ -26,11 +25,24 @@ struct ContentView: View {
                              isParentMode: isAdult,))
         }
     }
+        
     
     var body: some View {
         currentView
+            .onAppear {
+                self.viewSwitcher.api = api
+            }
+            .alert("Error", isPresented: $warningManager.isShown) {
+                        Button("OK", role: .cancel) {
+                            warningManager.hideWarning()
+                        }
+                    } message: {
+                        Text(warningManager.message)
+                    }
+            
         
     }
+        
 }
 
 enum ActiveView {
@@ -41,7 +53,7 @@ enum ActiveView {
 
 @MainActor
 class ViewSwitcher: ObservableObject {
-    let api: APIHandler
+    @ObservedObject var api: APIHandler
     
     @Published var activeView: ActiveView = .login
     
@@ -50,8 +62,7 @@ class ViewSwitcher: ObservableObject {
     }
     
     func switchToSelectRole() {
-        activeView = .selectRole
-    }
+        activeView = .selectRole    }
     
     func switchToLogin() {
         activeView = .login
@@ -81,6 +92,24 @@ class ViewSwitcher: ObservableObject {
                 activeView = .login
             }
         }
+    }
+}
+
+
+
+class GlobalWarningHandler: ObservableObject {
+    @Published var message: String = ""
+    @Published var isShown: Bool = false
+    
+    
+    func showWarning(_ message: String) {
+        self.message = message
+        self.isShown = true
+    }
+    
+    func hideWarning() {
+        self.message = ""
+        self.isShown = false
     }
 }
     
