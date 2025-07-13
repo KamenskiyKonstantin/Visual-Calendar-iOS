@@ -7,6 +7,18 @@
 
 import SwiftUI
 
+struct LoadingView: View {
+    var body: some View {
+        VStack {
+            ProgressView("Loading your data…")
+                .progressViewStyle(CircularProgressViewStyle())
+                .padding()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemBackground))
+    }
+}
+
 struct ContentView: View {
     @EnvironmentObject var api: APIHandler
     @EnvironmentObject var warningManager: GlobalWarningHandler
@@ -23,6 +35,9 @@ struct ContentView: View {
                 AnyView(CalendarView(api: api,
                              viewSwitcher: viewSwitcher,
                              isParentMode: isAdult,))
+            case .loading:
+                AnyView(LoadingView())
+            
         }
     }
         
@@ -49,6 +64,7 @@ enum ActiveView {
     case login
     case selectRole
     case calendar(isAdult: Bool)
+    case loading
 }
 
 @MainActor
@@ -75,6 +91,8 @@ class ViewSwitcher: ObservableObject {
             return
         }
         
+        activeView = .loading
+        
         Task {
             do {
                 try await api.fetchEvents()
@@ -93,6 +111,10 @@ class ViewSwitcher: ObservableObject {
                 activeView = .login
             }
         }
+    }
+    
+    func switchToLoading() {
+        activeView = .loading
     }
 }
 
@@ -113,6 +135,8 @@ class GlobalWarningHandler: ObservableObject {
         self.isShown = false
     }
 }
+
+
     
 #Preview {
     ContentView()

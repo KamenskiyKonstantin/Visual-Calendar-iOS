@@ -45,6 +45,7 @@ struct EventJSON: Codable {
     let sideImageURLS: [String]
     let id: UUID
     let repetitionType: String
+    let reactionString: String
 
     func toEvent() -> Event {
         return Event(
@@ -57,7 +58,9 @@ struct EventJSON: Codable {
             id: id,
             bgcolor: backgroundColor,
             textcolor: textColor,
-            repetitionType: repetitionType
+            repetitionType: repetitionType,
+            reactionString: reactionString
+            
         )
     }
 }

@@ -257,6 +257,7 @@ private extension EventEditor {
             bgcolor: backgroundColor,
             textcolor: textColor,
             repetitionType: repeatType.displayName,
+            reactionString: ""
             )
         return event
             

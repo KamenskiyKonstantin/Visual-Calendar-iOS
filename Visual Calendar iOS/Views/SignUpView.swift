@@ -14,6 +14,7 @@ struct SignUpView: View {
     @State var password: String = ""
     
     @EnvironmentObject var viewSwitcher: ViewSwitcher
+    @EnvironmentObject var warningHandler: GlobalWarningHandler
     
     @Environment(\.dismiss) private var dismiss
     
@@ -25,22 +26,25 @@ struct SignUpView: View {
     
     func signup() {
         Task{
-            try await self.APIinteractor.signUp(email:email, password:password)
-            try await self.APIinteractor.login(email:email, password:password)
-            
-            await MainActor.run {
-                if self.APIinteractor.isAuthenticated{
-                    
-                    
-                    dismiss()
-                    self.viewSwitcher.switchToSelectRole()
-                    print("Signup successful")
-                    print("Current view: \(self.viewSwitcher.activeView)")
-                    
+            do{
+                try await self.APIinteractor.signUp(email:email, password:password)
+                try await self.APIinteractor.login(email:email, password:password)
+                
+                await MainActor.run {
+                    if self.APIinteractor.isAuthenticated{
+                        dismiss()
+                        self.viewSwitcher.switchToSelectRole()
+                        print("Signup successful")
+                        print("Current view: \(self.viewSwitcher.activeView)")
+                        
+                    }
+                    else{
+                        self.viewSwitcher.switchToLogin()
+                    }
                 }
-                else{
-                    self.viewSwitcher.switchToLogin()
-                }
+            }
+            catch{
+                warningHandler.showWarning("\(error)")
             }
             
         }

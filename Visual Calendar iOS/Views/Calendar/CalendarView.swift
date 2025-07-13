@@ -156,17 +156,25 @@ struct CalendarBackgroundView: View{
 
 
 struct DetailView: View{
-    let mainImage: String
-    let sideImages: [String]
-    init(mainImage: String, sideImages: [String] = []) {
-        self.mainImage = mainImage
-        self.sideImages = sideImages
-    }
-    
+    let event: Event
+    let api: APIHandler
+
     var body: some View{
         VStack{
+            HStack{
+                ForEach(EventReaction.allCases, id:\.self){
+                    reaction in
+                    Button(action: {self.updateEventReaction(reaction)}) {
+                        if let image = emojiToImage(reaction.emoji, fontSize: 30){
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                        }
+                    }
+                }
+            }
 
-            AsyncImage(url:URL(string:self.mainImage)){
+            AsyncImage(url:URL(string:event.mainImageURL)){
                 asyncImage in
                 if let image = asyncImage.image{
                     image
@@ -178,7 +186,7 @@ struct DetailView: View{
             }
                 
             Divider()
-            ForEach(sideImages, id: \.self){
+            ForEach(event.sideImagesURL, id: \.self){
                 sideImage in
                 HStack{
                     AsyncImage(url:URL(string:sideImage)){
@@ -193,6 +201,27 @@ struct DetailView: View{
                     }
                     
                 }
+            }
+
+        }
+    }
+    
+    func updateEventReaction(_ newReaction: EventReaction) {
+        var new_event = event
+        new_event.reaction = newReaction
+        Task{
+            do{
+                var events = api.eventList
+                if let index = events.firstIndex(where: { $0.id == new_event.id }) {
+                    events[index] = new_event
+                }
+                else {
+                    return
+                }
+                try await api.upsertEvents(events)
+            }
+            catch {
+                print("Error updating event reaction: \(error.localizedDescription)")
             }
         }
     }

@@ -8,6 +8,25 @@
 import Foundation
 import SwiftUI
 
+// Emoji based reaction system
+enum EventReaction: CaseIterable{
+    case none
+    case smiley
+    case thumbsUp
+    case thumbsDown
+    case upset
+    
+    var emoji: String {
+        switch self {
+        case .none: return ""
+        case .smiley: return "😊"
+        case .thumbsUp: return "👍"
+        case .thumbsDown: return "👎"
+        case .upset: return "😡"
+        }
+    }
+}
+
 enum EventRepetitionType{
     case daily
     case weekly
@@ -42,6 +61,8 @@ enum EventRepetitionType{
 
 }
 
+
+
 func repetitionStringToEnum(_ repetitionString: String) -> EventRepetitionType {
     switch repetitionString {
     case "daily":
@@ -69,6 +90,21 @@ func repetitionStringToEnum(_ repetitionString: String) -> EventRepetitionType {
     }
 }
 
+func emojiStringToEnum(_ emojiString: String) -> EventReaction {
+    switch emojiString {
+        case "😊":
+            return .smiley
+        case "👍":
+            return .thumbsUp
+        case "👎":
+            return .thumbsDown
+        case "😡":
+            return .upset
+        default:
+            return .smiley
+    }
+}
+
 class Event{
     let id: UUID
     let backgroundColor: String
@@ -81,11 +117,14 @@ class Event{
     let dayOfWeek: Int
     let mainImageURL: String
     let sideImagesURL: [String]
+    
     let repetitionType: EventRepetitionType
+    var reaction: EventReaction
+    
 
     init(systemImage: String, dateTimeStart: Date, dateTimeEnd: Date, minuteHeight: Int,
          mainImageURL: String, sideImagesURL: [String], id: UUID = UUID(), bgcolor: String = "Mint", textcolor: String = "Blue",
-         repetitionType: String) {
+         repetitionType: String, reactionString: String) {
         self.id = id
         
         self.systemImage = systemImage
@@ -103,7 +142,7 @@ class Event{
         self.duration = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart) / 60)
         
         self.repetitionType = repetitionStringToEnum(repetitionType)
-        
+        self.reaction = emojiStringToEnum(reactionString)
         
         
     }
@@ -127,6 +166,7 @@ class Event{
             hour: timeEnd[3], minute: timeEnd[4]
         )
         self.repetitionType = repetitionStringToEnum(dictionary["repetitionType"] as! String)
+        self.reaction = emojiStringToEnum(dictionary["reaction"] as! String)
         
         self.minuteHeight = 2
         self.mainImageURL = dictionary["mainImageURL"] as! String
@@ -137,9 +177,10 @@ class Event{
         
         
         self.id = dictionary["id"] as! UUID
+        
     }
     
-    func getVisibleObject(deleteMode: Bool = false, deletionAPI: APIHandler) -> some View{
+    func getVisibleObject(deleteMode: Bool = false, api: APIHandler) -> some View{
         let height = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart)) / 60 * self.minuteHeight
         let hour = Calendar.current.component(.hour, from: self.dateTimeStart)
         let minute = Calendar.current.component(.minute, from: self.dateTimeStart)
@@ -149,11 +190,12 @@ class Event{
             VStack(alignment: .leading) {
                 if !deleteMode{
                     NavigationLink(
-                        destination: DetailView(mainImage: self.mainImageURL, sideImages: self.sideImagesURL))
+                        destination: DetailView(event: self, api: api))
                     {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(colorFromName(self.backgroundColor))
                             .stroke(colorFromName(self.textColor), lineWidth: 1)
+                            
                             .overlay(alignment: .center)
                             {
                                 if self.duration >= 60{
@@ -174,6 +216,15 @@ class Event{
                                 }
                                 
                             }
+                            .overlay(alignment: .bottomTrailing, content: {
+                                // add emoji from reaction
+                                if let reactionImage = emojiToImage(reaction.emoji, fontSize: 1) {
+                                    Image(uiImage: reactionImage)
+                                        .resizable()
+                                        .aspectRatio(1/1, contentMode: .fit)
+                                        .padding(5)
+                                }
+                            })
                             
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -182,7 +233,7 @@ class Event{
                     Button(action: {
                         Task{
                             do{
-                                try await deletionAPI.deleteEvent(self.id)
+                                try await api.deleteEvent(self.id)
                             }
                             catch {
                                 print("Error deleting event: \(error)")
@@ -243,6 +294,7 @@ class Event{
             "sideImageURLS":self.sideImagesURL,
             
             "repetitionType":self.repetitionType.displayName,
+            "reactionString":self.reaction.emoji,
             
             "id": id.uuidString,
             
@@ -263,23 +315,23 @@ class Event{
 }
 
 
-    func emojiToImage(_ emoji: String, fontSize: CGFloat) -> UIImage? {
-        let size = CGSize(width: fontSize, height: fontSize)
-        let renderer = UIGraphicsImageRenderer(size: size)
-        return renderer.image { _ in
-            let attributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.systemFont(ofSize: fontSize)
-            ]
-            let textSize = emoji.size(withAttributes: attributes)
-            let rect = CGRect(
-                x: (size.width - textSize.width) / 2,
-                y: (size.height - textSize.height) / 2,
-                width: textSize.width,
-                height: textSize.height
-            )
-            emoji.draw(in: rect, withAttributes: attributes)
-        }
+func emojiToImage(_ emoji: String, fontSize: CGFloat) -> UIImage? {
+    let size = CGSize(width: fontSize, height: fontSize)
+    let renderer = UIGraphicsImageRenderer(size: size)
+    return renderer.image { _ in
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: fontSize)
+        ]
+        let textSize = emoji.size(withAttributes: attributes)
+        let rect = CGRect(
+            x: (size.width - textSize.width) / 2,
+            y: (size.height - textSize.height) / 2,
+            width: textSize.width,
+            height: textSize.height
+        )
+        emoji.draw(in: rect, withAttributes: attributes)
     }
+}
 
 
 extension Event {
