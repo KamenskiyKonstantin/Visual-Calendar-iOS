@@ -52,7 +52,6 @@ struct EventJSON: Codable {
             systemImage: systemImage,
             dateTimeStart: Date.from(day: timeStart[0], month: timeStart[1], year: timeStart[2], hour: timeStart[3], minute: timeStart[4]),
             dateTimeEnd: Date.from(day: timeEnd[0], month: timeEnd[1], year: timeEnd[2], hour: timeEnd[3], minute: timeEnd[4]),
-            minuteHeight: 2,
             mainImageURL: mainImageURL,
             sideImagesURL: sideImageURLS,
             id: id,

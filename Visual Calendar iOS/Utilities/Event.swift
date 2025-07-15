@@ -112,7 +112,6 @@ class Event: ObservableObject{
     let systemImage: String
     let dateTimeStart: Date
     let dateTimeEnd: Date
-    let minuteHeight : Int
     let duration: Int
     let dayOfWeek: Int
     let mainImageURL: String
@@ -122,7 +121,7 @@ class Event: ObservableObject{
     @Published var reaction: EventReaction
     
 
-    init(systemImage: String, dateTimeStart: Date, dateTimeEnd: Date, minuteHeight: Int,
+    init(systemImage: String, dateTimeStart: Date, dateTimeEnd: Date,
          mainImageURL: String, sideImagesURL: [String], id: UUID = UUID(), bgcolor: String = "Mint", textcolor: String = "Blue",
          repetitionType: String, reactionString: String) {
         self.id = id
@@ -136,7 +135,6 @@ class Event: ObservableObject{
         
         self.mainImageURL = mainImageURL
         self.sideImagesURL = sideImagesURL
-        self.minuteHeight = minuteHeight
         
         self.dayOfWeek = Calendar.current.component(.weekday, from: self.dateTimeStart)
         self.duration = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart) / 60)
@@ -168,7 +166,6 @@ class Event: ObservableObject{
         self.repetitionType = repetitionStringToEnum(dictionary["repetitionType"] as! String)
         self.reaction = emojiStringToEnum(dictionary["reaction"] as! String)
         
-        self.minuteHeight = 2
         self.mainImageURL = dictionary["mainImageURL"] as! String
         self.sideImagesURL = dictionary["sideImageURLS"] as! [String]
         
@@ -230,85 +227,6 @@ func emojiToImage(_ emoji: String, fontSize: CGFloat) -> UIImage? {
             height: textSize.height
         )
         emoji.draw(in: rect, withAttributes: attributes)
-    }
-}
-
-extension Event{
-    
-    
-    func getVisibleObject(deleteMode: Bool = false, api: APIHandler) -> some View {
-        let height = Int(dateTimeEnd.timeIntervalSince(dateTimeStart)) / 60 * minuteHeight
-        let hour = Calendar.current.component(.hour, from: dateTimeStart)
-        let minute = Calendar.current.component(.minute, from: dateTimeStart)
-        let offsetY = (hour * 60 + minute) * minuteHeight
-        
-        // Shared rounded rectangle content
-        @ViewBuilder
-        func rectangleView(strokeColor: Color) -> some View {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(colorFromName(backgroundColor))
-                .stroke(strokeColor, lineWidth: 1)
-                .overlay(alignment: .center) {
-
-                    if let emojiImage = emojiToImage(systemImage, fontSize: 64) {
-                        Image(uiImage: emojiImage)
-                        
-                            .resizable()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .padding(duration >= 60 ? 10 : 5)
-                            .aspectRatio(1, contentMode: .fit)
-                        
-                    }
-
-                }
-                .overlay(alignment: .bottomTrailing) {
-                    if reaction != .none, let reactionImage = emojiToImage(reaction.emoji, fontSize: 16) {
-                        Image(uiImage: reactionImage)
-                            .resizable()
-                            .aspectRatio(1, contentMode: .fit)
-                            .frame(width: 20, height: 20)
-                            .padding(3)
-                            .background(Color.white.opacity(0.9))
-                            .clipShape(RoundedRectangle(cornerRadius: 5))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.8)
-                            )
-                    }
-                }
-            
-        }
-        
-
-        return VStack(alignment: .leading) {
-            if deleteMode {
-                Button {
-                    Task {
-                        do {
-                            try await api.deleteEvent(self.id)
-                        } catch {
-                            print("Error deleting event: \(error)")
-                        }
-                    }
-                } label: {
-                    rectangleView(strokeColor: .red)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            } else {
-                NavigationLink(destination: DetailView(event: self, api: api)) {
-                    rectangleView(strokeColor: colorFromName(textColor))
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        .font(.caption)
-        .frame(
-            maxWidth: .infinity,
-            minHeight: CGFloat(height), maxHeight: CGFloat(height),
-            alignment: .topLeading
-        )
-        .offset(y: CGFloat(offsetY + 30 * minuteHeight))
     }
 }
 

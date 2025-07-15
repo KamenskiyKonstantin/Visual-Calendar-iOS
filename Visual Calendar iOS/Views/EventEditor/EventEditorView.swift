@@ -250,7 +250,6 @@ private extension EventEditor {
             systemImage: selectedSymbol,
             dateTimeStart: dateStart,
             dateTimeEnd: dateEnd,
-            minuteHeight: defaultMinuteHeight,
             mainImageURL: mainImageURL,
             sideImagesURL: sideImagesURL,
             id:UUID(),
