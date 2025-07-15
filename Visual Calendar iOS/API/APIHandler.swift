@@ -1,4 +1,12 @@
 //
+//  APIHandler.swift
+//  Visual Calendar iOS
+//
+//  Created by Konstantin Kamenskiy on 15.07.2025.
+//
+
+
+//
 //  FunctionalClasses.swift
 //  Visual Calendar iOS
 //
