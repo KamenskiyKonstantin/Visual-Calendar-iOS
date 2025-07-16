@@ -28,12 +28,13 @@
 		ED7B0F1A2E2626A200042ED3 /* PresetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F132E2626A200042ED3 /* PresetService.swift */; };
 		ED7B0F1E2E2626F400042ED3 /* APIHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F1D2E2626F400042ED3 /* APIHandler.swift */; };
 		ED7B0F222E2633D300042ED3 /* EventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F212E2633D300042ED3 /* EventView.swift */; };
+		ED7B0F252E273A0B00042ED3 /* APIConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F242E273A0B00042ED3 /* APIConverters.swift */; };
 		ED86AFFD2D42684A00F5B89C /* UtilsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED86AFFC2D42684A00F5B89C /* UtilsUI.swift */; };
 		ED97F3932DE2E1C6007D316B /* WeekdayHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3922DE2E1C6007D316B /* WeekdayHeader.swift */; };
 		ED97F3952DE2E22F007D316B /* CalendarConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3942DE2E22F007D316B /* CalendarConstants.swift */; };
 		ED97F3972DE2E968007D316B /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3962DE2E968007D316B /* Buttons.swift */; };
 		ED97F3992DE2E990007D316B /* CalendarTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3982DE2E990007D316B /* CalendarTable.swift */; };
-		ED97F39B2DE2EAE4007D316B /* CalendarHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F39A2DE2EAE4007D316B /* CalendarHelpers.swift */; };
+		ED97F39B2DE2EAE4007D316B /* LogicHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F39A2DE2EAE4007D316B /* LogicHelpers.swift */; };
 		ED97F39E2DE2F6C6007D316B /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F39D2DE2F6C6007D316B /* Event.swift */; };
 		ED9E8A822C5E765F0098D8FD /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A812C5E765F0098D8FD /* Auth */; };
 		ED9E8A842C5E765F0098D8FD /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A832C5E765F0098D8FD /* Functions */; };
@@ -66,12 +67,13 @@
 		ED7B0F132E2626A200042ED3 /* PresetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetService.swift; sourceTree = "<group>"; };
 		ED7B0F1D2E2626F400042ED3 /* APIHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIHandler.swift; sourceTree = "<group>"; };
 		ED7B0F212E2633D300042ED3 /* EventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventView.swift; sourceTree = "<group>"; };
+		ED7B0F242E273A0B00042ED3 /* APIConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConverters.swift; sourceTree = "<group>"; };
 		ED86AFFC2D42684A00F5B89C /* UtilsUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsUI.swift; sourceTree = "<group>"; };
 		ED97F3922DE2E1C6007D316B /* WeekdayHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekdayHeader.swift; sourceTree = "<group>"; };
 		ED97F3942DE2E22F007D316B /* CalendarConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarConstants.swift; sourceTree = "<group>"; };
 		ED97F3962DE2E968007D316B /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
 		ED97F3982DE2E990007D316B /* CalendarTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTable.swift; sourceTree = "<group>"; };
-		ED97F39A2DE2EAE4007D316B /* CalendarHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarHelpers.swift; sourceTree = "<group>"; };
+		ED97F39A2DE2EAE4007D316B /* LogicHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogicHelpers.swift; sourceTree = "<group>"; };
 		ED97F39D2DE2F6C6007D316B /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
 		EDAAAE192C5FEBB300E45598 /* VisualCalendarIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VisualCalendarIOS.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -166,7 +168,6 @@
 			isa = PBXGroup;
 			children = (
 				ED7B0F0E2E2626A200042ED3 /* AuthService.swift */,
-				ED7B0F0F2E2626A200042ED3 /* CodableStructures.swift */,
 				ED7B0F102E2626A200042ED3 /* EventService.swift */,
 				ED7B0F112E2626A200042ED3 /* ImageService.swift */,
 				ED7B0F122E2626A200042ED3 /* LibraryService.swift */,
@@ -178,6 +179,7 @@
 		ED7B0F1C2E2626C900042ED3 /* API */ = {
 			isa = PBXGroup;
 			children = (
+				ED7B0F232E2739E500042ED3 /* ObjectMappings */,
 				ED7B0F1D2E2626F400042ED3 /* APIHandler.swift */,
 				ED7B0F1B2E2626AA00042ED3 /* Services */,
 			);
@@ -197,10 +199,19 @@
 			children = (
 				ED86AFFC2D42684A00F5B89C /* UtilsUI.swift */,
 				ED97F3942DE2E22F007D316B /* CalendarConstants.swift */,
-				ED97F39A2DE2EAE4007D316B /* CalendarHelpers.swift */,
+				ED97F39A2DE2EAE4007D316B /* LogicHelpers.swift */,
 				ED97F39D2DE2F6C6007D316B /* Event.swift */,
 			);
 			path = Utilities;
+			sourceTree = "<group>";
+		};
+		ED7B0F232E2739E500042ED3 /* ObjectMappings */ = {
+			isa = PBXGroup;
+			children = (
+				ED7B0F0F2E2626A200042ED3 /* CodableStructures.swift */,
+				ED7B0F242E273A0B00042ED3 /* APIConverters.swift */,
+			);
+			path = ObjectMappings;
 			sourceTree = "<group>";
 		};
 		ED97F3912DE2E16D007D316B /* Calendar */ = {
@@ -331,6 +342,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED7B0F252E273A0B00042ED3 /* APIConverters.swift in Sources */,
 				ED97F3952DE2E22F007D316B /* CalendarConstants.swift in Sources */,
 				ED4ABE462DE472DC0036B16F /* EditorSections.swift in Sources */,
 				ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */,
@@ -351,7 +363,7 @@
 				ED41F0902C5BD15500954ACF /* ContentView.swift in Sources */,
 				ED4ABE482DE72E2D0036B16F /* BaseExtensions.swift in Sources */,
 				ED6DB6E22D422D9F00F518A2 /* EventEditorView.swift in Sources */,
-				ED97F39B2DE2EAE4007D316B /* CalendarHelpers.swift in Sources */,
+				ED97F39B2DE2EAE4007D316B /* LogicHelpers.swift in Sources */,
 				ED97F3932DE2E1C6007D316B /* WeekdayHeader.swift in Sources */,
 				ED97F3992DE2E990007D316B /* CalendarTable.swift in Sources */,
 				ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */,

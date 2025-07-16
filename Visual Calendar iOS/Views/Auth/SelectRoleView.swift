@@ -78,7 +78,7 @@ struct ConfirmAdultView: View{
     
     var viewSwitcher: ViewSwitcher
     
-    @State var isAlertPresented: Bool = false
+    @EnvironmentObject var warningHandler: GlobalWarningHandler
     
     
     var body: some View{
@@ -110,21 +110,18 @@ struct ConfirmAdultView: View{
             }
             Spacer()
         }
-        .sheet(isPresented: $isAlertPresented) {
-            messageBox(text: "Incorrect answer", isVisible: $isAlertPresented)
-        }
         
     }
     
     func checkAnswer(){
         if userAnswer.isEmpty{
-            isAlertPresented.toggle()
+            warningHandler.showWarning("Please provide an answer")
         }
         else{
             if Int(userAnswer)! == verificationValA + verificationValB {
                 viewSwitcher.switchToCalendar(isAdult:true)
             }else{
-                isAlertPresented.toggle()
+                warningHandler.showWarning("Incorrect answer. Please try again")
             }
         }
     }

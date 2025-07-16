@@ -105,7 +105,7 @@ func emojiStringToEnum(_ emojiString: String) -> EventReaction {
     }
 }
 
-struct Event:	 Identifiable{
+struct Event: Identifiable{
     let id: UUID
     let backgroundColor: String
     let textColor: String
@@ -212,23 +212,7 @@ struct Event:	 Identifiable{
 }
 
 
-func emojiToImage(_ emoji: String, fontSize: CGFloat) -> UIImage? {
-    let size = CGSize(width: fontSize, height: fontSize)
-    let renderer = UIGraphicsImageRenderer(size: size)
-    return renderer.image { _ in
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: fontSize)
-        ]
-        let textSize = emoji.size(withAttributes: attributes)
-        let rect = CGRect(
-            x: (size.width - textSize.width) / 2,
-            y: (size.height - textSize.height) / 2,
-            width: textSize.width,
-            height: textSize.height
-        )
-        emoji.draw(in: rect, withAttributes: attributes)
-    }
-}
+
 
 
 extension Event {
@@ -281,5 +265,15 @@ extension Event {
     
 
 
+    }
+}
+
+extension Event: Hashable, Equatable {
+    static func == (lhs: Event, rhs: Event) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
