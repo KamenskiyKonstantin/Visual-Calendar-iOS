@@ -112,12 +112,13 @@ extension Event {
 
 extension Event: Hashable, Equatable {
     static func == (lhs: Event, rhs: Event) -> Bool {
-            return lhs.dateTimeStart == rhs.dateTimeStart && lhs.systemImage == rhs.systemImage
+            return lhs.id == rhs.id
         }
 
         func hash(into hasher: inout Hasher) {
             hasher.combine(dateTimeStart)
             hasher.combine(systemImage)
+            hasher.combine(id)
         }
 }
 

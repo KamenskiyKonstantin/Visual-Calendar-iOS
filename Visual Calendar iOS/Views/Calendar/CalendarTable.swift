@@ -45,7 +45,7 @@ struct CalendarTable: View {
                     Color.clear
                     
                     ForEach(eventsForDay, id: \.self) { event in
-                        EventView(event: event, deleteMode: deleteMode, api: api)
+                        EventView(eventID: event.id, deleteMode: deleteMode, api: api)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -59,7 +59,7 @@ struct CalendarTable: View {
             ZStack(alignment: .top) {
                 Color.clear
                 ForEach(eventsAtGivenDay(currentDate), id: \.self) { event in
-                    EventView(event: event, deleteMode: deleteMode, api: api)
+                    EventView(eventID: event.id, deleteMode: deleteMode, api: api)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

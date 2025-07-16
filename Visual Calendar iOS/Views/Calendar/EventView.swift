@@ -8,39 +8,44 @@
 import SwiftUI
 
 struct EventView: View {
-    @ObservedObject var event: Event
+    let eventID: UUID
     let deleteMode: Bool
-    let api: APIHandler
     let minuteHeight: Int = 2
-    
+
+    @ObservedObject var api: APIHandler
+
+    private var event: Event? {
+        api.eventList.first(where: { $0.id == eventID })
+    }
+
     var body: some View {
+        if let event = event {
+            content(for: event)
+        } else {
+            Color.clear
+        }
+    }
+
+    @ViewBuilder
+    func content(for event: Event) -> some View {
         let height = Int(event.dateTimeEnd.timeIntervalSince(event.dateTimeStart)) / 60 * minuteHeight
         let hour = Calendar.current.component(.hour, from: event.dateTimeStart)
         let minute = Calendar.current.component(.minute, from: event.dateTimeStart)
         let offsetY = (hour * 60 + minute) * minuteHeight
-        
-        // Shared rounded rectangle content
 
         VStack(alignment: .leading) {
             if deleteMode {
                 Button {
                     Task {
-                        do {
-                            try await api.deleteEvent(event.id)
-                        } catch {
-                            print("Error deleting event: \(error)")
-                        }
+                        try? await api.deleteEvent(event.id)
                     }
                 } label: {
-                    rectangleView(strokeColor: .red)
+                    rectangleView(event: event, strokeColor: .red)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
             } else {
-                NavigationLink(destination: DetailView(event: event, api: api)) {
-                    rectangleView(strokeColor: colorFromName(event.textColor))
+                NavigationLink(destination: DetailView(eventID: event.id, api: api)) {
+                    rectangleView(event: event, strokeColor: colorFromName(event.textColor))
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .font(.caption)
@@ -51,27 +56,24 @@ struct EventView: View {
         )
         .offset(y: CGFloat(offsetY + 30 * minuteHeight))
     }
-    
+
     @ViewBuilder
-    func rectangleView(strokeColor: Color) -> some View {
+    func rectangleView(event: Event, strokeColor: Color) -> some View {
         RoundedRectangle(cornerRadius: 8)
             .fill(colorFromName(event.backgroundColor))
             .stroke(strokeColor, lineWidth: 1)
             .overlay(alignment: .center) {
-
                 if let emojiImage = emojiToImage(event.systemImage, fontSize: 64) {
                     Image(uiImage: emojiImage)
-                    
                         .resizable()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .padding(event.duration >= 60 ? 10 : 5)
                         .aspectRatio(1, contentMode: .fit)
-                    
                 }
-
             }
             .overlay(alignment: .bottomTrailing) {
-                if event.reaction != .none, let reactionImage = emojiToImage(event.reaction.emoji, fontSize: 16) {
+                if event.reaction != .none,
+                   let reactionImage = emojiToImage(event.reaction.emoji, fontSize: 16) {
                     Image(uiImage: reactionImage)
                         .resizable()
                         .aspectRatio(1, contentMode: .fit)
@@ -85,7 +87,5 @@ struct EventView: View {
                         )
                 }
             }
-        
     }
-    
 }

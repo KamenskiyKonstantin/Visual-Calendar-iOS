@@ -81,9 +81,10 @@ class APIHandler: ObservableObject {
     }
 
     func upsertEvents(_ events: [Event]) async throws {
-        print("[\(Date.now.description)] Upserting events: \(events)")
-        try await eventService.upsertEvents(events)
+        print("[\(Date.now.description)] Upserting a total of \(events.count) events")
         self.eventList = events
+        try await eventService.upsertEvents(events)
+        
     }
     
     func deleteEvent(_ uid: UUID) async throws{

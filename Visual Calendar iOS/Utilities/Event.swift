@@ -105,7 +105,7 @@ func emojiStringToEnum(_ emojiString: String) -> EventReaction {
     }
 }
 
-class Event: ObservableObject{
+struct Event:	 Identifiable{
     let id: UUID
     let backgroundColor: String
     let textColor: String
@@ -118,7 +118,7 @@ class Event: ObservableObject{
     let sideImagesURL: [String]
     
     let repetitionType: EventRepetitionType
-    @Published var reaction: EventReaction
+    var reaction: EventReaction
     
 
     init(systemImage: String, dateTimeStart: Date, dateTimeEnd: Date,
