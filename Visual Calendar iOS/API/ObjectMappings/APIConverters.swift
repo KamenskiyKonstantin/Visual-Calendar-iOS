@@ -63,3 +63,26 @@ extension EventJSON {
         )
     }
 }
+
+enum APIError: Error, LocalizedError {
+    case duplicateLibrary
+    case unauthorized
+    case networkError
+    case duplicateFile
+    case unknown(Error)
+
+    var errorDescription: String? {
+        switch self {
+        case .duplicateLibrary:
+            return "You’ve already added this library."
+        case .unauthorized:
+            return "You must be logged in to perform this action."
+        case .networkError:
+            return "Network connection issue. Please try again."
+        case .duplicateFile:
+            return "You’ve already added this file."
+        case .unknown(let error):
+            return error.localizedDescription
+        }
+    }
+}

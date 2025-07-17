@@ -6,7 +6,6 @@
 //
 import Foundation
 import Supabase
-import SwiftyJSON
 import Combine
 
 @MainActor
@@ -16,78 +15,83 @@ class ImageService: ObservableObject {
     init(client: SupabaseClient) {
         self.client = client
     }
-}
 
-extension ImageService {
-    struct CustomFile: Decodable {
-        let id: UUID
-        let name: String
-        let file_url: String
-    }
-
-    struct PublicImage: Decodable {
-        let id: UUID
-        let name: String
-        let file_url: String
-        let library: String
-    }
-}
-
-extension ImageService {
-    func fetchUserImages() async throws -> [String: String] {
+    // MARK: - User Images
+    
+    func isFilenameAvailable(_ name: String) async throws -> Bool {
         let uid = try await client.auth.user().id
 
         let response = try await client
             .from("custom_files")
-            .select()
-            .eq("user_id", value: uid)
+            .select("id")  // Only need to know if any entry exists
+            .eq("user_uuid", value: uid)
+            .eq("display_name", value: name)
+            .limit(1)
             .execute()
 
-        let files = try JSONDecoder().decode([CustomFile].self, from: response.data)
-        return Dictionary(uniqueKeysWithValues: files.map { ($0.name, $0.file_url) })
+        let rows = try JSONSerialization.jsonObject(with: response.data, options: []) as? [[String: Any]]
+        return (rows?.isEmpty ?? true)
+    }
+
+    func fetchUserImages() async throws -> [CustomFile] {
+        let uid = try await client.auth.user().id
+
+        let response = try await client
+            .from("custom_files")
+            .select("user_uuid, display_name, file_url")
+            .eq("user_uuid", value: uid)
+            .execute()
+
+        return try JSONDecoder().decode([CustomFile].self, from: response.data)
     }
 
     func upsertImage(imageData: Data, name: String) async throws {
         let uid = try await client.auth.user().id
         let timestamp = Int(Date().timeIntervalSince1970)
-        let safeFilename = "\(timestamp).png"
-        let path = "\(uid.uuidString)/images/\(safeFilename)"
-
+        let filename = "\(timestamp).png"
+        let path = "\(uid.uuidString)/images/\(filename)"
+        
+        // check for availabitliy
+        if try await !isFilenameAvailable(name) {
+            throw APIError.duplicateFile
+        }
+        // upload
         try await client.storage.from("user_data").upload(
             path: path,
             file: imageData,
-            options: FileOptions(cacheControl: "0", contentType: "image/png", upsert: true)
+            options: .init(cacheControl: "0", contentType: "image/png", upsert: true)
         )
+        // read URL
 
         let fileURL = try client.storage.from("user_data").getPublicURL(path: path).absoluteString
-
+        
+        // insert to index
         _ = try await client
             .from("custom_files")
-            .upsert(
-                [["user_id": uid.uuidString, "name": name, "file_url": fileURL]],
-                onConflict: "user_id,name"
-            )
+            .insert([
+                ["user_uuid": uid.uuidString, "display_name": name, "file_url": fileURL]
+            ])
             .execute()
     }
-}
 
-extension ImageService {
-    func fetchLibraryImages(library: String) async throws -> [String: String] {
+    // MARK: - Library Images
+
+    func fetchLibraryImages(_ library: LibraryInfo) async throws -> [PublicImage] {
         let response = try await client
             .from("public_images")
-            .select()
-            .eq("library", value: library)
+            .select("library_uuid, display_name, file_url")
+            .eq("library_uuid", value: library.library_uuid.uuidString)
             .execute()
 
-        let images = try JSONDecoder().decode([PublicImage].self, from: response.data)
-        return Dictionary(uniqueKeysWithValues: images.map { ($0.name, $0.file_url) })
+        return try JSONDecoder().decode([PublicImage].self, from: response.data)
     }
 
-    func fetchAllImageMappings(libraries: [String]) async throws -> [String: [String: String]] {
-        var result: [String: [String: String]] = [:]
+    func fetchAllImageMappings(libraries: [LibraryInfo]) async throws -> [String: [NamedURL]] {
+        var result: [String: [NamedURL]] = [:]
 
         for library in libraries {
-            result[library] = try await fetchLibraryImages(library: library)
+            
+            result[library.localized_name] = try await fetchLibraryImages(library)
         }
 
         result["user"] = try await fetchUserImages()

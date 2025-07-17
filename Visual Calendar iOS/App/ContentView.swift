@@ -32,7 +32,7 @@ struct ContentView: View {
             case .selectRole:
                 AnyView(SelectRoleView(viewSwitcher: viewSwitcher))
             case let .calendar(isAdult):
-                AnyView(CalendarView(api: api,
+                AnyView(CalendarView(
                              viewSwitcher: viewSwitcher,
                              isParentMode: isAdult,))
             case .loading:
@@ -95,23 +95,37 @@ class ViewSwitcher: ObservableObject {
         
         Task {
             do {
-                try await api.fetchEvents()
-                try await api.addLibrary("StandardLibrary")
-                try await api.fetchImageURLs()
+                // Fetch library index early (critical for resolving names)
                 try await api.fetchExistingLibraries()
-                try await api.fetchPresets()
-                
+
+                // Try to add the library, but suppress duplicate errors
+                do {
+                    try await api.addLibrary("standard_library")
+                } catch {
+                    print("Library already exists or failed silently: \(error.localizedDescription)")
+                    // You may want to inspect specific errors if needed
+                }
+
+                // Parallelize non-conflicting fetches
+                async let imageTask: Void = try api.fetchImageURLs()
+                async let eventsTask: Void = try api.fetchEvents()
+                async let presetsTask: Void = try api.fetchPresets()
+
+                _ = try await (imageTask, eventsTask, presetsTask)
+
+                // Only after all above tasks succeed, switch to main app
                 await MainActor.run {
                     activeView = .calendar(isAdult: isAdult)
                 }
-                
+
             } catch {
                 print("Error switching to main app: \(error.localizedDescription)")
-                try await api.logout()
-                activeView = .login
+                try? await api.logout()
+                await MainActor.run {
+                    activeView = .login
+                }
             }
-        }
-    }
+        }    }
     
     func switchToLoading() {
         activeView = .loading

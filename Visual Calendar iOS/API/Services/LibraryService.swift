@@ -7,52 +7,55 @@
 
 import Foundation
 import Supabase
-import Combine
 
 @MainActor
-class LibraryService: ObservableObject {
+class LibraryService {
     private let client: SupabaseClient
 
     init(client: SupabaseClient) {
         self.client = client
     }
 
-    func fetchLibraries() async throws -> [String] {
-        let libraryEntries = try await client.storage.from("publiclibraries").list().map { $0.name }
-        return libraryEntries
-    }
-    
-    func checkLoadedLibraries() async throws -> [String] {
-        let uid = try await client.auth.user().id
-
+    // Fetch all available libraries
+    func fetchAllLibraries() async throws -> [LibraryInfo] {
         let response = try await client
-            .from("ConnectedLibraries")
-            .select("library")
-            .eq("uuid", value: uid)
+            .from("library_index")
+            .select("library_uuid, system_name, localized_name")
             .execute()
 
-        let data = response.data
-        let libraries = try JSONDecoder().decode([LibraryEntry].self, from: data)
-
-        return libraries.map(\.library)
+        return try JSONDecoder().decode([LibraryInfo].self, from: response.data)
     }
 
-    func addLibrary(_ name: String) async throws {
+    // Fetch system_names of libraries connected to the current user
+    func fetchConnectedSystemNames() async throws -> [String] {
         let uid = try await client.auth.user().id
-
-        let response = try await client.from("ConnectedLibraries")
-            .select()
-            .eq("library", value: name)
-            .eq("uuid", value: uid)
+        
+        let response = try await client
+            .from("connected_libraries")
+            .select("system_name")
+            .eq("user_uuid", value: uid)
             .execute()
 
-        let existing = try JSONDecoder().decode([LibraryJSON].self, from: response.data)
-        guard existing.isEmpty else { return }
+        let rows = try JSONSerialization.jsonObject(with: response.data, options: []) as? [[String: Any]]
+        return rows?.compactMap { $0["system_name"] as? String } ?? []
+    }
 
-        _ = try await client.from("ConnectedLibraries")
-            .insert(["library": name, "uuid": uid.uuidString])
+    // Add a library to user's connected ones using system_name and [LibraryInfo]
+    func addLibrary(systemName: String, from libraries: [LibraryInfo]) async throws {
+        guard let info = libraries.first(where: { $0.system_name == systemName }) else {
+            print("Library with system_name '\(systemName)' not found.")
+            return
+        }
+
+        let uid = try await client.auth.user().id
+        // inserts the library to user by looked up UUID and pushes system_name silently.
+        _ = try await client
+            .from("connected_libraries")
+            .insert([
+                "user_uuid": uid.uuidString,
+                "library_uuid": info.library_uuid.uuidString,
+                "system_name": info.system_name
+            ])
             .execute()
     }
 }
-
-

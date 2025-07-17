@@ -50,3 +50,14 @@ func levenshtein(_ lhs: String, _ rhs: String) -> Int {
     
     return dp[m][n]
 }
+
+
+func resolveLibraries(from systemNames: [String], using available: [LibraryInfo]) -> [LibraryInfo] {
+    return available.filter { systemNames.contains($0.system_name) }
+}
+
+struct RuntimeWarning: Error {
+    let message: String
+    init(_ message: String) { self.message = message }
+    var localizedDescription: String { message }
+}

@@ -13,7 +13,7 @@ struct CalendarView: View {
     let HStackXOffset = defaultHStackOffset
     
     // MARK: Dependencies
-    @ObservedObject var api: APIHandler
+    @EnvironmentObject var api: APIHandler
     let viewSwitcher: ViewSwitcher
     
     // MARK: State Properties
@@ -28,6 +28,7 @@ struct CalendarView: View {
     //MARK: Sheet showers
     @State var logoutFormShown: Bool = false
     
+    @EnvironmentObject var warninghandler: GlobalWarningHandler
     
     var body: some View {
         NavigationStack{
@@ -77,7 +78,6 @@ struct CalendarView: View {
                         calendarMode: $mode,
                         currentDate: $currentDate,
                         deleteMode: $deleteMode,
-                        api: api,
                         isParentMode: isParentMode,
                         updateEvents: updateEvents)})
 

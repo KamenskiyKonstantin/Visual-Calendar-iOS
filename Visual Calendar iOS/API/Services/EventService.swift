@@ -18,27 +18,28 @@ class EventService: ObservableObject {
 
     func fetchEvents() async throws -> [Event] {
         let uid = try await client.auth.user().id
-        let data = try await client.storage.from("user_data").download(path: "\(uid.uuidString)/calendar.json")
-        do{
+        let path = "\(uid.uuidString)/calendar.json"
+        
+        do {
+            let data = try await client.storage.from("user_data").download(path: path)
             let calendar = try JSONDecoder().decode(CalendarJSON.self, from: data)
-            return calendar.events.map({$0.toEvent()})
+            return calendar.events.map { $0.toEvent() }
+        } catch {
+            print("Error fetching or decoding calendar.json: \(error)")
+            return []   
         }
-        catch{
-            print(error.localizedDescription)
-        }
-        return []
     }
 
     func upsertEvents(_ events: [Event]) async throws {
         let uid = try await client.auth.user().id.uuidString
-        let payload = CalendarJSON(events: events.map { $0.toEventJSON() }, uid: uid)
-        let jsonData = try JSONEncoder().encode(payload)
+        let path = "\(uid)/calendar.json"
+        let calendarPayload = CalendarJSON(events: events.map { $0.toEventJSON() }, uid: uid)
+        let data = try JSONEncoder().encode(calendarPayload)
 
         try await client.storage.from("user_data").upload(
-            path: "\(uid)/calendar.json",
-            file: jsonData,
-            options: FileOptions(cacheControl: "0", contentType: "application/json", upsert: true)
+            path: path,
+            file: data,
+            options: .init(cacheControl: "0", contentType: "application/json", upsert: true)
         )
-
     }
 }

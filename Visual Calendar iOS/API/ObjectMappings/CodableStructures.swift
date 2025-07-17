@@ -12,19 +12,11 @@ struct CalendarJSON: Codable {
     let uid: String
 }
 
-struct LibraryEntry: Codable {
-    let library: String
-}
-
 struct Preset: Codable, Hashable {
     var selectedSymbol: String
     var backgroundColor: String
     var mainImageURL: String
     var sideImageURLs: [String]
-}
-
-struct LibraryJSON: Codable {
-    let library: String
 }
 
 struct EventJSON: Codable {
@@ -39,4 +31,27 @@ struct EventJSON: Codable {
     let reactionString: String
 
     
+}
+
+protocol NamedURL {
+    var display_name: String { get }
+    var file_url: String { get }
+}
+
+struct LibraryInfo: Codable, Hashable {
+    let library_uuid: UUID
+    let system_name: String
+    let localized_name: String
+}
+
+struct PublicImage: Codable, Hashable, NamedURL {
+    let library_uuid: UUID
+    let display_name: String
+    let file_url: String
+}
+
+struct CustomFile: Codable, Hashable, NamedURL {
+    let user_uuid: UUID
+    let display_name: String
+    let file_url: String
 }

@@ -29,8 +29,8 @@ class APIHandler: ObservableObject {
     private let apiClient: SupabaseClient
 
     @Published private(set) var eventList: [Event] = []
-    @Published private(set) var images: [String:[String: String]] = [:]
-    @Published private(set) var libraryEntries: [String] = []
+    @Published private(set) var images: [String:[NamedURL]] = [:]
+    @Published private(set) var availableLibraries: [LibraryInfo] = []
     @Published private(set) var presets: [String: Preset] = [:]
     
     private var fetchTimer: AnyCancellable?
@@ -94,27 +94,42 @@ class APIHandler: ObservableObject {
     }
 
     func upsertImage(imageData: Data, filename: String) async throws {
-        print("Delegating upsertion to ImageService, name: \(filename)")
-        try await imageService.upsertImage(imageData: imageData, name: filename)
+        do {
+            print("Delegating upsertion to ImageService, name: \(filename)")
+            try await imageService.upsertImage(imageData: imageData, name: filename)
+        } catch {
+            throw error
+        }
     }
 
     func fetchImageURLs() async throws {
         print("Fetching image URLs...")
-        let libraries = try await libraryService.checkLoadedLibraries()
+        let systemNames = try await libraryService.fetchConnectedSystemNames()
+        print("User has libs: \(systemNames)")
+        let libraries = resolveLibraries(from: systemNames, using: availableLibraries)
         let result = try await imageService.fetchAllImageMappings(libraries: libraries)
         self.images = result
     }
 
     func fetchExistingLibraries() async throws {
-        let entries = try await libraryService.fetchLibraries()
-        self.libraryEntries = entries
+        let result = try await libraryService.fetchAllLibraries()
+        self.availableLibraries = result
     }
 
-    func addLibrary(_ library: String) async throws {
-        try await libraryService.addLibrary(library)
-        let libraries = try await libraryService.checkLoadedLibraries()
-        let result = try await imageService.fetchAllImageMappings(libraries: libraries)
-        self.images = result
+    func addLibrary(_ systemName: String) async throws {
+        do {
+            try await libraryService.addLibrary(systemName: systemName, from: availableLibraries)
+            let libraries = try await libraryService.fetchAllLibraries()
+            let result = try await imageService.fetchAllImageMappings(libraries: libraries)
+            self.images = result
+        } catch {
+            if let postgrestError = error as? PostgrestError,
+               postgrestError.message.contains("duplicate key value violates unique constraint") {
+                throw APIError.duplicateLibrary
+            } else {
+                throw APIError.unknown(error)
+            }
+        }
     }
 
     func fetchPresets() async throws  {

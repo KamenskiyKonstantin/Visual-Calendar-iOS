@@ -31,7 +31,7 @@ struct EventEditor: View {
     @State private var fileImporterPresented = false
     @State private var isNameEditorShown = false
     @State private var addedFilename = "Unnamed"
-    @State private var addedFilePath = ""
+    @State private var addedFilePath: URL? = nil
     
     // MARK: - Event Details State
     @State private var title: String = ""
@@ -46,7 +46,8 @@ struct EventEditor: View {
     
 
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var APIHandler: APIHandler
+    @EnvironmentObject var APIHandler: APIHandler
+    @EnvironmentObject var warningHandler: GlobalWarningHandler
     
     let updateCallback: (Event) async throws-> Void
     
@@ -80,7 +81,6 @@ struct EventEditor: View {
                     fileImporterPresented: $fileImporterPresented,
                     mainImage: $mainImageURL,
                     sideImages: $sideImagesURL,
-                    api: APIHandler
                 )
 
                 Section {
@@ -99,7 +99,7 @@ struct EventEditor: View {
             .navigationTitle("Edit Event")
             .fileImporter(isPresented: $fileImporterPresented, allowedContentTypes: [.image], onCompletion: fileCallback)
             .sheet(isPresented: $isNameEditorShown) {
-                NameEditor($addedFilename, callback: terminateNameEditor)
+                NameEditor(name: $addedFilename, fileURL: $addedFilePath, isPresented: $isNameEditorShown)
             }
             .sheet(isPresented: $showPresetUploadWarning) {
                 DuplicatePresetWarning(
@@ -115,13 +115,12 @@ struct EventEditor: View {
     func fileCallback(_ result: Result<URL, Error>) {
         do {
             let file = try result.get()
-            addedFilePath = file.absoluteString
+            addedFilePath = file
             isNameEditorShown = true
         } catch {
             print(error.localizedDescription)
         }
     }
-    
     func forceSubmission() {
         beginSubmission(force: true)
     }
@@ -211,36 +210,6 @@ private extension EventEditor {
             return nil
         }
         
-    }
-    
-    func terminateNameEditor() {
-        Task {
-            // fetch file as data
-            print("Filepath fetched: \(addedFilePath)")
-            guard let url = URL(string: addedFilePath) else {
-                print("Invalid URL: \(addedFilePath)")
-                return
-            }
-            
-            
-
-            guard let data = handleURL(url) else {
-                print("Failed to load file.")
-                return
-            }
-
-            _ = addedFilePath.split(separator: "/").last?.split(separator: ".").last ?? "png"
-            let newName = "\(addedFilename)"
-            print("File otained, name acquired, uploading with name: \(newName)")
-
-            try await APIHandler.upsertImage(imageData: data, filename: newName)
-            try await APIHandler.fetchImageURLs()
-            
-            await MainActor.run {
-                isNameEditorShown = false
-            }
-            
-        }
     }
 }
 

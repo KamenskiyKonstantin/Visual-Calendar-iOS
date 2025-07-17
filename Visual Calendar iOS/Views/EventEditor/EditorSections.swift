@@ -8,21 +8,76 @@
 import SwiftUI
 import MCEmojiPicker
 
-struct NameEditor: View{
+struct NameEditor: View {
+    @EnvironmentObject var api: APIHandler
+    @EnvironmentObject var warningHandler: GlobalWarningHandler
+
     @Binding var name: String
-    var callback: () -> Void
-    init(_ name: Binding<String>, callback: @escaping () -> Void){
-        _name = name
-        self.callback = callback
-    }
-    var body: some View{
-        VStack{
-            Text("Please name your file")
-            TextField("Name", text: $name)
-            Button("Ok"){
-                self.callback()
+    @Binding var fileURL: URL?
+    @Binding var isPresented: Bool
+
+    @State private var isUploading = false
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Enter a name for your image")) {
+                    TextField("Image name", text: $name)
+                        .disabled(isUploading)
+                }
+
+                if isUploading {
+                    Section {
+                        ProgressView("Uploading...")
+                            .progressViewStyle(CircularProgressViewStyle())
+                    }
+                }
+
+                Section {
+                    Button("Upload") {
+                        Task {
+                            await uploadFile()
+                        }
+                    }
+                    .disabled(isUploading || name.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            .navigationTitle("Upload File")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isPresented = false
+                    }.disabled(isUploading)
+                }
             }
         }
+    }
+
+    private func uploadFile() async {
+        guard let url = fileURL else {
+            warningHandler.showWarning("No file selected.")
+            return
+        }
+
+        guard let data = try? Data(contentsOf: url) else {
+            warningHandler.showWarning("Could not read file.")
+            return
+        }
+
+        isUploading = true
+
+        do {
+            try await api.upsertImage(imageData: data, filename: name)
+            try await api.fetchImageURLs()
+            await MainActor.run {
+                isPresented = false
+            }
+        } catch {
+            warningHandler.showWarning(error.localizedDescription)
+        }
+
+        isUploading = false
     }
 }
 
@@ -93,8 +148,11 @@ struct EventContentSection: View {
     @Binding var fileImporterPresented: Bool
     @Binding var mainImage: String
     @Binding var sideImages: [String]
-    @ObservedObject var api: APIHandler
+    
     @State private var isLibrarySheetShown = false
+    
+    @EnvironmentObject var warningHandler: GlobalWarningHandler
+    @EnvironmentObject var api: APIHandler
     
     
     var body: some View {
@@ -148,21 +206,25 @@ struct PickerView: View{
     
     @Binding var selection: String
     
+    var groupedImageSections: [(group: String, items: [NamedURL])] {
+        api.images.map { (key, value) in
+            (group: key, items: value.sorted { $0.display_name < $1.display_name })
+        }.sorted { $0.group < $1.group }
+    }
+    
     var body: some View {
         HStack{
             Text(name)
             Spacer()
-            Picker("", selection: self.$selection) {
-                let imageURLS = self.api.images
+            Picker("", selection: $selection) {
                 Text("Select \(name)").tag("")
-                ForEach(imageURLS.keys.sorted(), id: \.self) { group in
-                    Section(header: Text(group)){
-                        ForEach(imageURLS[group]?.sorted(by: { $0.key < $1.key }) ?? [], id: \.key) { key, value in
-                            Text(key).tag(value)
+
+                ForEach(groupedImageSections, id: \.group) { section in
+                    Section(header: Text(section.group)) {
+                        ForEach(section.items, id: \.file_url) { item in
+                            Text(item.display_name).tag(item.file_url)
                         }
-                        
                     }
-                    
                 }
             }
             .pickerStyle(MenuPickerStyle())
@@ -175,33 +237,47 @@ struct PickerView: View{
 struct LibrarySelectionSheet: View {
     @ObservedObject var api: APIHandler
     var dismiss: () -> Void
-    
+
+    @EnvironmentObject var warningHandler: GlobalWarningHandler
+    @State private var isProcessing = false
+    @State private var selectedLibrary: String?
+
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(api.libraryEntries, id: \.self) { entry in
-                    Button(entry) {
-                        Task {
-                            do {
-                                try await api.addLibrary(entry)
-                                dismiss()
-                            } catch {
-                                print("Error adding library: \(error)")
-                            }
-                        }
+        List(api.availableLibraries, id: \.self) { library in
+            Button {
+                selectedLibrary = library.system_name
+                isProcessing = true
+                Task {
+                    await handleAdd(library: library)
+                }
+            } label: {
+                HStack {
+                    Text(library.localized_name)
+                    Spacer()
+                    if isProcessing && selectedLibrary == library.system_name {
+                        ProgressView()
                     }
                 }
             }
-            .navigationTitle("Add Public Library")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
+            .disabled(isProcessing)
+        }
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel", action: dismiss)
+                    .disabled(isProcessing)
             }
         }
+    }
+
+    private func handleAdd(library: LibraryInfo) async {
+        do {
+            try await api.addLibrary(library.system_name)
+            dismiss()
+        } catch {
+            warningHandler.showWarning(error.localizedDescription)
+        }
+        isProcessing = false
+        selectedLibrary = nil
     }
 }
 
