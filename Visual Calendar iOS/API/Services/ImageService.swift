@@ -16,65 +16,78 @@ class ImageService: ObservableObject {
         self.client = client
     }
 
-    // MARK: - User Images
-    
+    /// Current user's UUID
+    private var uid: UUID {
+        get async throws {
+            try await client.auth.user().id
+        }
+    }
+}
+
+// MARK: - User Images
+
+extension ImageService {
+
     func isFilenameAvailable(_ name: String) async throws -> Bool {
-        let uid = try await client.auth.user().id
+        let userID = try await uid
 
         let response = try await client
             .from("custom_files")
-            .select("id")  // Only need to know if any entry exists
-            .eq("user_uuid", value: uid)
+            .select("id")
+            .eq("user_uuid", value: userID)
             .eq("display_name", value: name)
             .limit(1)
             .execute()
 
         let rows = try JSONSerialization.jsonObject(with: response.data, options: []) as? [[String: Any]]
-        return (rows?.isEmpty ?? true)
+        return rows?.isEmpty ?? true
     }
 
     func fetchUserImages() async throws -> [CustomFile] {
-        let uid = try await client.auth.user().id
+        let userID = try await uid
 
         let response = try await client
             .from("custom_files")
             .select("user_uuid, display_name, file_url")
-            .eq("user_uuid", value: uid)
+            .eq("user_uuid", value: userID)
             .execute()
 
         return try JSONDecoder().decode([CustomFile].self, from: response.data)
     }
 
     func upsertImage(imageData: Data, name: String) async throws {
-        let uid = try await client.auth.user().id
+        let userID = try await uid
         let timestamp = Int(Date().timeIntervalSince1970)
         let filename = "\(timestamp).png"
-        let path = "\(uid.uuidString)/images/\(filename)"
-        
-        // check for availabitliy
+        let path = "\(userID.uuidString)/images/\(filename)"
+
+        // Validate availability
         if try await !isFilenameAvailable(name) {
             throw APIError.duplicateFile
         }
-        // upload
+
+        // Upload file
         try await client.storage.from("user_data").upload(
             path: path,
             file: imageData,
             options: .init(cacheControl: "0", contentType: "image/png", upsert: true)
         )
-        // read URL
 
+        // Register in database
         let fileURL = try client.storage.from("user_data").getPublicURL(path: path).absoluteString
-        
-        // insert to index
+
         _ = try await client
             .from("custom_files")
             .insert([
-                ["user_uuid": uid.uuidString, "display_name": name, "file_url": fileURL]
+                ["user_uuid": userID.uuidString, "display_name": name, "file_url": fileURL]
             ])
             .execute()
     }
+}
 
-    // MARK: - Library Images
+// MARK: - Library Images
+
+extension ImageService {
 
     func fetchLibraryImages(_ library: LibraryInfo) async throws -> [PublicImage] {
         let response = try await client
@@ -89,12 +102,24 @@ class ImageService: ObservableObject {
     func fetchAllImageMappings(libraries: [LibraryInfo]) async throws -> [String: [NamedURL]] {
         var result: [String: [NamedURL]] = [:]
 
-        for library in libraries {
-            
-            result[library.localized_name] = try await fetchLibraryImages(library)
+        try await withThrowingTaskGroup(of: (String, [NamedURL]).self) { group in
+            for library in libraries {
+                group.addTask {
+                    let images = try await self.fetchLibraryImages(library)
+                    return (library.localized_name, images)
+                }
+            }
+
+            group.addTask {
+                let userImages = try await self.fetchUserImages()
+                return ("user", userImages)
+            }
+
+            for try await (label, images) in group {
+                result[label] = images
+            }
         }
 
-        result["user"] = try await fetchUserImages()
         return result
     }
 }
