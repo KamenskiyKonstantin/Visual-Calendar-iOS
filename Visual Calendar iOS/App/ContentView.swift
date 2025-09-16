@@ -21,7 +21,7 @@ struct LoadingView: View {
 
 struct ContentView: View {
     @EnvironmentObject var api: APIHandler
-    @EnvironmentObject var warningManager: GlobalWarningHandler
+    @EnvironmentObject var warningManager: WarningHandler
     @EnvironmentObject var viewSwitcher: ViewSwitcher
 
     
@@ -32,7 +32,7 @@ struct ContentView: View {
             case .selectRole:
                 AnyView(SelectRoleView(viewSwitcher: viewSwitcher))
             case let .calendar(isAdult):
-                AnyView(CalendarView(api: api,
+                AnyView(CalendarView(
                              viewSwitcher: viewSwitcher,
                              isParentMode: isAdult,))
             case .loading:
@@ -40,7 +40,6 @@ struct ContentView: View {
             
         }
     }
-        
     
     var body: some View {
         currentView
@@ -85,56 +84,67 @@ class ViewSwitcher: ObservableObject {
         activeView = .login
     }
     
-    func switchToCalendar(isAdult: Bool = false) {
+    func switchToCalendar(isAdult: Bool = false) async throws {
         guard api.isAuthenticated else {
             activeView = .login
             return
         }
-        
+
         activeView = .loading
+
+        try await api.fetchExistingLibraries()
         
-        Task {
-            do {
-                try await api.fetchEvents()
-                try await api.addLibrary("StandardLibrary")
-                try await api.fetchImageURLs()
-                try await api.fetchExistingLibraries()
-                try await api.fetchPresets()
-                
-                await MainActor.run {
-                    activeView = .calendar(isAdult: isAdult)
-                }
-                
-            } catch {
-                print("Error switching to main app: \(error.localizedDescription)")
-                try await api.logout()
-                activeView = .login
-            }
+        print("These libraries exist: \(api.availableLibraries)")
+
+        let result = await Result { try await api.addLibrary("standard_library") }
+        if case .failure(AppError.duplicateLibrary) = result {
+            print("std library already added, ignoring")
+        } else {
+            try result.get()  // Propagate any other failure
+        }
+
+        try await api.fetchImageURLs()
+        try await api.fetchEvents()
+        try await api.fetchPresets()
+
+        await MainActor.run {
+            activeView = .calendar(isAdult: isAdult)
         }
     }
-    
     func switchToLoading() {
         activeView = .loading
     }
 }
 
 
-
-class GlobalWarningHandler: ObservableObject {
+@MainActor
+class WarningHandler: ObservableObject {
     @Published var message: String = ""
     @Published var isShown: Bool = false
-    
-    
+
+
     func showWarning(_ message: String) {
         self.message = message
         self.isShown = true
     }
-    
+
     func hideWarning() {
-        self.message = ""
-        self.isShown = false
+        message = ""
+        isShown = false
+    }
+
+    func forceLogout(with message: String? = nil, api: APIHandler, viewSwitcher: ViewSwitcher) {
+        if let msg = message {
+            showWarning(msg)
+        }
+        Task{
+            do {
+                try await api.logout()
+                viewSwitcher.switchToLogin()
+                
+            }
+            catch {}
+        }
     }
 }
-
-
     

@@ -13,7 +13,8 @@ struct CalendarView: View {
     let HStackXOffset = defaultHStackOffset
     
     // MARK: Dependencies
-    @ObservedObject var api: APIHandler
+    @EnvironmentObject var api: APIHandler
+    @EnvironmentObject var warningHandler: WarningHandler
     let viewSwitcher: ViewSwitcher
     
     // MARK: State Properties
@@ -28,6 +29,7 @@ struct CalendarView: View {
     //MARK: Sheet showers
     @State var logoutFormShown: Bool = false
     
+    @EnvironmentObject var warninghandler: WarningHandler
     
     var body: some View {
         NavigationStack{
@@ -45,7 +47,6 @@ struct CalendarView: View {
                             Color.clear.frame(width: HStackXOffset)
                             CalendarTable(
                                 minuteHeight: minuteHeight,
-                                api: api,
                                 currentDate: $currentDate,
                                 mode: $mode,
                                 deleteMode: $deleteMode)
@@ -62,7 +63,7 @@ struct CalendarView: View {
                             titleVisibility: .visible
             ) {
                             Button("OK") {
-                                Task{
+                                AsyncExecutor.runWithWarningHandler(warningHandler: warninghandler, api: api, viewSwitcher: viewSwitcher) {
                                     try await api.logout()
                                     viewSwitcher.switchToLogin()
                                 }
@@ -77,7 +78,6 @@ struct CalendarView: View {
                         calendarMode: $mode,
                         currentDate: $currentDate,
                         deleteMode: $deleteMode,
-                        api: api,
                         isParentMode: isParentMode,
                         updateEvents: updateEvents)})
 
@@ -155,99 +155,107 @@ struct CalendarBackgroundView: View{
 
 
 
-struct DetailView: View{
-    @StateObject var event: Event
-    let api: APIHandler
+struct DetailView: View {
+    let eventID: UUID
+    @EnvironmentObject var api: APIHandler
+    @EnvironmentObject var warningHandler: WarningHandler
+    @EnvironmentObject var viewSwitcher: ViewSwitcher
 
-    var body: some View{
-        VStack{
-            
+    var event: Event? {
+        api.eventList.first(where: { $0.id == eventID })
+    }
 
-            AsyncImage(url:URL(string:event.mainImageURL)){
-                asyncImage in
-                if let image = asyncImage.image{
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding()
-                 }
-            }
-                
-            Divider()
-            ForEach(event.sideImagesURL, id: \.self){
-                sideImage in
-                HStack{
-                    AsyncImage(url:URL(string:sideImage)){
-                        asyncImage in
-                        if let image = asyncImage.image{
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .padding()
-                         }
-                    }
-                    Spacer()
-                    
-                }
-            }
-            
-            HStack(spacing: 12) {
-                ForEach(EventReaction.allCases.filter { $0 != .none }, id: \.self) { reaction in
-                    Button(action: {
-                        let newReaction = (self.event.reaction == reaction) ? .none : reaction
-                        self.updateEventReaction(newReaction)
-                    }) {
-                        if let image = emojiToImage(reaction.emoji, fontSize: 36) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 44, height: 44)
-                                .padding(8)
-                                .background(
-                                    self.event.reaction == reaction
-                                    ? Color.blue.opacity(0.2)
-                                    : Color.gray.opacity(0.1)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(self.event.reaction == reaction ? Color.blue : Color.clear, lineWidth: 1.5)
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle()) // Avoids default tap effect
-                }
-            }
-
+    var body: some View {
+        if let event = event {
+            DetailViewBody(event: event)
+        } else {
+            Image(uiImage: emojiToImage("❌", fontSize: 64) ?? UIImage())
         }
     }
-    
-    func updateEventReaction(_ newReaction: EventReaction) {
-        let new_event = event
-        new_event.reaction = newReaction
-        Task{
-            do{
-                var events = api.eventList
-                if let index = events.firstIndex(where: { $0.id == new_event.id }) {
-                    events[index] = new_event
-                }
-                else {
-                    return
-                }
-                event.reaction = newReaction
-                try await api.upsertEvents(events)
-                
-                
+
+    @ViewBuilder
+    func DetailViewBody(event: Event) -> some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                mainImage(event: event)
+                Divider()
+                sideImages(event: event)
+                Divider()
+                reactionButtons(event: event)
             }
-            catch {
-                print("Error updating event reaction: \(error.localizedDescription)")
+            .padding()
+        }
+    }
+
+    private func mainImage(event: Event) -> some View {
+        AsyncImage(url: URL(string: event.mainImageURL)) { phase in
+            if let image = phase.image {
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .cornerRadius(12)
+            }
+        }
+    }
+
+    private func sideImages(event: Event) -> some View {
+        VStack {
+            ForEach(event.sideImagesURL, id: \.self) { url in
+                AsyncImage(url: URL(string: url)) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(8)
+                    }
+                }
+            }
+        }
+    }
+
+    private func reactionButtons(event: Event) -> some View {
+        HStack(spacing: 12) {
+            ForEach(EventReaction.allCases.filter { $0 != .none }, id: \.self) { reaction in
+                Button {
+                    let newReaction = (event.reaction == reaction) ? .none : reaction
+                    updateEventReaction(newReaction)
+                } label: {
+                    emojiButton(for: reaction, selected: event.reaction == reaction)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+    }
+
+    private func emojiButton(for reaction: EventReaction, selected: Bool) -> some View {
+        let image = emojiToImage(reaction.emoji, fontSize: 36) ?? UIImage()
+
+        return Image(uiImage: image)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 44, height: 44)
+            .padding(8)
+            .background(selected ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(selected ? Color.blue : Color.clear, lineWidth: 1.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+    }
+
+    func updateEventReaction(_ newReaction: EventReaction) {
+        guard var new_event = event else { return }
+        new_event.reaction = newReaction
+
+        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: api, viewSwitcher: viewSwitcher) {
+            var events = api.eventList
+            if let index = events.firstIndex(where: { $0.id == new_event.id }) {
+                events[index] = new_event
+                try await api.upsertEvents(events)
             }
         }
     }
 }
-
-
-

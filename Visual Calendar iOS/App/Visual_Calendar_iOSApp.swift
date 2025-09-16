@@ -9,9 +9,20 @@ import SwiftUI
 
 @main
 struct Visual_Calendar_iOSApp: App {
+    
+
+    
+    
     private let api = APIHandler()
-    private let warningManager = GlobalWarningHandler()
     private let viewSwitcher: ViewSwitcher
+    private let warningManager = WarningHandler()
+    
+    func logoutSequence() async throws {
+        try await api.logout()
+        viewSwitcher.switchToLogin()
+    }
+
+
 
     init() {
         self.viewSwitcher = ViewSwitcher(api: api)

@@ -15,29 +15,10 @@ struct LoginView: View {
     
     @State private var isCheckingSession = true
     
-    @EnvironmentObject var warningManager: GlobalWarningHandler
+    @EnvironmentObject var warningManager: WarningHandler
     @EnvironmentObject var APIinteractor: APIHandler
     @EnvironmentObject var viewSwitcher: ViewSwitcher
-    
 
-    
-    func login(){
-        Task{
-            do{
-                try await APIinteractor.login(email:email, password:password)
-                if APIinteractor.isAuthenticated{
-                    print("Logged in, redirecting...")
-                    self.viewSwitcher.switchToSelectRole()
-                }
-            }
-            catch{
-                warningManager.showWarning("Wrong email or password")
-            }
-        }
-       
-    }
-    
-    
     var body: some View {
         Group {
             if isCheckingSession {
@@ -49,32 +30,39 @@ struct LoginView: View {
                         HStack {
                             Spacer()
                             VStack {
-                                TextField("E-mail",
-                                          text: $email)
+                                TextField("E-mail", text: $email)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
 
-                                SecureField("Password",
-                                            text: $password)
+                                SecureField("Password", text: $password)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
                             }
-                            .frame(width: 275, height: 100, alignment: .center)
+                            .frame(width: 275, height: 100)
                             Spacer()
                         }
+
                         HStack {
-                            Button(action: login) {
-                                Text("Log in")
-                                    .frame(width: 250)
+                            Button("Log in") {
+                                AsyncExecutor.runWithWarningHandler(warningHandler: warningManager, api: APIinteractor, viewSwitcher: viewSwitcher) {
+                                    try await APIinteractor.login(email: email, password: password)
+                                    if APIinteractor.isAuthenticated {
+                                        viewSwitcher.switchToSelectRole()
+                                    } else {
+                                        throw AppError.authInvalidCredentials
+                                    }
+                                }
                             }
+                            .frame(width: 250)
                             .buttonBorderShape(.capsule)
                             .background(Color.blue)
                             .cornerRadius(20)
                             .buttonStyle(BorderedButtonStyle())
                             .foregroundColor(.white)
                         }
+
                         HStack {
                             Spacer()
                             NavigationLink {
@@ -86,18 +74,24 @@ struct LoginView: View {
                             .buttonStyle(.borderless)
                             Spacer()
                         }
+
                         Spacer()
                     }
                 }
             }
         }
         .task {
-            if APIinteractor.isAuthenticated {
-                viewSwitcher.switchToSelectRole()
-            } else {
-                warningManager.showWarning("Could not restore session")
+            AsyncExecutor.runWithWarningHandler(warningHandler: warningManager,api: APIinteractor, viewSwitcher: viewSwitcher) {
+                defer {
+                    isCheckingSession = false
+                }
+                if APIinteractor.isAuthenticated {
+                    try await APIinteractor.verifySession()
+                    viewSwitcher.switchToSelectRole()  // View logic stays in the view
+                } else {
+                    throw AppError.authSessionUnavailable
+                }
             }
-            isCheckingSession = false
         }
     }
 }

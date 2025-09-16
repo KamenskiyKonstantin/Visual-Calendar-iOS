@@ -8,13 +8,12 @@
 import SwiftUI
 
 struct EditButtonView: View {
-    @ObservedObject var APIHandler: APIHandler
+    @EnvironmentObject var APIHandler: APIHandler
     var updateEvents: (Event) async throws-> Void
     
     var body: some View {
         NavigationLink(destination:
-                        EventEditor(APIHandler:APIHandler,
-                                    updateCallback:updateEvents)){
+                        EventEditor(updateCallback:updateEvents)){
             RoundedRectangle(cornerRadius: 10)
                 .foregroundColor(Color(.systemGreen))
                 .overlay(alignment: .center){
@@ -108,7 +107,7 @@ struct ButtonPanel: View {
     @Binding var currentDate: Date
     @Binding var deleteMode: Bool
     
-    @ObservedObject var api: APIHandler
+    @EnvironmentObject var api: APIHandler
     @State var isParentMode: Bool
     @State var updateEvents: (Event) async throws -> Void
     
@@ -120,7 +119,6 @@ struct ButtonPanel: View {
             Spacer()
             if isParentMode {
                 EditButtonView(
-                    APIHandler: api,
                     updateEvents: self.updateEvents
                 )
                 DeleteButtonView(deleteMode: $deleteMode)

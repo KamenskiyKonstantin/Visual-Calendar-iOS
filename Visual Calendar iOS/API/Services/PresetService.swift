@@ -20,27 +20,18 @@ class PresetService {
         let uid = try await client.auth.user().id
         let path = "\(uid.uuidString)/presets.json"
 
-        var userPresets: [String: Preset] = [:]
-        do {
-            let data = try await client.storage.from("user_data").download(path: path)
-            userPresets = try JSONDecoder().decode([String: Preset].self, from: data)
-        } catch {
-            print("Error decoding user presets: \(error)")
-        }
+        // Fetch user presets
+        let userData = try await client.storage.from("user_data").download(path: path)
+        print(String(data: userData, encoding: .utf8) ?? "No user data")
+        let userPresets = try JSONDecoder().decode([String: Preset].self, from: userData)
 
-        let officialItems = try await client.storage.from("presets").list()
-        var officialPresets: [String: Preset] = [:]
-        for item in officialItems where item.name.hasSuffix(".json") {
-            do {
-                let data = try await client.storage.from("presets").download(path: item.name)
-                let decoded = try JSONDecoder().decode([String: Preset].self, from: data)
-                decoded.forEach { officialPresets[$0.key] = $0.value }
-            } catch {
-                print("Failed to decode official preset: \(item.name), error: \(error)")
-            }
-        }
+        // Fetch official presets (from a single file)
+        let officialData = try await client.storage.from("presets").download(path: "presets.json")
+        print(String(data: officialData, encoding: .utf8) ?? "No official data")
+        let officialPresets = try JSONDecoder().decode([String: Preset].self, from: officialData)
+        
 
-        print("Loaded \(officialPresets.count) official and \(userPresets.count) user presets.")
+        // Merge user presets (override if keys overlap)
         return officialPresets.merging(userPresets) { _, user in user }
     }
 
@@ -69,12 +60,7 @@ class PresetService {
         let uid = try await client.auth.user().id
         let path = "\(uid.uuidString)/presets.json"
 
-        do {
-            let data = try await client.storage.from("user_data").download(path: path)
-            return try JSONDecoder().decode([String: Preset].self, from: data)
-        } catch {
-            print("Failed to fetch user presets: \(error)")
-            return [:]
-        }
+        let data = try await client.storage.from("user_data").download(path: path)
+        return try JSONDecoder().decode([String: Preset].self, from: data)
     }
 }

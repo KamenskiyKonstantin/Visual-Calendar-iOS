@@ -20,7 +20,7 @@ struct EventEditor: View {
     
     // MARK: - Date State
     @State private var dateStart = Date()
-    @State private var dateEnd = Date()
+    @State private var dateEnd = Date().addingTimeInterval(TimeInterval(60*60))
     @State private var repeatType: EventRepetitionType = .once
     
     // MARK: - Image State
@@ -31,7 +31,7 @@ struct EventEditor: View {
     @State private var fileImporterPresented = false
     @State private var isNameEditorShown = false
     @State private var addedFilename = "Unnamed"
-    @State private var addedFilePath = ""
+    @State private var addedFilePath: URL? = nil
     
     // MARK: - Event Details State
     @State private var title: String = ""
@@ -46,7 +46,10 @@ struct EventEditor: View {
     
 
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject var APIHandler: APIHandler
+    
+    @EnvironmentObject var APIHandler: APIHandler
+    @EnvironmentObject var warningHandler: WarningHandler
+    @EnvironmentObject var viewSwitcher: ViewSwitcher
     
     let updateCallback: (Event) async throws-> Void
     
@@ -80,7 +83,6 @@ struct EventEditor: View {
                     fileImporterPresented: $fileImporterPresented,
                     mainImage: $mainImageURL,
                     sideImages: $sideImagesURL,
-                    api: APIHandler
                 )
 
                 Section {
@@ -99,7 +101,7 @@ struct EventEditor: View {
             .navigationTitle("Edit Event")
             .fileImporter(isPresented: $fileImporterPresented, allowedContentTypes: [.image], onCompletion: fileCallback)
             .sheet(isPresented: $isNameEditorShown) {
-                NameEditor($addedFilename, callback: terminateNameEditor)
+                NameEditor(name: $addedFilename, fileURL: $addedFilePath, isPresented: $isNameEditorShown)
             }
             .sheet(isPresented: $showPresetUploadWarning) {
                 DuplicatePresetWarning(
@@ -115,13 +117,12 @@ struct EventEditor: View {
     func fileCallback(_ result: Result<URL, Error>) {
         do {
             let file = try result.get()
-            addedFilePath = file.absoluteString
+            addedFilePath = file
             isNameEditorShown = true
         } catch {
             print(error.localizedDescription)
         }
     }
-    
     func forceSubmission() {
         beginSubmission(force: true)
     }
@@ -131,21 +132,27 @@ struct EventEditor: View {
             updateEvents()
             return
         }
-        Task{
+        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: APIHandler, viewSwitcher: viewSwitcher) {
             try await APIHandler.fetchPresets()
-            if APIHandler.presets.keys.contains(title) && !force{
-                showPresetUploadWarning = true
+            if APIHandler.presets.keys.contains(title) && !force {
+                await MainActor.run {
+                    showPresetUploadWarning = true
+                }
                 return
             }
+            
             let current_preset = Preset(
                 selectedSymbol: selectedSymbol,
                 backgroundColor: backgroundColor,
                 mainImageURL: mainImageURL,
-                sideImageURLs: sideImagesURL,
-                )
-            try await APIHandler.upsertPresets(title: title, preset: current_preset)
-            updateEvents()
+                sideImageURLs: sideImagesURL
+            )
             
+            try await APIHandler.upsertPresets(title: title, preset: current_preset)
+            
+            await MainActor.run {
+                updateEvents()
+            }
         }
         
     }
@@ -155,24 +162,20 @@ struct EventEditor: View {
         print(repeatType)
         let event = generateEvent()
         print(event.repetitionType)
-        Task {
-                var currentEvents = APIHandler.eventList
-                
+        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: APIHandler, viewSwitcher: viewSwitcher) {
+            var currentEvents = APIHandler.eventList
 
-                if let index = currentEvents.firstIndex(where: { $0.id == event.id }) {
-                    currentEvents[index] = event // Update existing
-                } else {
-                    currentEvents.append(event) // Add new
-                }
-            do {
-                try await APIHandler.upsertEvents(currentEvents)
-                await MainActor.run {
-                    dismiss()
-                }
-            } catch {
-                print("Error upserting events: \(error)")
+            if let index = currentEvents.firstIndex(where: { $0.id == event.id }) {
+                currentEvents[index] = event
+            } else {
+                currentEvents.append(event)
             }
-            
+
+            try await APIHandler.upsertEvents(currentEvents)
+
+            await MainActor.run {
+                dismiss()
+            }
         }
     }
     
@@ -184,6 +187,7 @@ struct EventEditor: View {
 
 private extension EventEditor {
     func applyPreset(title: String, preset: Preset) {
+        print(preset.mainImageURL)
         self.title = title
         selectedSymbol = preset.selectedSymbol
         backgroundColor = preset.backgroundColor
@@ -212,36 +216,6 @@ private extension EventEditor {
         }
         
     }
-    
-    func terminateNameEditor() {
-        Task {
-            // fetch file as data
-            print("Filepath fetched: \(addedFilePath)")
-            guard let url = URL(string: addedFilePath) else {
-                print("Invalid URL: \(addedFilePath)")
-                return
-            }
-            
-            
-
-            guard let data = handleURL(url) else {
-                print("Failed to load file.")
-                return
-            }
-
-            _ = addedFilePath.split(separator: "/").last?.split(separator: ".").last ?? "png"
-            let newName = "\(addedFilename)"
-            print("File otained, name acquired, uploading with name: \(newName)")
-
-            try await APIHandler.upsertImage(imageData: data, filename: newName)
-            try await APIHandler.fetchImageURLs()
-            
-            await MainActor.run {
-                isNameEditorShown = false
-            }
-            
-        }
-    }
 }
 
 private extension EventEditor {
@@ -250,7 +224,6 @@ private extension EventEditor {
             systemImage: selectedSymbol,
             dateTimeStart: dateStart,
             dateTimeEnd: dateEnd,
-            minuteHeight: defaultMinuteHeight,
             mainImageURL: mainImageURL,
             sideImagesURL: sideImagesURL,
             id:UUID(),

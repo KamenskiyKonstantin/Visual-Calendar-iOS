@@ -15,7 +15,8 @@ public enum CalendarMode {
 
 struct CalendarTable: View {
     let minuteHeight: Int
-    @ObservedObject var api: APIHandler
+    @EnvironmentObject var api: APIHandler
+    @EnvironmentObject var warningHandler: WarningHandler
     @Binding var currentDate: Date
     @Binding var mode: CalendarMode
     @Binding var deleteMode: Bool
@@ -45,7 +46,7 @@ struct CalendarTable: View {
                     Color.clear
                     
                     ForEach(eventsForDay, id: \.self) { event in
-                        event.getVisibleObject(deleteMode: deleteMode, api: api)
+                        EventView(eventID: event.id, deleteMode: deleteMode)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -59,7 +60,7 @@ struct CalendarTable: View {
             ZStack(alignment: .top) {
                 Color.clear
                 ForEach(eventsAtGivenDay(currentDate), id: \.self) { event in
-                    event.getVisibleObject(deleteMode: deleteMode, api: api)
+                    EventView(eventID: event.id, deleteMode: deleteMode)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
