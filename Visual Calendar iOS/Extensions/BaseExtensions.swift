@@ -13,6 +13,16 @@ extension Date {
         let components = DateComponents(year: year, month: month, day: day, hour: hour, minute: minute)
         return calendar.date(from: components) ?? .now
     }
+    static func fromArray(_ components: [Int]) -> Date? {
+        guard components.count == 5 else { return nil }
+        return Self.from(
+            day: components[0],
+            month: components[1],
+            year: components[2],
+            hour: components[3],
+            minute: components[4]
+        )
+    }
 
     func toIntList() -> [Int] {
         let calendar = Calendar.current

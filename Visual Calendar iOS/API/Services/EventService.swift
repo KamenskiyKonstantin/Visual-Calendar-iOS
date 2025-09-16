@@ -20,14 +20,9 @@ class EventService: ObservableObject {
         let uid = try await client.auth.user().id
         let path = "\(uid.uuidString)/calendar.json"
         
-        do {
-            let data = try await client.storage.from("user_data").download(path: path)
-            let calendar = try JSONDecoder().decode(CalendarJSON.self, from: data)
-            return calendar.events.map { $0.toEvent() }
-        } catch {
-            print("Error fetching or decoding calendar.json: \(error)")
-            return []   
-        }
+        let data = try await client.storage.from("user_data").download(path: path)
+        let calendar = try JSONDecoder().decode(CalendarJSON.self, from: data)
+        return calendar.events.map { $0.toEvent() }
     }
 
     func upsertEvents(_ events: [Event]) async throws {

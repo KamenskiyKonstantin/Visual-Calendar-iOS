@@ -42,121 +42,161 @@ class APIHandler: ObservableObject {
             options: SupabaseClientOptions(
                 auth: .init(
                     storage: KeychainLocalStorage(service: "com.visualcalendar.supabase", accessGroup: nil),
-                    flowType: .pkce
+                    flowType: .pkce,
+                    
                 )
-    )
+            )
         )
+
         self.apiClient = client
         self.authService = AuthService(client: client)
         self.imageService = ImageService(client: client)
         self.eventService = EventService(client: client)
         self.libraryService = LibraryService(client: client)
         self.presetService = PresetService(client: client)
-        startPeriodicFetch()
         
+        startPeriodicFetch()
     }
 
     var isAuthenticated: Bool {
         authService.isAuthenticated
     }
 
+    // MARK: - Auth
+
     func signUp(email: String, password: String) async throws {
-        try await authService.signUp(email: email, password: password)
+        try await wrap("signUp", requiresAuth: false) {
+            try await authService.signUp(email: email, password: password)
+        }
     }
 
     func login(email: String, password: String) async throws {
-        try await authService.login(email: email, password: password)
+        try await wrap("login", requiresAuth: false) {
+            try await authService.login(email: email, password: password)
+        }
     }
 
     func logout() async throws {
-        try await authService.logout()
+        try await wrap("logout") {
+            try await authService.logout()
+        }
     }
     
+    func verifySession() async throws {
+        try await wrap("verifySession", requiresAuth: false) {
+            try await authService.verifySession()
+        }
+    }
+
+    // MARK: - Events
+
     func fetchEvents() async throws {
-        print("[\(Date.now.description)] Fetching events")
-        let events = try await eventService.fetchEvents()
-        print("Total of \(events.count) events fetched")
-        self.eventList = events
-        
+        try await wrap("fetchEvents") {
+            let events = try await eventService.fetchEvents()
+            self.eventList = events
+        }
     }
 
     func upsertEvents(_ events: [Event]) async throws {
-        print("[\(Date.now.description)] Upserting a total of \(events.count) events")
-        self.eventList = events
-        try await eventService.upsertEvents(events)
-        
-    }
-    
-    func deleteEvent(_ uid: UUID) async throws{
-        self.eventList.removeAll { $0.id == uid }
-        try await eventService.upsertEvents(self.eventList)
-        
+        try await wrap("upsertEvents") {
+            self.eventList = events
+            try await eventService.upsertEvents(events)
+        }
     }
 
+    func deleteEvent(_ uid: UUID) async throws {
+        try await wrap("deleteEvent") {
+            self.eventList.removeAll { $0.id == uid }
+            try await eventService.upsertEvents(self.eventList)
+        }
+    }
+
+    // MARK: - Images
+
     func upsertImage(imageData: Data, filename: String) async throws {
-        do {
-            print("Delegating upsertion to ImageService, name: \(filename)")
+        try await wrap("upsertImage(\(filename))") {
             try await imageService.upsertImage(imageData: imageData, name: filename)
-        } catch {
-            throw error
         }
     }
 
     func fetchImageURLs() async throws {
-        print("Fetching image URLs...")
-        let systemNames = try await libraryService.fetchConnectedSystemNames()
-        print("User has libs: \(systemNames)")
-        let libraries = resolveLibraries(from: systemNames, using: availableLibraries)
-        let result = try await imageService.fetchAllImageMappings(libraries: libraries)
-        self.images = result
+        try await wrap("fetchImageURLs") {
+            let systemNames = try await libraryService.fetchConnectedSystemNames()
+            let libraries = resolveLibraries(from: systemNames, using: availableLibraries)
+            let result = try await imageService.fetchAllImageMappings(libraries: libraries)
+            self.images = result
+        }
     }
 
+    // MARK: - Libraries
+
     func fetchExistingLibraries() async throws {
-        let result = try await libraryService.fetchAllLibraries()
-        self.availableLibraries = result
+        try await wrap("fetchExistingLibraries") {
+            let result = try await libraryService.fetchAllLibraries()
+            self.availableLibraries = result
+        }
     }
 
     func addLibrary(_ systemName: String) async throws {
-        do {
+        try await wrap("addLibrary(\(systemName))") {
             try await libraryService.addLibrary(systemName: systemName, from: availableLibraries)
             let libraries = try await libraryService.fetchAllLibraries()
             let result = try await imageService.fetchAllImageMappings(libraries: libraries)
             self.images = result
-        } catch {
-            if let postgrestError = error as? PostgrestError,
-               postgrestError.message.contains("duplicate key value violates unique constraint") {
-                throw APIError.duplicateLibrary
-            } else {
-                throw APIError.unknown(error)
+        }
+    }
+
+    // MARK: - Presets
+
+    func fetchPresets() async throws {
+        try await wrap("fetchPresets") {
+            let loaded = try await presetService.fetchPresets()
+            for preset_name in loaded.keys {
+                print("Preset: \(preset_name), URL: \(loaded[preset_name]!.mainImageURL)")
             }
+            self.presets = loaded
         }
     }
 
-    func fetchPresets() async throws  {
-        let presets = try await presetService.fetchPresets()
-        self.presets = presets
-    }
-    
     func upsertPresets(title: String, preset: Preset) async throws {
-        _ = try await presetService.uploadUserPreset(title: title, preset: preset)
-        self.presets[title] = preset
+        try await wrap("upsertPresets(\(title))") {
+            _ = try await presetService.uploadUserPreset(title: title, preset: preset)
+            self.presets[title] = preset
+        }
     }
-    
-}
 
-extension APIHandler {
+    // MARK: - Timer Polling
+
     func startPeriodicFetch() {
-            fetchTimer = Timer.publish(every: 60, on: .main, in: .common)
-                .autoconnect()
-                .sink { [weak self] _ in
-                    Task{
-                        try await self?.fetchEvents()
-                    }
+        fetchTimer = Timer.publish(every: 60, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                Task {
+                    try? await self?.fetchEvents()
                 }
+            }
+    }
+
+    func stopPeriodicFetch() {
+        fetchTimer?.cancel()
+        fetchTimer = nil
+    }
+
+    // MARK: - Error Classifier Wrapper
+
+    private func wrap<T>(
+        _ job: String,
+        requiresAuth: Bool = true,
+        _ operation: () async throws -> T
+    ) async throws -> T {
+        do {
+            if requiresAuth {
+                try await verifySession()
+            }
+
+            return try await operation()
+        } catch {
+            try ErrorClassifier.classifyAndThrow(error, job: job) // surface error to layers up
         }
-        
-        func stopPeriodicFetch() {
-            fetchTimer?.cancel()
-            fetchTimer = nil
-        }
+    }
 }

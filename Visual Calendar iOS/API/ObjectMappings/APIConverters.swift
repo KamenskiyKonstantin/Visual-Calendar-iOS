@@ -50,8 +50,8 @@ extension EventJSON {
     func toEvent() -> Event {
         return Event(
             systemImage: systemImage,
-            dateTimeStart: Date.from(day: timeStart[0], month: timeStart[1], year: timeStart[2], hour: timeStart[3], minute: timeStart[4]),
-            dateTimeEnd: Date.from(day: timeEnd[0], month: timeEnd[1], year: timeEnd[2], hour: timeEnd[3], minute: timeEnd[4]),
+            dateTimeStart: Date.fromArray(timeStart) ?? Date(),
+            dateTimeEnd: Date.fromArray(timeEnd) ?? Date(),
             mainImageURL: mainImageURL,
             sideImagesURL: sideImageURLS,
             id: id,
@@ -59,30 +59,6 @@ extension EventJSON {
             textcolor: textColor,
             repetitionType: repetitionType,
             reactionString: reactionString
-            
         )
-    }
-}
-
-enum APIError: Error, LocalizedError {
-    case duplicateLibrary
-    case unauthorized
-    case networkError
-    case duplicateFile
-    case unknown(Error)
-
-    var errorDescription: String? {
-        switch self {
-        case .duplicateLibrary:
-            return "You’ve already added this library."
-        case .unauthorized:
-            return "You must be logged in to perform this action."
-        case .networkError:
-            return "Network connection issue. Please try again."
-        case .duplicateFile:
-            return "You’ve already added this file."
-        case .unknown(let error):
-            return error.localizedDescription
-        }
     }
 }

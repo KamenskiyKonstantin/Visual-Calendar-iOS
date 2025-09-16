@@ -10,8 +10,9 @@ import MCEmojiPicker
 
 struct NameEditor: View {
     @EnvironmentObject var api: APIHandler
-    @EnvironmentObject var warningHandler: GlobalWarningHandler
-
+    @EnvironmentObject var warningHandler: WarningHandler
+    @EnvironmentObject var viewSwitcher: ViewSwitcher
+    
     @Binding var name: String
     @Binding var fileURL: URL?
     @Binding var isPresented: Bool
@@ -67,14 +68,12 @@ struct NameEditor: View {
 
         isUploading = true
 
-        do {
+        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: api, viewSwitcher: viewSwitcher) {
             try await api.upsertImage(imageData: data, filename: name)
             try await api.fetchImageURLs()
             await MainActor.run {
                 isPresented = false
             }
-        } catch {
-            warningHandler.showWarning(error.localizedDescription)
         }
 
         isUploading = false
@@ -127,7 +126,6 @@ struct EventAppearanceSection: View {
                 }
                 HStack {
                     Text("Select background color")
-                        .font(.headline)
                     Spacer()
                     Picker("", selection: self.$backgroundColor) {
                         Text("Select a color").tag("")
@@ -151,8 +149,9 @@ struct EventContentSection: View {
     
     @State private var isLibrarySheetShown = false
     
-    @EnvironmentObject var warningHandler: GlobalWarningHandler
+    @EnvironmentObject var warningHandler: WarningHandler
     @EnvironmentObject var api: APIHandler
+    @EnvironmentObject var viewSwitcher: ViewSwitcher
     
     
     var body: some View {
@@ -165,7 +164,7 @@ struct EventContentSection: View {
             .buttonStyle(.borderedProminent)
             .tint(.green)
             .sheet(isPresented: $isLibrarySheetShown) {
-                LibrarySelectionSheet(api: api) {
+                LibrarySelectionSheet() {
                     isLibrarySheetShown = false
                 }
             }
@@ -235,10 +234,11 @@ struct PickerView: View{
 }
 
 struct LibrarySelectionSheet: View {
-    @ObservedObject var api: APIHandler
+    @EnvironmentObject var api: APIHandler
     var dismiss: () -> Void
 
-    @EnvironmentObject var warningHandler: GlobalWarningHandler
+    @EnvironmentObject var warningHandler: WarningHandler
+    @EnvironmentObject var viewSwitcher: ViewSwitcher
     @State private var isProcessing = false
     @State private var selectedLibrary: String?
 
@@ -270,11 +270,9 @@ struct LibrarySelectionSheet: View {
     }
 
     private func handleAdd(library: LibraryInfo) async {
-        do {
+        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: api, viewSwitcher: viewSwitcher) {
             try await api.addLibrary(library.system_name)
             dismiss()
-        } catch {
-            warningHandler.showWarning(error.localizedDescription)
         }
         isProcessing = false
         selectedLibrary = nil

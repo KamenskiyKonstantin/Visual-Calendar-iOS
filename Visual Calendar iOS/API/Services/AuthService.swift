@@ -21,13 +21,14 @@ class AuthService {
     var isAuthenticated: Bool {
         auth.currentUser != nil
     }
-
-    func restoreSession() async throws -> Bool {
-        let session = try await auth.session
-        print("Session restored for user: \(session.user.id)")
-        return true
+    
+    func verifySession() async throws {
+        do {
+            try await auth.refreshSession()
+        } catch {
+            throw AppError.authSessionExpired
+        }
     }
-
     func signUp(email: String, password: String) async throws {
         let session = try await auth.signUp(email: email, password: password)
         let userID = session.user.id 
@@ -65,8 +66,7 @@ class AuthService {
             options: .init(cacheControl: "0", contentType: "text/plain", upsert: true)
         )
 
-        // Upload empty valid presets.json (`[]`)
-        let emptyPresetsData = try encoder.encode([Preset]())
+        let emptyPresetsData = try encoder.encode([String: Preset]())
         try await client.storage.from("user_data").upload(
             path: "\(uid.uuidString)/presets.json",
             file: emptyPresetsData,

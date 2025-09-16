@@ -14,7 +14,7 @@ struct SignUpView: View {
     @State var password: String = ""
     
     @EnvironmentObject var viewSwitcher: ViewSwitcher
-    @EnvironmentObject var warningHandler: GlobalWarningHandler
+    @EnvironmentObject var warningHandler: WarningHandler
     
     @Environment(\.dismiss) private var dismiss
     
@@ -25,30 +25,21 @@ struct SignUpView: View {
     }
     
     func signup() {
-        Task{
-            do{
-                try await self.APIinteractor.signUp(email:email, password:password)
-                try await self.APIinteractor.login(email:email, password:password)
-                
-                await MainActor.run {
-                    if self.APIinteractor.isAuthenticated{
-                        dismiss()
-                        self.viewSwitcher.switchToSelectRole()
-                        print("Signup successful")
-                        print("Current view: \(self.viewSwitcher.activeView)")
-                        
-                    }
-                    else{
-                        self.viewSwitcher.switchToLogin()
-                    }
+        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: APIinteractor, viewSwitcher: viewSwitcher) {
+            try await self.APIinteractor.signUp(email: email, password: password)
+            try await self.APIinteractor.login(email: email, password: password)
+
+            await MainActor.run {
+                if self.APIinteractor.isAuthenticated {
+                    dismiss()
+                    self.viewSwitcher.switchToSelectRole()
+                    print("Signup successful")
+                    print("Current view: \(self.viewSwitcher.activeView)")
+                } else {
+                    self.viewSwitcher.switchToLogin()
                 }
             }
-            catch{
-                warningHandler.showWarning("\(error)")
-            }
-            
         }
-        
     }
     var body: some View{
         VStack{

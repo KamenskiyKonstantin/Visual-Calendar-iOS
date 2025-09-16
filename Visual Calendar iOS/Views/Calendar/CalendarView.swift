@@ -14,6 +14,7 @@ struct CalendarView: View {
     
     // MARK: Dependencies
     @EnvironmentObject var api: APIHandler
+    @EnvironmentObject var warningHandler: WarningHandler
     let viewSwitcher: ViewSwitcher
     
     // MARK: State Properties
@@ -28,7 +29,7 @@ struct CalendarView: View {
     //MARK: Sheet showers
     @State var logoutFormShown: Bool = false
     
-    @EnvironmentObject var warninghandler: GlobalWarningHandler
+    @EnvironmentObject var warninghandler: WarningHandler
     
     var body: some View {
         NavigationStack{
@@ -46,7 +47,6 @@ struct CalendarView: View {
                             Color.clear.frame(width: HStackXOffset)
                             CalendarTable(
                                 minuteHeight: minuteHeight,
-                                api: api,
                                 currentDate: $currentDate,
                                 mode: $mode,
                                 deleteMode: $deleteMode)
@@ -63,7 +63,7 @@ struct CalendarView: View {
                             titleVisibility: .visible
             ) {
                             Button("OK") {
-                                Task{
+                                AsyncExecutor.runWithWarningHandler(warningHandler: warninghandler, api: api, viewSwitcher: viewSwitcher) {
                                     try await api.logout()
                                     viewSwitcher.switchToLogin()
                                 }
@@ -157,7 +157,9 @@ struct CalendarBackgroundView: View{
 
 struct DetailView: View {
     let eventID: UUID
-    @ObservedObject var api: APIHandler
+    @EnvironmentObject var api: APIHandler
+    @EnvironmentObject var warningHandler: WarningHandler
+    @EnvironmentObject var viewSwitcher: ViewSwitcher
 
     var event: Event? {
         api.eventList.first(where: { $0.id == eventID })
@@ -248,15 +250,11 @@ struct DetailView: View {
         guard var new_event = event else { return }
         new_event.reaction = newReaction
 
-        Task {
-            do {
-                var events = api.eventList
-                if let index = events.firstIndex(where: { $0.id == new_event.id }) {
-                    events[index] = new_event
-                    try await api.upsertEvents(events)
-                }
-            } catch {
-                print("Error updating event reaction: \(error.localizedDescription)")
+        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: api, viewSwitcher: viewSwitcher) {
+            var events = api.eventList
+            if let index = events.firstIndex(where: { $0.id == new_event.id }) {
+                events[index] = new_event
+                try await api.upsertEvents(events)
             }
         }
     }

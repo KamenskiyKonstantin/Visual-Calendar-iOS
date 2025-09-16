@@ -7,18 +7,23 @@
 
 import Foundation
 
-func bestMatchingKeyword(from text: String, keywords: [String]) -> String {
-    let words = text.lowercased().split(separator: " ").map { String($0) }
+func bestMatchingKeyword(from text: String, keywords: [String], maxDistance: Int = 3) -> String {
+    print("Looking for best matching keyword from \(text)")
 
-    for word in words {
-        for keyword in keywords {
-            if levenshtein(word, keyword.lowercased()) <= 2 {
-                return keyword
-            }
+    var bestMatch: String?
+    var bestDistance = Int.max
+    if text.isEmpty {
+        return "Custom"
+    }
+    for keyword in keywords {
+        let distance = levenshtein(text, keyword.lowercased())
+        if distance < bestDistance && distance <= maxDistance {
+            bestMatch = keyword
+            bestDistance = distance
         }
     }
 
-    return "Custom"
+    return bestMatch ?? "Custom"
 }
 
 // Levenshtein distance function

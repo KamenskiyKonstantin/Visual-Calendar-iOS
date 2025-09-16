@@ -16,6 +16,8 @@
 		ED41F0952C5BD15600954ACF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ED41F0942C5BD15600954ACF /* Preview Assets.xcassets */; };
 		ED4ABE462DE472DC0036B16F /* EditorSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4ABE452DE472DC0036B16F /* EditorSections.swift */; };
 		ED4ABE482DE72E2D0036B16F /* BaseExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4ABE472DE72E2D0036B16F /* BaseExtensions.swift */; };
+		ED567D702E2CC3C1005FA014 /* AsyncExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED567D6F2E2CC3C1005FA014 /* AsyncExecutor.swift */; };
+		ED567D722E2CC3E5005FA014 /* UtilsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED567D712E2CC3E5005FA014 /* UtilsUI.swift */; };
 		ED6DB6E22D422D9F00F518A2 /* EventEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6DB6E12D422D9F00F518A2 /* EventEditorView.swift */; };
 		ED7B0F0A2E2625C300042ED3 /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F082E2625C300042ED3 /* SignUpView.swift */; };
 		ED7B0F0B2E2625C300042ED3 /* SelectRoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F072E2625C300042ED3 /* SelectRoleView.swift */; };
@@ -29,13 +31,14 @@
 		ED7B0F1E2E2626F400042ED3 /* APIHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F1D2E2626F400042ED3 /* APIHandler.swift */; };
 		ED7B0F222E2633D300042ED3 /* EventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F212E2633D300042ED3 /* EventView.swift */; };
 		ED7B0F252E273A0B00042ED3 /* APIConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F242E273A0B00042ED3 /* APIConverters.swift */; };
-		ED86AFFD2D42684A00F5B89C /* UtilsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED86AFFC2D42684A00F5B89C /* UtilsUI.swift */; };
 		ED97F3932DE2E1C6007D316B /* WeekdayHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3922DE2E1C6007D316B /* WeekdayHeader.swift */; };
 		ED97F3952DE2E22F007D316B /* CalendarConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3942DE2E22F007D316B /* CalendarConstants.swift */; };
 		ED97F3972DE2E968007D316B /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3962DE2E968007D316B /* Buttons.swift */; };
 		ED97F3992DE2E990007D316B /* CalendarTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3982DE2E990007D316B /* CalendarTable.swift */; };
 		ED97F39B2DE2EAE4007D316B /* LogicHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F39A2DE2EAE4007D316B /* LogicHelpers.swift */; };
 		ED97F39E2DE2F6C6007D316B /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F39D2DE2F6C6007D316B /* Event.swift */; };
+		ED9AAC9E2E28B30A00AAA8CE /* ErrorClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9AAC9D2E28B30A00AAA8CE /* ErrorClassifier.swift */; };
+		ED9AACA02E28C82E00AAA8CE /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9AAC9F2E28C82E00AAA8CE /* AppError.swift */; };
 		ED9E8A822C5E765F0098D8FD /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A812C5E765F0098D8FD /* Auth */; };
 		ED9E8A842C5E765F0098D8FD /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A832C5E765F0098D8FD /* Functions */; };
 		ED9E8A862C5E765F0098D8FD /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A852C5E765F0098D8FD /* PostgREST */; };
@@ -55,6 +58,8 @@
 		ED41F0942C5BD15600954ACF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		ED4ABE452DE472DC0036B16F /* EditorSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorSections.swift; sourceTree = "<group>"; };
 		ED4ABE472DE72E2D0036B16F /* BaseExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseExtensions.swift; sourceTree = "<group>"; };
+		ED567D6F2E2CC3C1005FA014 /* AsyncExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncExecutor.swift; sourceTree = "<group>"; };
+		ED567D712E2CC3E5005FA014 /* UtilsUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsUI.swift; sourceTree = "<group>"; };
 		ED6DB6E12D422D9F00F518A2 /* EventEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditorView.swift; sourceTree = "<group>"; };
 		ED7B0F062E2625C300042ED3 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		ED7B0F072E2625C300042ED3 /* SelectRoleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectRoleView.swift; sourceTree = "<group>"; };
@@ -68,13 +73,14 @@
 		ED7B0F1D2E2626F400042ED3 /* APIHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIHandler.swift; sourceTree = "<group>"; };
 		ED7B0F212E2633D300042ED3 /* EventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventView.swift; sourceTree = "<group>"; };
 		ED7B0F242E273A0B00042ED3 /* APIConverters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIConverters.swift; sourceTree = "<group>"; };
-		ED86AFFC2D42684A00F5B89C /* UtilsUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsUI.swift; sourceTree = "<group>"; };
 		ED97F3922DE2E1C6007D316B /* WeekdayHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekdayHeader.swift; sourceTree = "<group>"; };
 		ED97F3942DE2E22F007D316B /* CalendarConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarConstants.swift; sourceTree = "<group>"; };
 		ED97F3962DE2E968007D316B /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
 		ED97F3982DE2E990007D316B /* CalendarTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarTable.swift; sourceTree = "<group>"; };
 		ED97F39A2DE2EAE4007D316B /* LogicHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogicHelpers.swift; sourceTree = "<group>"; };
 		ED97F39D2DE2F6C6007D316B /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		ED9AAC9D2E28B30A00AAA8CE /* ErrorClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorClassifier.swift; sourceTree = "<group>"; };
+		ED9AAC9F2E28C82E00AAA8CE /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		EDAAAE192C5FEBB300E45598 /* VisualCalendarIOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VisualCalendarIOS.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -197,7 +203,10 @@
 		ED7B0F202E26273E00042ED3 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				ED86AFFC2D42684A00F5B89C /* UtilsUI.swift */,
+				ED567D712E2CC3E5005FA014 /* UtilsUI.swift */,
+				ED9AAC9F2E28C82E00AAA8CE /* AppError.swift */,
+				ED9AAC9D2E28B30A00AAA8CE /* ErrorClassifier.swift */,
+				ED567D6F2E2CC3C1005FA014 /* AsyncExecutor.swift */,
 				ED97F3942DE2E22F007D316B /* CalendarConstants.swift */,
 				ED97F39A2DE2EAE4007D316B /* LogicHelpers.swift */,
 				ED97F39D2DE2F6C6007D316B /* Event.swift */,
@@ -347,9 +356,10 @@
 				ED4ABE462DE472DC0036B16F /* EditorSections.swift in Sources */,
 				ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */,
 				ED7B0F1E2E2626F400042ED3 /* APIHandler.swift in Sources */,
+				ED9AAC9E2E28B30A00AAA8CE /* ErrorClassifier.swift in Sources */,
 				ED97F3972DE2E968007D316B /* Buttons.swift in Sources */,
+				ED567D702E2CC3C1005FA014 /* AsyncExecutor.swift in Sources */,
 				ED97F39E2DE2F6C6007D316B /* Event.swift in Sources */,
-				ED86AFFD2D42684A00F5B89C /* UtilsUI.swift in Sources */,
 				ED7B0F0A2E2625C300042ED3 /* SignUpView.swift in Sources */,
 				ED7B0F152E2626A200042ED3 /* AuthService.swift in Sources */,
 				ED7B0F162E2626A200042ED3 /* CodableStructures.swift in Sources */,
@@ -360,7 +370,9 @@
 				ED7B0F0B2E2625C300042ED3 /* SelectRoleView.swift in Sources */,
 				ED7B0F222E2633D300042ED3 /* EventView.swift in Sources */,
 				ED7B0F0C2E2625C300042ED3 /* LoginView.swift in Sources */,
+				ED567D722E2CC3E5005FA014 /* UtilsUI.swift in Sources */,
 				ED41F0902C5BD15500954ACF /* ContentView.swift in Sources */,
+				ED9AACA02E28C82E00AAA8CE /* AppError.swift in Sources */,
 				ED4ABE482DE72E2D0036B16F /* BaseExtensions.swift in Sources */,
 				ED6DB6E22D422D9F00F518A2 /* EventEditorView.swift in Sources */,
 				ED97F39B2DE2EAE4007D316B /* LogicHelpers.swift in Sources */,
@@ -505,7 +517,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Visual Calendar iOS/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = BAZD9675JV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -513,6 +525,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -537,7 +550,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Visual Calendar iOS/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = BAZD9675JV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -545,6 +558,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

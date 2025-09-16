@@ -20,7 +20,7 @@ struct EventEditor: View {
     
     // MARK: - Date State
     @State private var dateStart = Date()
-    @State private var dateEnd = Date()
+    @State private var dateEnd = Date().addingTimeInterval(TimeInterval(60*60))
     @State private var repeatType: EventRepetitionType = .once
     
     // MARK: - Image State
@@ -46,8 +46,10 @@ struct EventEditor: View {
     
 
     @Environment(\.dismiss) private var dismiss
+    
     @EnvironmentObject var APIHandler: APIHandler
-    @EnvironmentObject var warningHandler: GlobalWarningHandler
+    @EnvironmentObject var warningHandler: WarningHandler
+    @EnvironmentObject var viewSwitcher: ViewSwitcher
     
     let updateCallback: (Event) async throws-> Void
     
@@ -130,21 +132,27 @@ struct EventEditor: View {
             updateEvents()
             return
         }
-        Task{
+        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: APIHandler, viewSwitcher: viewSwitcher) {
             try await APIHandler.fetchPresets()
-            if APIHandler.presets.keys.contains(title) && !force{
-                showPresetUploadWarning = true
+            if APIHandler.presets.keys.contains(title) && !force {
+                await MainActor.run {
+                    showPresetUploadWarning = true
+                }
                 return
             }
+            
             let current_preset = Preset(
                 selectedSymbol: selectedSymbol,
                 backgroundColor: backgroundColor,
                 mainImageURL: mainImageURL,
-                sideImageURLs: sideImagesURL,
-                )
-            try await APIHandler.upsertPresets(title: title, preset: current_preset)
-            updateEvents()
+                sideImageURLs: sideImagesURL
+            )
             
+            try await APIHandler.upsertPresets(title: title, preset: current_preset)
+            
+            await MainActor.run {
+                updateEvents()
+            }
         }
         
     }
@@ -154,24 +162,20 @@ struct EventEditor: View {
         print(repeatType)
         let event = generateEvent()
         print(event.repetitionType)
-        Task {
-                var currentEvents = APIHandler.eventList
-                
+        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: APIHandler, viewSwitcher: viewSwitcher) {
+            var currentEvents = APIHandler.eventList
 
-                if let index = currentEvents.firstIndex(where: { $0.id == event.id }) {
-                    currentEvents[index] = event // Update existing
-                } else {
-                    currentEvents.append(event) // Add new
-                }
-            do {
-                try await APIHandler.upsertEvents(currentEvents)
-                await MainActor.run {
-                    dismiss()
-                }
-            } catch {
-                print("Error upserting events: \(error)")
+            if let index = currentEvents.firstIndex(where: { $0.id == event.id }) {
+                currentEvents[index] = event
+            } else {
+                currentEvents.append(event)
             }
-            
+
+            try await APIHandler.upsertEvents(currentEvents)
+
+            await MainActor.run {
+                dismiss()
+            }
         }
     }
     
@@ -183,6 +187,7 @@ struct EventEditor: View {
 
 private extension EventEditor {
     func applyPreset(title: String, preset: Preset) {
+        print(preset.mainImageURL)
         self.title = title
         selectedSymbol = preset.selectedSymbol
         backgroundColor = preset.backgroundColor

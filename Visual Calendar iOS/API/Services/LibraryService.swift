@@ -36,15 +36,14 @@ class LibraryService {
             .eq("user_uuid", value: uid)
             .execute()
 
-        let rows = try JSONSerialization.jsonObject(with: response.data, options: []) as? [[String: Any]]
-        return rows?.compactMap { $0["system_name"] as? String } ?? []
+        let rows = try JSONSerialization.jsonObject(with: response.data) as? [[String: Any]] ?? []
+        return rows.compactMap { $0["system_name"] as? String }
     }
 
     // Add a library to user's connected ones using system_name and [LibraryInfo]
     func addLibrary(systemName: String, from libraries: [LibraryInfo]) async throws {
         guard let info = libraries.first(where: { $0.system_name == systemName }) else {
-            print("Library with system_name '\(systemName)' not found.")
-            return
+            throw AppError.libraryNotFound(systemName)
         }
 
         let uid = try await client.auth.user().id

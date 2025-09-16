@@ -5,6 +5,13 @@
 //  Created by Konstantin Kamenskiy on 06.06.2025.
 //
 
+//
+// Naming Convention:
+// - All Supabase/PostgREST models decode from `snake_case`.
+// - All JSON file models use `camelCase` (for storage in buckets).
+// DO NOT mix database and file formats in one model.
+//
+
 import Foundation
 
 struct CalendarJSON: Codable {

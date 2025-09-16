@@ -141,61 +141,6 @@ struct Event: Identifiable{
         
         self.repetitionType = repetitionStringToEnum(repetitionType)
         self.reaction = emojiStringToEnum(reactionString)
-        
-        
-    }
-    
-    init(dictionary: [String:Any]){
-        self.systemImage = dictionary["systemImage"] as! String
-        
-        self.textColor = dictionary["textColor"] as! String
-        self.backgroundColor = dictionary["backgroundColor"] as! String
-        
-        let timeStart = dictionary["timeStart"] as! [Int]
-        let timeEnd = dictionary["timeEnd"] as! [Int]
-        
-        self.dateTimeStart = Date.from(
-            day: timeStart[0], month: timeStart[1], year: timeStart[2],
-            hour: timeStart[3], minute: timeStart[4]
-        )
-
-        self.dateTimeEnd = Date.from(
-            day: timeEnd[0], month: timeEnd[1], year: timeEnd[2],
-            hour: timeEnd[3], minute: timeEnd[4]
-        )
-        self.repetitionType = repetitionStringToEnum(dictionary["repetitionType"] as! String)
-        self.reaction = emojiStringToEnum(dictionary["reaction"] as! String)
-        
-        self.mainImageURL = dictionary["mainImageURL"] as! String
-        self.sideImagesURL = dictionary["sideImageURLS"] as! [String]
-        
-        self.dayOfWeek = Calendar.current.component(.weekday, from: self.dateTimeStart)
-        self.duration = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart) / 60)
-        
-        
-        self.id = dictionary["id"] as! UUID
-        
-    }
-    
-        
-    func getDictionary() -> [String: Any] {
-        return  [
-            "timeStart":self.dateTimeStart.toIntList(),
-            "timeEnd":self.dateTimeEnd.toIntList(),
-            
-            "systemImage":self.systemImage,
-            "backgroundColor":self.backgroundColor,
-            "textColor":self.textColor,
-            
-            "mainImageURL":self.mainImageURL,
-            "sideImageURLS":self.sideImagesURL,
-            
-            "repetitionType":self.repetitionType.displayName,
-            "reactionString":self.reaction.emoji,
-            
-            "id": id.uuidString,
-            
-        ]
     }
     
     func getString() -> String {
@@ -210,10 +155,6 @@ struct Event: Identifiable{
 
     
 }
-
-
-
-
 
 extension Event {
     func occurs(on date: Date, calendar: Calendar = .current) -> Bool {

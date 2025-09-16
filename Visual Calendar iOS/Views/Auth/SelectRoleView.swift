@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SelectRoleView: View {
     @State private var viewSwitcher: ViewSwitcher
+    @EnvironmentObject var warningHandler: WarningHandler
+    @EnvironmentObject var api: APIHandler
     init(viewSwitcher: ViewSwitcher) {
         self.viewSwitcher = viewSwitcher
     }
@@ -24,7 +26,10 @@ struct SelectRoleView: View {
                 VStack{
                     HStack{
                         Spacer()
-                        Button(action:{self.viewSwitcher.switchToCalendar(isAdult: false)})
+                        Button(action:{
+                            AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler,  api: api, viewSwitcher: viewSwitcher,) {
+                                try await viewSwitcher.switchToCalendar(isAdult: false)
+                            }})
                         {
                             Text("Child")
                                 .frame(width:400)
@@ -72,13 +77,14 @@ struct SelectRoleView: View {
 
 struct ConfirmAdultView: View{
     @State var userAnswer: String = ""
+    @EnvironmentObject var api: APIHandler
     
     var verificationValA: Int = Int.random(in: 1...10)
     var verificationValB: Int = Int.random(in: 1...10)
     
     var viewSwitcher: ViewSwitcher
     
-    @EnvironmentObject var warningHandler: GlobalWarningHandler
+    @EnvironmentObject var warningHandler: WarningHandler
     
     
     var body: some View{
@@ -113,18 +119,24 @@ struct ConfirmAdultView: View{
         
     }
     
-    func checkAnswer(){
-        if userAnswer.isEmpty{
+    func checkAnswer() {
+        guard !userAnswer.isEmpty else {
             warningHandler.showWarning("Please provide an answer")
+            return
         }
-        else{
-            if Int(userAnswer)! == verificationValA + verificationValB {
-                viewSwitcher.switchToCalendar(isAdult:true)
-            }else{
-                warningHandler.showWarning("Incorrect answer. Please try again")
+        
+        guard let answer = Int(userAnswer) else {
+            warningHandler.showWarning("Please enter a valid number")
+            return
+        }
+        
+        if answer == verificationValA + verificationValB {
+            AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: api, viewSwitcher: viewSwitcher) {
+                try await viewSwitcher.switchToCalendar(isAdult: true)
             }
+        } else {
+            warningHandler.showWarning("Incorrect answer. Please try again")
         }
     }
-    
 }
 

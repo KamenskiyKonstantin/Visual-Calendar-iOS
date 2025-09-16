@@ -63,7 +63,7 @@ extension ImageService {
 
         // Validate availability
         if try await !isFilenameAvailable(name) {
-            throw APIError.duplicateFile
+            throw AppError.duplicateFile
         }
 
         // Upload file
@@ -101,6 +101,7 @@ extension ImageService {
 
     func fetchAllImageMappings(libraries: [LibraryInfo]) async throws -> [String: [NamedURL]] {
         var result: [String: [NamedURL]] = [:]
+        
 
         try await withThrowingTaskGroup(of: (String, [NamedURL]).self) { group in
             for library in libraries {

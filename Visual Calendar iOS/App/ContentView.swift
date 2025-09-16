@@ -21,7 +21,7 @@ struct LoadingView: View {
 
 struct ContentView: View {
     @EnvironmentObject var api: APIHandler
-    @EnvironmentObject var warningManager: GlobalWarningHandler
+    @EnvironmentObject var warningManager: WarningHandler
     @EnvironmentObject var viewSwitcher: ViewSwitcher
 
     
@@ -40,7 +40,6 @@ struct ContentView: View {
             
         }
     }
-        
     
     var body: some View {
         currentView
@@ -85,70 +84,67 @@ class ViewSwitcher: ObservableObject {
         activeView = .login
     }
     
-    func switchToCalendar(isAdult: Bool = false) {
+    func switchToCalendar(isAdult: Bool = false) async throws {
         guard api.isAuthenticated else {
             activeView = .login
             return
         }
-        
+
         activeView = .loading
+
+        try await api.fetchExistingLibraries()
         
-        Task {
-            do {
-                // Fetch library index early (critical for resolving names)
-                try await api.fetchExistingLibraries()
+        print("These libraries exist: \(api.availableLibraries)")
 
-                // Try to add the library, but suppress duplicate errors
-                do {
-                    try await api.addLibrary("standard_library")
-                } catch {
-                    print("Library already exists or failed silently: \(error.localizedDescription)")
-                    // You may want to inspect specific errors if needed
-                }
+        let result = await Result { try await api.addLibrary("standard_library") }
+        if case .failure(AppError.duplicateLibrary) = result {
+            print("std library already added, ignoring")
+        } else {
+            try result.get()  // Propagate any other failure
+        }
 
-                // Parallelize non-conflicting fetches
-                async let imageTask: Void = try api.fetchImageURLs()
-                async let eventsTask: Void = try api.fetchEvents()
-                async let presetsTask: Void = try api.fetchPresets()
+        try await api.fetchImageURLs()
+        try await api.fetchEvents()
+        try await api.fetchPresets()
 
-                _ = try await (imageTask, eventsTask, presetsTask)
-
-                // Only after all above tasks succeed, switch to main app
-                await MainActor.run {
-                    activeView = .calendar(isAdult: isAdult)
-                }
-
-            } catch {
-                print("Error switching to main app: \(error.localizedDescription)")
-                try? await api.logout()
-                await MainActor.run {
-                    activeView = .login
-                }
-            }
-        }    }
-    
+        await MainActor.run {
+            activeView = .calendar(isAdult: isAdult)
+        }
+    }
     func switchToLoading() {
         activeView = .loading
     }
 }
 
 
-
-class GlobalWarningHandler: ObservableObject {
+@MainActor
+class WarningHandler: ObservableObject {
     @Published var message: String = ""
     @Published var isShown: Bool = false
-    
-    
+
+
     func showWarning(_ message: String) {
         self.message = message
         self.isShown = true
     }
-    
+
     func hideWarning() {
-        self.message = ""
-        self.isShown = false
+        message = ""
+        isShown = false
+    }
+
+    func forceLogout(with message: String? = nil, api: APIHandler, viewSwitcher: ViewSwitcher) {
+        if let msg = message {
+            showWarning(msg)
+        }
+        Task{
+            do {
+                try await api.logout()
+                viewSwitcher.switchToLogin()
+                
+            }
+            catch {}
+        }
     }
 }
-
-
     
