@@ -10,9 +10,10 @@ import SwiftUI
 @main
 struct Visual_Calendar_iOSApp: App {
     
-    private let api = APIHandler()
+    private let api: APIHandler
     private let viewSwitcher: ViewSwitcher
-    private let warningManager = WarningHandler()
+    private let warningHandler: WarningHandler
+    
     
     func logoutSequence() async throws {
         try await api.logout()
@@ -20,14 +21,33 @@ struct Visual_Calendar_iOSApp: App {
     }
 
     init() {
-        self.viewSwitcher = ViewSwitcher(api: api)
+        // define references
+        let viewSwitcher = ViewSwitcher()
+        let api = APIHandler()
+        let warningHandler = WarningHandler()
+        
+        // inject into self
+        self.api = api
+        self.viewSwitcher = viewSwitcher
+        self.warningHandler = warningHandler
+        
+        // create AsyncExecutor
+        func logoutSequence() async throws {
+            try await api.logout()
+            viewSwitcher.switchToLogin()
+        }
+        
+        
+        
+        
+        
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(api)
-                .environmentObject(warningManager)
+                .environmentObject(warningHandler)
                 .environmentObject(viewSwitcher)
         }
     }

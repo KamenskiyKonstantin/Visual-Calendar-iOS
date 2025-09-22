@@ -23,13 +23,6 @@ struct ContentView: View {
     @EnvironmentObject var api: APIHandler
     @EnvironmentObject var warningManager: WarningHandler
     @EnvironmentObject var viewSwitcher: ViewSwitcher
-    
-    let calendarViewModel: CalendarViewModel = CalendarViewModel(
-        api:api,
-        warningHandler: warningManager
-        
-        
-    )
 
     
     var currentView: some View {
@@ -40,7 +33,7 @@ struct ContentView: View {
                 AnyView(SelectRoleView(viewSwitcher: viewSwitcher))
             case let .calendar(isAdult):
                 AnyView(CalendarView(
-                             viewSwitcher: viewSwitcher))
+                    viewModel: CalendarViewModel(api:api, warningHandler: warningManager, viewSwitcher:viewSwitcher), warningHandler:_warningManager, viewSwitcher: viewSwitcher))
             case .loading:
                 AnyView(LoadingView())
             
@@ -49,9 +42,6 @@ struct ContentView: View {
     
     var body: some View {
         currentView
-            .onAppear {
-                self.viewSwitcher.api = api
-            }
             .alert("Error", isPresented: $warningManager.isShown) {
                         Button("OK", role: .cancel) {
                             warningManager.hideWarning()
@@ -63,63 +53,6 @@ struct ContentView: View {
         
     }
         
-}
-
-enum ActiveView {
-    case login
-    case selectRole
-    case calendar(isAdult: Bool)
-    case loading
-}
-
-@MainActor
-class ViewSwitcher: ObservableObject {
-    @ObservedObject var api: APIHandler
-    
-    @Published var activeView: ActiveView = .login
-    
-    init(api: APIHandler) {
-        self.api = api
-    }
-    
-    func switchToSelectRole() {
-        activeView = .selectRole
-    }
-    
-    func switchToLogin() {
-        activeView = .login
-    }
-    
-    func switchToCalendar(isAdult: Bool = false) async throws {
-        guard api.isAuthenticated else {
-            activeView = .login
-            return
-        }
-
-        activeView = .loading
-
-        try await api.fetchExistingLibraries()
-        
-        print("These libraries exist: \(api.availableLibraries)")
-
-        let result = await Result { try await api.addLibrary("standard_library") }
-        if case .failure(AppError.duplicateLibrary) = result {
-            print("std library already added, ignoring")
-        } else {
-            try result.get()  // Propagate any other failure
-        }
-
-        try await api.fetchImageURLs()
-        try await api.fetchEvents()
-        try await api.fetchPresets()
-
-        await MainActor.run {
-            activeView = .calendar(isAdult: isAdult)
-        }
-    }
-    func switchToLoading() {
-        activeView = .loading
-    }
 }
 
 

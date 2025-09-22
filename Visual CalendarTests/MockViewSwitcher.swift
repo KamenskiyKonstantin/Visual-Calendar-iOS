@@ -1,7 +1,9 @@
 //
-//  Visual_CalendarTests.swift
-//  Visual CalendarTests
+//  MockViewSwitcher.swift
+//  Visual Calendar iOS
 //
 //  Created by Konstantin Kamenskiy on 22.09.2025.
 //
+
+
 
