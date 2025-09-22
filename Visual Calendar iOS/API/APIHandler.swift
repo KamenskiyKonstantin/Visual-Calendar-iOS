@@ -90,10 +90,11 @@ class APIHandler: ObservableObject {
 
     // MARK: - Events
 
-    func fetchEvents() async throws {
+    func fetchEvents() async throws -> [Event] {
         try await wrap("fetchEvents") {
             let events = try await eventService.fetchEvents()
             self.eventList = events
+            return events
         }
     }
 

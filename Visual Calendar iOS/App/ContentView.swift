@@ -23,6 +23,13 @@ struct ContentView: View {
     @EnvironmentObject var api: APIHandler
     @EnvironmentObject var warningManager: WarningHandler
     @EnvironmentObject var viewSwitcher: ViewSwitcher
+    
+    let calendarViewModel: CalendarViewModel = CalendarViewModel(
+        api:api,
+        warningHandler: warningManager
+        
+        
+    )
 
     
     var currentView: some View {
@@ -33,8 +40,7 @@ struct ContentView: View {
                 AnyView(SelectRoleView(viewSwitcher: viewSwitcher))
             case let .calendar(isAdult):
                 AnyView(CalendarView(
-                             viewSwitcher: viewSwitcher,
-                             isParentMode: isAdult,))
+                             viewSwitcher: viewSwitcher))
             case .loading:
                 AnyView(LoadingView())
             

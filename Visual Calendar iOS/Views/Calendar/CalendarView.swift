@@ -8,119 +8,66 @@
 import SwiftUI
 
 struct CalendarView: View {
-    // MARK: Constants
-    let minuteHeight = 2
-    let HStackXOffset = defaultHStackOffset
-    
+    // MARK: View Model
+    @StateObject var viewModel: CalendarViewModel
+
     // MARK: Dependencies
-    @EnvironmentObject var api: APIHandler
     @EnvironmentObject var warningHandler: WarningHandler
     let viewSwitcher: ViewSwitcher
-    
-    // MARK: State Properties
-    @State var currentDate: Date = Date().startOfWeek()
-    
-    @State var isParentMode: Bool
-    @State var deleteMode: Bool = false
-    
-    @State var mode: CalendarMode = .Week
-    
-    
-    //MARK: Sheet showers
+
+    // MARK: Sheet
     @State var logoutFormShown: Bool = false
-    
-    @EnvironmentObject var warninghandler: WarningHandler
-    
+
     var body: some View {
-        NavigationStack{
-            VStack (spacing:0){
+        NavigationStack {
+            VStack(spacing: 0) {
                 WeekdayHeader(
-                    decreaseCurrentDate: decreaseCurrentDate,
-                    increaseCurrentDate: increaseCurrentDate,
-                    HStackXOffset: HStackXOffset,
-                    currentDate: $currentDate,
-                    mode: $mode
+                    decreaseCurrentDate: viewModel.decreaseDate,
+                    increaseCurrentDate: viewModel.increaseDate,
+                    HStackXOffset: viewModel.HStackXOffset,
+                    currentDate: $viewModel.currentDate,
+                    mode: $viewModel.mode
                 )
-                ScrollView(.vertical){
-                    ZStack(alignment: .topLeading){
-                        HStack{
-                            Color.clear.frame(width: HStackXOffset)
+                ScrollView(.vertical) {
+                    ZStack(alignment: .topLeading) {
+                        HStack {
+                            Color.clear.frame(width: viewModel.HStackXOffset)
                             CalendarTable(
-                                minuteHeight: minuteHeight,
-                                currentDate: $currentDate,
-                                mode: $mode,
-                                deleteMode: $deleteMode)
-                            Color.clear.frame(width: HStackXOffset)
+                                minuteHeight: viewModel.minuteHeight,
+                                currentDate: $viewModel.currentDate,
+                                mode: $viewModel.mode,
+                                deleteMode: $viewModel.deleteMode
+                            )
+                            Color.clear.frame(width: viewModel.HStackXOffset)
                         }
-                        CalendarBackgroundView(minuteHeight: minuteHeight)
+                        CalendarBackgroundView(minuteHeight: viewModel.minuteHeight)
                     }
                 }
-                
             }
             .confirmationDialog(
-                            "Are you sure you want to proceed?",
-                            isPresented: $logoutFormShown,
-                            titleVisibility: .visible
+                "Are you sure you want to proceed?",
+                isPresented: $logoutFormShown,
+                titleVisibility: .visible
             ) {
-                            Button("OK") {
-                                AsyncExecutor.runWithWarningHandler(warningHandler: warninghandler, api: api, viewSwitcher: viewSwitcher) {
-                                    try await api.logout()
-                                    viewSwitcher.switchToLogin()
-                                }
-                            }
-                            Button("Cancel", role: .cancel){
-                                logoutFormShown = false
-                            }
-                        }
-            .overlay(alignment: .bottom,
-                     content: {ButtonPanel(
-                        logoutFormShown: $logoutFormShown,
-                        calendarMode: $mode,
-                        currentDate: $currentDate,
-                        deleteMode: $deleteMode,
-                        isParentMode: isParentMode,
-                        updateEvents: updateEvents)})
-
-        }
-            
-    }
-    
-    func increaseCurrentDate(){
-        if mode == .Week{
-            self.currentDate = self.currentDate.addingTimeInterval(60 * 60 * 24 * 7)
-        }
-        else if mode == .Day{
-            self.currentDate = self.currentDate.addingTimeInterval(60 * 60 * 24)
-        }
-        
-    }
-    func decreaseCurrentDate(){
-        if mode == .Week{
-            self.currentDate = self.currentDate.addingTimeInterval(-60 * 60 * 24 * 7)
-        }
-        else if mode == .Day{
-            self.currentDate = self.currentDate.addingTimeInterval(-60 * 60 * 24)
+                Button("OK") {
+                    viewModel.logout()
+                }
+                Button("Cancel", role: .cancel) {
+                    logoutFormShown = false
+                }
+            }
+            .overlay(alignment: .bottom) {
+                ButtonPanel(
+                    logoutFormShown: $logoutFormShown,
+                    calendarMode: $viewModel.mode,
+                    currentDate: $viewModel.currentDate,
+                    deleteMode: $viewModel.deleteMode,
+                    isParentMode: viewModel.isParentMode,
+                    updateEvents: viewModel.updateEvents
+                )
+            }
         }
     }
-    
-    func updateEvents(event: Event) async throws{
-        print("Updater received event: \(event.getString())")
-        let newEvents: [Event] = api.eventList+[event]
-        print("New events: \(newEvents)")
-        try await api.upsertEvents(newEvents)
-        try await api.fetchEvents()
-    }
-    
-    func refetchEvents() async {
-        do {
-            try await api.fetchEvents()
-        }
-        catch{
-            print("Error fetching events: \(error)")
-        }
-    }
-    
-    
 }
 
 struct CalendarBackgroundView: View{
