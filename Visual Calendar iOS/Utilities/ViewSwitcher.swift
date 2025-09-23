@@ -5,6 +5,7 @@
 //  Created by Konstantin Kamenskiy on 22.09.2025.
 //
 import Foundation
+import Combine
 
 enum ActiveView: Equatable {
     case login
@@ -15,7 +16,11 @@ enum ActiveView: Equatable {
 
 @MainActor
 class ViewSwitcher: ObservableObject {
+    
+
+    
     @Published var activeView: ActiveView = .login
+    
     func switchToSelectRole() {
         activeView = .selectRole
     }

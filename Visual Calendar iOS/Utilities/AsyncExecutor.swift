@@ -4,7 +4,7 @@
 //
 //  Created by Konstantin Kamenskiy on 20.07.2025.
 //
-
+import Foundation
 
 struct AsyncResult<T> {
     let value: T?

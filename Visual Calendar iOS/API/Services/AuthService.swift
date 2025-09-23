@@ -23,10 +23,13 @@ class AuthService {
     }
     
     func verifySession() async throws {
+        //print("[SERVICES/AUTH] VERIFYING SESSION")
         do {
             try await auth.refreshSession()
         } catch {
+            //print("[SERVICES/AUTH] SESSION INVALIDATED")
             throw AppError.authSessionExpired
+            
         }
     }
     func signUp(email: String, password: String) async throws {

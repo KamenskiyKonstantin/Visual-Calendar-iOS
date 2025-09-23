@@ -5,7 +5,10 @@
 //  Created by Konstantin Kamenskiy on 22.09.2025.
 //
 
-
+import Foundation
+import Supabase
+import Combine
+import SwiftyJSON
 
 @MainActor
 final class APIHandler {
@@ -25,7 +28,7 @@ final class APIHandler {
     init() {
         let client = SupabaseClient(
             supabaseURL: URL(string: "https://wlviarpvbxdaoytfeqnm.supabase.co")!,
-            supabaseKey: "YOUR_SECRET_KEY",
+            supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsdmlhcnB2YnhkYW95dGZlcW5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjIxNTk0MzksImV4cCI6MjAzNzczNTQzOX0.zoQJTA3Tu_fpe24BrxDjhMtlfxfd_3Nx8TM1t8V3PK0",
             options: SupabaseClientOptions(
                 auth: .init(
                     storage: KeychainLocalStorage(service: "com.calmtable.app", accessGroup: nil),
@@ -86,35 +89,40 @@ final class APIHandler {
 
     // MARK: - Events
     func fetchEvents() async -> [Event] {
-        await requireExecutor().run("fetchEvents") {
+        await verifySession()
+        return await requireExecutor().run("fetchEvents") {
             try await self.eventService.fetchEvents()
         }.value ?? []
     }
 
     func upsertEvents(_ events: [Event]) async -> Bool {
-        await requireExecutor().run("upsertEvents") {
+        await verifySession()
+        return await requireExecutor().run("upsertEvents") {
             try await self.eventService.upsertEvents(events)
         }.value != nil
     }
 
-    func deleteEvent(_ uid: UUID, from currentList: [Event]) async -> [Event] {
-        var updated = currentList.filter { $0.id != uid }
+    func deleteEvent(_ uid: UUID, from currentList: [Event]) async -> Bool {
+        let updated = currentList.filter { $0.id != uid }
         let success = await requireExecutor().run("deleteEvent") {
             try await self.eventService.upsertEvents(updated)
         }.value != nil
 
-        return success ? updated : currentList
+        return success
     }
 
     // MARK: - Images
     func upsertImage(imageData: Data, filename: String) async -> Bool {
-        await requireExecutor().run("upsertImage(\(filename))") {
+        await self.verifySession()
+        return await requireExecutor().run("upsertImage(\(filename))") {
+            
             try await self.imageService.upsertImage(imageData: imageData, name: filename)
         }.value != nil
     }
 
     func fetchImageURLs(using libraries: [LibraryInfo]) async -> [String: [NamedURL]] {
-        await requireExecutor().run("fetchImageURLs") {
+        await self.verifySession()
+        return await requireExecutor().run("fetchImageURLs") {
             try await self.imageService.fetchAllImageMappings(libraries: libraries)
         }.value ?? [:]
     }

@@ -8,6 +8,25 @@
 
 /* Begin PBXBuildFile section */
 		ED095CAB2C8765B800559F3A /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = ED095CAA2C8765B800559F3A /* SwiftyJSON */; };
+		ED0E6FEA2E8179BB003ADB9C /* APIHandlerNew.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED0E6FE82E8179B1003ADB9C /* APIHandlerNew.swift */; };
+		ED0E6FEB2E817A05003ADB9C /* LibraryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F122E2626A200042ED3 /* LibraryService.swift */; };
+		ED0E6FEC2E817A05003ADB9C /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F112E2626A200042ED3 /* ImageService.swift */; };
+		ED0E6FED2E817A05003ADB9C /* PresetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F132E2626A200042ED3 /* PresetService.swift */; };
+		ED0E6FEE2E817A05003ADB9C /* EventService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F102E2626A200042ED3 /* EventService.swift */; };
+		ED0E6FEF2E817A05003ADB9C /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F0E2E2626A200042ED3 /* AuthService.swift */; };
+		ED0E6FF02E817A1F003ADB9C /* CodableStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F0F2E2626A200042ED3 /* CodableStructures.swift */; };
+		ED0E6FF12E817A1F003ADB9C /* APIConverters.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F242E273A0B00042ED3 /* APIConverters.swift */; };
+		ED0E6FF22E817A34003ADB9C /* CalendarConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F3942DE2E22F007D316B /* CalendarConstants.swift */; };
+		ED0E6FF32E817A34003ADB9C /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F39D2DE2F6C6007D316B /* Event.swift */; };
+		ED0E6FF42E817A34003ADB9C /* LogicHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED97F39A2DE2EAE4007D316B /* LogicHelpers.swift */; };
+		ED0E6FF52E817A34003ADB9C /* AsyncExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED567D6F2E2CC3C1005FA014 /* AsyncExecutor.swift */; };
+		ED0E6FF62E817A34003ADB9C /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9AAC9F2E28C82E00AAA8CE /* AppError.swift */; };
+		ED0E6FF72E817A34003ADB9C /* ErrorClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9AAC9D2E28B30A00AAA8CE /* ErrorClassifier.swift */; };
+		ED0E6FF82E817A34003ADB9C /* ViewSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9910992E812E5F0082E202 /* ViewSwitcher.swift */; };
+		ED0E6FF92E817A3B003ADB9C /* BaseExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4ABE472DE72E2D0036B16F /* BaseExtensions.swift */; };
+		ED0E6FFB2E817DB4003ADB9C /* WarningHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED0E6FFA2E817DB4003ADB9C /* WarningHandler.swift */; };
+		ED0E6FFC2E817DB4003ADB9C /* WarningHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED0E6FFA2E817DB4003ADB9C /* WarningHandler.swift */; };
+		ED0E6FFD2E817DF6003ADB9C /* UtilsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED567D712E2CC3E5005FA014 /* UtilsUI.swift */; };
 		ED1323C92DEC34C600671162 /* MCEmojiPicker in Frameworks */ = {isa = PBXBuildFile; productRef = ED1323C82DEC34C600671162 /* MCEmojiPicker */; };
 		ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED1410E82C7F29E300D152A6 /* CalendarView.swift */; };
 		ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */; };
@@ -64,6 +83,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		ED0E6FE82E8179B1003ADB9C /* APIHandlerNew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIHandlerNew.swift; sourceTree = "<group>"; };
+		ED0E6FFA2E817DB4003ADB9C /* WarningHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningHandler.swift; sourceTree = "<group>"; };
 		ED1410E82C7F29E300D152A6 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		ED3503502C9B3F8F002BE9D4 /* Visual Calendar iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Visual Calendar iOS.entitlements"; sourceTree = "<group>"; };
 		ED41F08A2C5BD15500954ACF /* Visual Calendar iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Visual Calendar iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -217,6 +238,7 @@
 			children = (
 				ED7B0F232E2739E500042ED3 /* ObjectMappings */,
 				ED7B0F1D2E2626F400042ED3 /* APIHandler.swift */,
+				ED0E6FE82E8179B1003ADB9C /* APIHandlerNew.swift */,
 				ED7B0F1B2E2626AA00042ED3 /* Services */,
 			);
 			path = API;
@@ -233,6 +255,7 @@
 		ED7B0F202E26273E00042ED3 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				ED0E6FFA2E817DB4003ADB9C /* WarningHandler.swift */,
 				ED9910992E812E5F0082E202 /* ViewSwitcher.swift */,
 				ED567D712E2CC3E5005FA014 /* UtilsUI.swift */,
 				ED9AAC9F2E28C82E00AAA8CE /* AppError.swift */,
@@ -439,6 +462,7 @@
 				ED7B0F252E273A0B00042ED3 /* APIConverters.swift in Sources */,
 				ED97F3952DE2E22F007D316B /* CalendarConstants.swift in Sources */,
 				ED4ABE462DE472DC0036B16F /* EditorSections.swift in Sources */,
+				ED0E6FFC2E817DB4003ADB9C /* WarningHandler.swift in Sources */,
 				ED1410E92C7F29E300D152A6 /* CalendarView.swift in Sources */,
 				ED7B0F1E2E2626F400042ED3 /* APIHandler.swift in Sources */,
 				ED9AAC9E2E28B30A00AAA8CE /* ErrorClassifier.swift in Sources */,
@@ -474,6 +498,24 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED0E6FFB2E817DB4003ADB9C /* WarningHandler.swift in Sources */,
+				ED0E6FFD2E817DF6003ADB9C /* UtilsUI.swift in Sources */,
+				ED0E6FEB2E817A05003ADB9C /* LibraryService.swift in Sources */,
+				ED0E6FF02E817A1F003ADB9C /* CodableStructures.swift in Sources */,
+				ED0E6FF12E817A1F003ADB9C /* APIConverters.swift in Sources */,
+				ED0E6FEC2E817A05003ADB9C /* ImageService.swift in Sources */,
+				ED0E6FED2E817A05003ADB9C /* PresetService.swift in Sources */,
+				ED0E6FF22E817A34003ADB9C /* CalendarConstants.swift in Sources */,
+				ED0E6FF32E817A34003ADB9C /* Event.swift in Sources */,
+				ED0E6FF42E817A34003ADB9C /* LogicHelpers.swift in Sources */,
+				ED0E6FF52E817A34003ADB9C /* AsyncExecutor.swift in Sources */,
+				ED0E6FF92E817A3B003ADB9C /* BaseExtensions.swift in Sources */,
+				ED0E6FF62E817A34003ADB9C /* AppError.swift in Sources */,
+				ED0E6FF72E817A34003ADB9C /* ErrorClassifier.swift in Sources */,
+				ED0E6FF82E817A34003ADB9C /* ViewSwitcher.swift in Sources */,
+				ED0E6FEE2E817A05003ADB9C /* EventService.swift in Sources */,
+				ED0E6FEF2E817A05003ADB9C /* AuthService.swift in Sources */,
+				ED0E6FEA2E8179BB003ADB9C /* APIHandlerNew.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -542,7 +584,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -601,7 +643,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -686,8 +728,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YKCASK27M4;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				MARKETING_VERSION = 1.0;
+				"OTHER_SWIFT_FLAGS[arch=*]" = "-D TESTING";
 				PRODUCT_BUNDLE_IDENTIFIER = "Visual-Calendar.Visual-CalendarTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -708,7 +751,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = YKCASK27M4;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "Visual-Calendar.Visual-CalendarTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";

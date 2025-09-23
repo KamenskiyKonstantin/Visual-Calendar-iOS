@@ -40,7 +40,7 @@ struct EventJSON: Codable {
     
 }
 
-protocol NamedURL {
+protocol NamedURL: Sendable {
     var display_name: String { get }
     var file_url: String { get }
 }
