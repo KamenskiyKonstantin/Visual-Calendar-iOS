@@ -95,40 +95,54 @@ final class APIHandler {
         }.value ?? []
     }
 
-    func upsertEvents(_ events: [Event]) async -> Bool {
+    func createEvent(_ event: Event) async -> Bool {
         guard await verifySession() else { return false }
         return await requireExecutor().run("upsertEvents") {
-            try await self.eventService.upsertEvents(events)
+            try await self.eventService.createEvent(event)
+        }.value != nil
+    }
+    
+    func updateEvent(_ newEvent: Event) async -> Bool {
+        guard await verifySession() else { return false }
+        return await requireExecutor().run("upsertEvents") {
+            try await self.eventService.updateEvent(newEvent)
         }.value != nil
     }
 
-    func deleteEvent(_ uid: UUID, from currentList: [Event]) async -> Bool {
+
+    func deleteEvent(_ eventID: UUID) async -> Bool {
         guard await verifySession() else { return false }
-        let updated = currentList.filter { $0.id != uid }
         return await requireExecutor().run("deleteEvent") {
-            try await self.eventService.upsertEvents(updated)
+            try await self.eventService.deleteEvent(eventID)
         }.value != nil
     }
 
     // MARK: - Images
-    func upsertImage(imageData: Data, filename: String, force: Bool = false) async -> Bool {
+    func createImage(_ imageData: Data, _ displayName: String) async -> Bool {
         guard await verifySession() else { return false }
-        return await requireExecutor().run("upsertImage(\(filename))") {
-            try await self.imageService.upsertImage(imageData: imageData, name: filename, force: force)
+        return await requireExecutor().run("upsertImage (\(displayName))") {
+            try await self.imageService.createImage(imageData: imageData, displayName: displayName)
         }.value != nil
     }
 
-    func fetchImageURLs(using libraries: [LibraryInfo]) async -> [String: [any NamedURL]] {
+    func fetchImages(_ libraries: [LibraryInfo]) async -> [String: [any NamedURL]] {
         guard await verifySession() else { return [:] }
         return await requireExecutor().run("fetchImageURLs") {
             try await self.imageService.fetchAllImageMappings(libraries: libraries)
         }.value ?? [:]
     }
     
-    func deleteImage(filename: String) async -> Bool {
+    func updateImage(_ imageData: Data, _ displayName: String) async -> Bool {
+        guard await verifySession() else { return false }
+        return await requireExecutor().run("upsertImage (\(displayName))") {
+            try await self.imageService.updateImage(imageData: imageData, displayName: displayName)
+        }.value != nil
+    }
+    
+    func deleteImage(_ displayName: String) async -> Bool {
         guard await verifySession() else { return false }
         return await requireExecutor().run("Delete Image") {
-            try await self.imageService.deleteImage(name: filename)
+            try await self.imageService.deleteImage(displayName: displayName)
         }.value != nil
     }
 
@@ -139,27 +153,57 @@ final class APIHandler {
             try await self.libraryService.fetchAllLibraries()
         }.value ?? []
     }
+    
+    func fetchConnectedLibraries() async -> [LibraryInfo] {
+        guard await verifySession() else { return [] }
+        return await requireExecutor().run("fetchConnectedLibraries") {
+            try await self.libraryService.fetchConnectedLibraries()
+        }.value ?? []
+    }
 
-    func addLibrary(_ systemName: String, available: [LibraryInfo]) async -> Bool {
+    func addLibrary(_ systemName: String) async -> Bool {
         guard await verifySession() else { return false }
         return await requireExecutor().run("addLibrary") {
-            try await self.libraryService.addLibrary(systemName: systemName, from: available)
+            try await self.libraryService.addLibrary(systemName: systemName)
+            return true
+        }.value ?? false
+    }
+    
+    func removeLibrary(_ systemName: String) async -> Bool{
+        guard await verifySession() else { return false }
+        return await requireExecutor().run("remove library") {
+            try await self.libraryService.removeLibrary(systemName: systemName)
             return true
         }.value ?? false
     }
 
     // MARK: - Presets
-    func fetchPresets() async -> [String: Preset] {
-        guard await verifySession() else { return [:] }
-        return await requireExecutor().run("fetchPresets") {
-            try await self.presetService.fetchPresets()
-        }.value ?? [:]
-    }
-
-    func upsertPreset(title: String, preset: Preset) async -> Bool {
+    func createPreset( preset: Preset) async -> Bool {
         guard await verifySession() else { return false }
-        return await requireExecutor().run("upsertPreset(\(title))") {
-            try await self.presetService.uploadUserPreset(title: title, preset: preset)
+        return await requireExecutor().run("upsertPreset(\(preset.presetName))") {
+            try await self.presetService.createPreset(preset)
         }.value != nil
     }
+    
+    func fetchPresets() async -> [Preset] {
+        guard await verifySession() else { return [] }
+        return await requireExecutor().run("fetchPresets") {
+            try await self.presetService.fetchPresets()
+        }.value ?? []
+    }
+    
+    func updatePreset(preset: Preset) async -> Bool {
+        guard await verifySession() else { return false }
+        return await requireExecutor().run("upsertPreset(\(preset.presetName))") {
+            try await self.presetService.updatePreset(preset)
+        }.value != nil
+    }
+
+    func deletePreset(presetName: String) async -> Bool {
+        guard await verifySession() else { return false }
+        return await requireExecutor().run("deletePreset(\(presetName))") {
+            try await self.presetService.deletePreset(named: presetName)
+        }.value != nil
+    }
+
 }

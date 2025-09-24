@@ -20,11 +20,13 @@ struct CalendarJSON: Codable {
 }
 
 struct Preset: Codable, Hashable {
+    var presetName: String = ""
     var selectedSymbol: String
     var backgroundColor: String
     var mainImageURL: String
     var sideImageURLs: [String]
 }
+
 
 struct EventJSON: Codable {
     let timeStart, timeEnd: [Int]

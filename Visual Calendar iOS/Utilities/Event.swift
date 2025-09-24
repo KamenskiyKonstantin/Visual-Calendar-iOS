@@ -107,7 +107,7 @@ func emojiStringToEnum(_ emojiString: String) -> EventReaction {
 
 struct Event: Identifiable{
     let id: UUID
-    let backgroundColor: String
+    var backgroundColor: String
     let textColor: String
     let systemImage: String
     let dateTimeStart: Date

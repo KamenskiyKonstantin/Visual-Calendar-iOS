@@ -39,6 +39,7 @@ enum AppError: Error, LocalizedError, Equatable{
     case failedToUpsertPreset
     case failedToReadFile
     case libraryNotFound(String)
+    case notFound
 
     // MARK: - Unknown / fallback
     case unknown(Error)
@@ -72,6 +73,7 @@ enum AppError: Error, LocalizedError, Equatable{
         case .failedToUpsertPreset: return "Failed to save the event preset."
         case .failedToReadFile: return "Could not read the selected file."
         case .libraryNotFound(let name): return "Library not found: \(name)."
+        case .notFound: return "Object Not Found"
         
         case .unknown(let error): return "An unknown error occurred: \(error.localizedDescription)."
         case .multipleErrorsOccurred(let errors):

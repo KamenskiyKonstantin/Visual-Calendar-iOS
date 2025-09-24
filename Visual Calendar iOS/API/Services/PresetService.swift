@@ -22,36 +22,80 @@ class PresetService {
         }
     }
 
-    func fetchPresets() async throws -> [String: Preset] {
+    // MARK: - Create
+    func createPreset(_ preset: Preset) async throws {
+        var presets = try await fetchUserOnlyPresets()
+        guard !presets.contains(where: { $0.presetName == preset.presetName }) else {
+            throw AppError.duplicateFile
+        }
+        presets.append(preset)
+        try await saveUserPresets(presets)
+        // print("[-SERVICES/PRESET] CREATED PRESET: \(preset.presetName)")
+    }
+
+    // MARK: - Read (all presets: official + user)
+    func fetchPresets() async throws -> [Preset] {
         let folder = try await userFolder
         let path = "\(folder)/presets.json"
 
         // Fetch user presets
+        print("[-SERVICES/PRESETS-] NOW FETCHING CUSTOM PRESETS")
         let userData = try await client.storage.from("user_data").download(path: path)
-        print(String(data: userData, encoding: .utf8) ?? "No user data")
-        let userPresets = try JSONDecoder().decode([String: Preset].self, from: userData)
+        let userPresets = try JSONDecoder().decode([Preset].self, from: userData)
 
-        // Fetch official presets (from a single file)
+        // Fetch official presets
+        print("[-SERVICES/PRESETS-] NOW FETCHING OFFICIAL PRESETS")
         let officialData = try await client.storage.from("presets").download(path: "presets.json")
-        print(String(data: officialData, encoding: .utf8) ?? "No official data")
-        let officialPresets = try JSONDecoder().decode([String: Preset].self, from: officialData)
+        let officialPresets = try JSONDecoder().decode([Preset].self, from: officialData)
 
-        // Merge user presets (override if keys overlap)
-        return officialPresets.merging(userPresets) { _, user in user }
+        // Merge (user presets override official ones with same name)
+        let merged = Dictionary(uniqueKeysWithValues: officialPresets.map { ($0.presetName, $0) })
+            .merging(Dictionary(uniqueKeysWithValues: userPresets.map { ($0.presetName, $0) })) { _, user in user }
+
+        let result = Array(merged.values)
+
+        // print("[-SERVICES/PRESET] FETCHED PRESETS: \(result.map { $0.presetName })")
+
+        return result
     }
 
-    func uploadUserPreset(title: String, preset: Preset, force: Bool = true) async throws -> Bool {
+    // MARK: - Read (user only)
+    func fetchUserOnlyPresets() async throws -> [Preset] {
         let folder = try await userFolder
         let path = "\(folder)/presets.json"
 
-        // Load existing presets
+        let data = try await client.storage.from("user_data").download(path: path)
+        return try JSONDecoder().decode([Preset].self, from: data)
+    }
+
+    // MARK: - Update
+    func updatePreset(_ preset: Preset) async throws {
         var presets = try await fetchUserOnlyPresets()
-
-        if presets[title] != nil && !force {
-            return false
+        guard let index = presets.firstIndex(where: { $0.presetName == preset.presetName }) else {
+            throw AppError.notFound
         }
+        presets[index] = preset
+        try await saveUserPresets(presets)
+        // print("[-SERVICES/PRESET] UPDATED PRESET: \(preset.presetName)")
+    }
 
-        presets[title] = preset
+    // MARK: - Delete
+    func deletePreset(named name: String) async throws {
+        print("[-SERVICES/PRESETS-] NOW DELETING: \(name)")
+        let presets = try await fetchUserOnlyPresets()
+        print("[-SERVICES/PRESETS-] User presets to delete from: \(presets.compactMap({$0.presetName}))")
+        let newPresets = presets.filter { $0.presetName != name }
+        guard newPresets.count != presets.count else {
+            throw AppError.notFound
+        }
+        try await saveUserPresets(newPresets)
+        // print("[-SERVICES/PRESET] DELETED PRESET: \(name)")
+    }
+
+    // MARK: - Internal helper
+    private func saveUserPresets(_ presets: [Preset]) async throws {
+        let folder = try await userFolder
+        let path = "\(folder)/presets.json"
         let data = try JSONEncoder().encode(presets)
 
         try await client.storage.from("user_data").upload(
@@ -59,14 +103,6 @@ class PresetService {
             file: data,
             options: FileOptions(contentType: "application/json", upsert: true)
         )
-        return true
-    }
-
-    func fetchUserOnlyPresets() async throws -> [String: Preset] {
-        let folder = try await userFolder
-        let path = "\(folder)/presets.json"
-
-        let data = try await client.storage.from("user_data").download(path: path)
-        return try JSONDecoder().decode([String: Preset].self, from: data)
+        // print("[-SERVICES/PRESET] SAVED PRESETS to path: \(path)")
     }
 }

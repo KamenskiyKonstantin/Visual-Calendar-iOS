@@ -8,6 +8,23 @@
 import Foundation
 import XCTest
 @testable import Visual_Calendar_iOS
+
+extension Preset {
+    static let officialPresets: [Preset] = [
+        Preset(presetName: "доктор", selectedSymbol: "🏥", backgroundColor: "Blue", mainImageURL: "/standard_library/doctor.png", sideImageURLs: []),
+        Preset(presetName: "спортклуб", selectedSymbol: "🏋️‍♂️", backgroundColor: "Green", mainImageURL: "/standard_library/fitness.png", sideImageURLs: []),
+        Preset(presetName: "бассейн", selectedSymbol: "🏊‍♂️", backgroundColor: "Teal", mainImageURL: "/standard_library/pool.png", sideImageURLs: []),
+        Preset(presetName: "экскурсия", selectedSymbol: "🏛️", backgroundColor: "Orange", mainImageURL: "/standard_library/museum.png", sideImageURLs: []),
+        Preset(presetName: "супермаркет", selectedSymbol: "🛒", backgroundColor: "Yellow", mainImageURL: "/standard_library/supermarket.png", sideImageURLs: []),
+        Preset(presetName: "аттракционы", selectedSymbol: "🎡", backgroundColor: "Purple", mainImageURL: "/standard_library/amusement_park.png", sideImageURLs: []),
+        Preset(presetName: "перелет", selectedSymbol: "✈️", backgroundColor: "Indigo", mainImageURL: "/standard_library/flight.png", sideImageURLs: []),
+        Preset(presetName: "чтение", selectedSymbol: "📖", backgroundColor: "Brown", mainImageURL: "/standard_library/reading.png", sideImageURLs: []),
+        Preset(presetName: "прогулка", selectedSymbol: "🚶‍♂️", backgroundColor: "Mint", mainImageURL: "/standard_library/walk.png", sideImageURLs: []),
+        Preset(presetName: "фастфуд", selectedSymbol: "🍔", backgroundColor: "Red", mainImageURL: "/standard_library/fastfood.png", sideImageURLs: []),
+        Preset(presetName: "ресторан", selectedSymbol: "🍽️", backgroundColor: "Pink", mainImageURL: "/standard_library/restaurant.png", sideImageURLs: [])
+    ]
+}
+
 #if TESTING
 @MainActor
 class APIHandlerIntegrationTests: XCTestCase {
@@ -68,30 +85,32 @@ class APIHandlerIntegrationTests: XCTestCase {
         }
         return img.pngData()!
     }
+    
+    
+    func makeMockPreset(_ variation: Bool = false) -> Preset {
+        return Preset(
+            presetName: "Mock Preset",
+            selectedSymbol: "🎯",
+            backgroundColor: variation ? "Blue" : "Red",
+            mainImageURL: "/standard_library/main_image.png",
+            sideImageURLs: [
+                "/standard_library/side_image_1.png",
+                "/standard_library/side_image_2.png"
+            ]
+        )
+    }
 
-    func testDLoginFlow() async throws {
+    func testLoginFlow() async throws {
         print("[-TESTER/APIHANDLER-] NOW TESTING: Standard Auth Flow")
-        
-        let logout = await api.logout()
-        let logoutWarning = warningHandler.lastWarning
-        XCTAssertTrue(logout, "Logout should succeed, failed with: \(logoutWarning ?? "Unsurfaced Error")")
 
         let login = await api.login(email: email, password: password)
         let loginWarning = warningHandler.lastWarning
         XCTAssertTrue(login, "Login should succeed, failed with: \(loginWarning ?? "Unsurfaced Error")")
         
-        XCTContext.runActivity(named: "Logout before login") { _ in
-            XCTAssertTrue(logout, "Logout failed: \(logoutWarning ?? "Unsurfaced Error")")
-        }
-
-        XCTContext.runActivity(named: "Login with test credentials") { _ in
-            XCTAssertTrue(login, "Login failed: \(loginWarning ?? "Unsurfaced Error")")
-        }
-        
         print("[-TESTER/APIHANDLER-] TESTING SUCCESSFUL: Standard Auth Flow")
     }
     
-    func testCInvalidCredentials() async throws {
+    func testInvalidCredentials() async throws {
         print("[-TESTER/APIHANDLER-] NOW TESTING: Invalid Credentials Auth Flow")
 
         // 1. Wrong password
@@ -124,7 +143,7 @@ class APIHandlerIntegrationTests: XCTestCase {
         print("[-TESTER/APIHANDLER-] TESTING SUCCESSFUL: Invalid Credentials Auth Flow")
     }
     
-    func testBInvalidSignup() async throws {
+    func testInvalidSignup() async throws {
         print("[-TESTER/APIHANDLER-] NOW TESTING: Invalid Signup Flow")
 
         // 1. Duplicate signup
@@ -151,184 +170,226 @@ class APIHandlerIntegrationTests: XCTestCase {
     
     
     
+    func testLibraryService() async throws {
+        print("[-TESTER/APIHANDLER-] NOW TESTING: Library Service")
+
+        // Login
+        let loginSuccess = await api.login(email: email, password: password)
+        XCTAssertTrue(loginSuccess, "Login should succeed before library tests")
+        XCTAssertTrue(api.isAuthenticated, "User should be authenticated after login")
+
+        // Fetch all available libraries
+        let existingLibraries = await api.fetchExistingLibraries()
+        XCTAssertFalse(existingLibraries.isEmpty, "Existing libraries should not be empty, got []")
+
+        // Pick one known library
+        let standardLibrary = existingLibraries.first { $0.system_name == "standard_library" }
+        XCTAssertNotNil(standardLibrary, "Expected to find standard_library in existing libraries, got: \(existingLibraries)")
+
+        // Add library
+        let addSuccess = await api.addLibrary("standard_library")
+        XCTAssertTrue(addSuccess, "Adding standard_library should succeed, failed with \(warningHandler.lastWarning ?? "Unsurfaced error")")
+
+        // Fetch connected libraries
+        var connectedLibraries = await api.fetchConnectedLibraries()
+        XCTAssertTrue(connectedLibraries.contains(where: { $0.system_name == "standard_library" }),
+                      "Connected libraries should include standard_library, got \(connectedLibraries)")
+
+        // Remove library
+        let removeSuccess = await api.removeLibrary("standard_library")
+        XCTAssertTrue(removeSuccess, "Removing standard_library should succeed")
+
+        connectedLibraries = await api.fetchConnectedLibraries()
+        XCTAssertFalse(connectedLibraries.contains(where: { $0.system_name == "standard_library" }),
+                       "Connected libraries should not include standard_library after removal, got \(connectedLibraries)")
+
+        print("[-TESTER/APIHANDLER-] TESTING SUCCESSFUL: Library Service")
+    }
+    
+    func testPresetService() async throws {
+        print("[-TESTER/APIHANDLER-] NOW TESTING: Preset Service")
+
+        // Login
+        let loginSuccess = await api.login(email: email, password: password)
+        XCTAssertTrue(loginSuccess, "Login should succeed before preset tests")
+        XCTAssertTrue(api.isAuthenticated, "User should be authenticated after login")
+
+        // Initial fetch
+        var presets = await api.fetchPresets()
+        let actualSorted = presets.sorted(by: { $0.presetName < $1.presetName })
+        let expectedSorted = Preset.officialPresets.sorted(by: { $0.presetName < $1.presetName })
+
+        XCTAssertEqual(actualSorted, expectedSorted, "Official presets mismatch, expected \(expectedSorted), got \(actualSorted) instead.")
+
+        // Create preset
+        let presetName = "UnitTestPreset"
+        let mockPreset = makeMockPreset()
+        let createSuccess = await api.createPreset(preset: mockPreset)
+        XCTAssertTrue(createSuccess, "Creating preset \(presetName) should succeed, failed with \(warningHandler.lastWarning ?? "Unsurfaced Error") instead")
+
+        presets = await api.fetchPresets()
+        XCTAssertEqual(presets.count, Preset.officialPresets.count+1, "Expected 1 preset after creation, got \(presets.count)")
+        XCTAssertTrue(presets.contains(mockPreset), "Preset name mismatch: expected \(presetName), got none)")
+
+        // Update preset
+        let updatedPreset = makeMockPreset(true)
+        let updateSuccess = await api.updatePreset(preset: updatedPreset)
+        XCTAssertTrue(updateSuccess, "Updating preset \(presetName) should succeed")
+
+        presets = await api.fetchPresets()
+        let target = presets.first(where: {$0.presetName == updatedPreset.presetName})
+        XCTAssertNotNil(target, "Target preset disappeared")
+        XCTAssertTrue(target?.backgroundColor.lowercased() == "blue",
+                      "Preset update not reflected, expected color 'blue', got \(target?.backgroundColor.lowercased() ?? "nil")")
+
+        // Delete preset
+        let deleteSuccess = await api.deletePreset(presetName: updatedPreset.presetName)
+        XCTAssertTrue(deleteSuccess, "Deleting preset \(presetName) should succeed")
+
+        presets = await api.fetchPresets()
+        XCTAssertTrue(presets.count == Preset.officialPresets.count, "Expected no presets after delete, got \(presets)")
+
+        print("[-TESTER/APIHANDLER-] TESTING SUCCESSFUL: Preset Service")
+    }
+    
     func testEventService() async throws {
         print("[-TESTER/APIHANDLER-] NOW TESTING: Event Service")
 
+        // Login
         let loginSuccess = await api.login(email: email, password: password)
         XCTAssertTrue(loginSuccess, "Login should succeed before event tests")
         XCTAssertTrue(api.isAuthenticated, "User should be authenticated after login")
 
         // Initial fetch
         var events = await api.fetchEvents()
-        XCTAssertTrue(events.isEmpty, "Initial fetch should return empty event list")
+        XCTAssertTrue(events.isEmpty, "Initial fetch should return empty list, got: \(events)")
 
-        // Upsert one event
+        // Create one event
         let mockEvent = makeMockEvent()
-        events.append(mockEvent)
-
-        let upsertOne = await api.upsertEvents(events)
-        XCTAssertTrue(upsertOne, "Upsert of single event should succeed, got: \(warningHandler.lastWarning ?? "No warning")")
+        let createOne = await api.createEvent(mockEvent)
+        XCTAssertTrue(createOne, "Creating single event should succeed")
 
         events = await api.fetchEvents()
-        XCTAssertEqual(events, [mockEvent], "Expected to fetch single inserted event, got: \(events)")
+        XCTAssertEqual(events.count, 1, "Expected 1 event after create, got \(events.count)")
+        XCTAssertEqual(events.first?.id, mockEvent.id, "Fetched event ID mismatch, expected \(mockEvent.id), got \(events.first?.id ?? UUID())")
 
-        // Append second event
-        let mockEvent2 = makeMockEvent(color: "Blue")
-        events.append(mockEvent2)
-
-        let upsertTwo = await api.upsertEvents(events)
-        XCTAssertTrue(upsertTwo, "Upserting two events should succeed")
+        // Update event
+        var updatedEvent = mockEvent
+        updatedEvent.backgroundColor = "Blue"
+        let updateOne = await api.updateEvent(updatedEvent)
+        XCTAssertTrue(updateOne, "Updating event should succeed")
 
         events = await api.fetchEvents()
-        XCTAssertEqual(events, [mockEvent, mockEvent2], "Expected both events after second upsert")
+        XCTAssertEqual(events.count, 1, "Expected still 1 event after update, got \(events.count)")
+        XCTAssertEqual(events.first?.backgroundColor, "Blue", "Expected updated color 'Blue', got \(events.first?.backgroundColor ?? "nil")")
 
-        // Delete one
-        let deleteSuccess = await api.deleteEvent(mockEvent.id, from: events)
+        // Create second event
+        let mockEvent2 = makeMockEvent(color: "Green")
+        let createTwo = await api.createEvent(mockEvent2)
+        XCTAssertTrue(createTwo, "Creating second event should succeed")
+
+        events = await api.fetchEvents()
+        XCTAssertEqual(events.count, 2, "Expected 2 events after creating second, got \(events.count)")
+
+        // Delete first event
+        let deleteSuccess = await api.deleteEvent(mockEvent.id)
         XCTAssertTrue(deleteSuccess, "Deleting first event should succeed")
 
         events = await api.fetchEvents()
-        XCTAssertEqual(events, [mockEvent2], "Only second event should remain after deletion")
+        XCTAssertEqual(events.count, 1, "Expected 1 event after deletion, got \(events.count)")
+        XCTAssertEqual(events.first?.id, mockEvent2.id, "Remaining event should be mockEvent2, got \(events.first?.id ?? UUID())")
 
         print("[-TESTER/APIHANDLER-] TESTING SUCCESSFUL: Event Service")
-    }
-    
-    func testImageAndLibraryService() async throws {
-        print("[-TESTER/APIHANDLER-] NOW TESTING: Image + Library Service")
-
-        // Login
-        let loginSuccess = await api.login(email: email, password: password)
-        XCTAssertTrue(loginSuccess, "Login should succeed before library/image tests")
-        XCTAssertTrue(api.isAuthenticated, "User should be authenticated after login")
-
-        // Start with a clean state
-        let libraries: [LibraryInfo] = []
-        var allMappings = await api.fetchImageURLs(using: libraries)
-        XCTAssertTrue(allMappings.isEmpty, "Initial fetch with no libraries should be empty, was \(allMappings) instead")
-        
-        //Look up all libraries
-        let availableLibraries = await api.fetchExistingLibraries()
-        XCTAssertFalse(availableLibraries.isEmpty, "Available libraries were empty, shouldn't have")
-        
-        let expectedLibraries: [LibraryInfo] = [
-            LibraryInfo(
-                library_uuid: UUID(uuidString: "4e0da613-c0f8-4d19-8d0d-192b92643b5c")!,
-                system_name: "standard_library",
-                localized_name: "Стандартная библиотека"
-            ),
-            LibraryInfo(
-                library_uuid: UUID(uuidString: "a2f1d9d2-1e2a-4c31-97f8-84e3dfe27301")!,
-                system_name: "test_library",
-                localized_name: "Тестовая библиотека"
-            )
-        ]
-        
-        XCTAssertEqual(expectedLibraries.count, availableLibraries.count, "Library counts differ")
-
-        for (exp, act) in zip(expectedLibraries, availableLibraries) {
-            XCTAssertEqual(exp.library_uuid, act.library_uuid, "UUID mismatch: expected \(exp.library_uuid), got \(act.library_uuid) instead")
-            XCTAssertEqual(exp.system_name, act.system_name, "System name mismatch: expected \(exp.system_name), got \(act.system_name) instead")
-            XCTAssertEqual(exp.localized_name, act.localized_name, "Localized name mismatch: expected \(exp.localized_name), got \(act.localized_name) instead")
-        }
-        
-        let libraryAddSuccess = await api.addLibrary("standard_library", available: availableLibraries)
-        XCTAssertTrue(libraryAddSuccess, "library add should succeed, failed instead with \(warningHandler.lastWarning ?? "Unsurfaced error")")
-        
-
-        // Fetch all images (with mappings)
-        allMappings = await api.fetchImageURLs(using: availableLibraries)
-        XCTAssertEqual(allMappings.keys.count, 1, "Should have exactly one library in mapping, got \(allMappings.keys.count) instead")
-        XCTAssertNotNil(allMappings["Стандартная библиотека"], "Mapping should contain standard_library, didn't")
-
-        print("[-TESTER/APIHANDLER-] TESTING SUCCESSFUL: Image + Library Service")
     }
     
     func testUserImageService() async throws {
         print("[-TESTER/APIHANDLER-] NOW TESTING: User Image Service")
 
-        // Login first
+        // Login
         let loginSuccess = await api.login(email: email, password: password)
         XCTAssertTrue(loginSuccess, "Login should succeed before image tests")
         XCTAssertTrue(api.isAuthenticated, "User should be authenticated after login")
 
-        // Initial fetch with [] libs should retturn [:]
-        var allMappings = await api.fetchImageURLs(using: [])
-        XCTAssertTrue(allMappings.isEmpty, "Expected one mapping group (user), got \(allMappings.keys.count) instead: \(allMappings.keys)")
+        // Initial fetch
+        var allMappings = await api.fetchImages([])
+        XCTAssertTrue(allMappings.isEmpty, "Expected empty mapping initially, got \(allMappings)")
 
-        let testData = makeTestPNG()
         let displayName = "UnitTestImage"
+        let testData = makeTestPNG()
 
-        // Upsert image
-        let uploadSuccess = await api.upsertImage(imageData: testData, filename: displayName)
-        XCTAssertTrue(uploadSuccess, "User image upsert should succeed, failed instead with \(warningHandler.lastWarning ?? "Unsurfaced error")")
+        // Create image
+        let createSuccess = await api.createImage(testData, displayName)
+        XCTAssertTrue(createSuccess, "Creating image \(displayName) should succeed")
 
-        // Fetch again
-        allMappings = await api.fetchImageURLs(using: [])
+        allMappings = await api.fetchImages([])
         let userImages = allMappings["user"] ?? []
-        XCTAssertEqual(userImages.count, 1, "Expected exactly 1 user image after upsert, got \(userImages.count) instead: \(userImages)")
+        XCTAssertEqual(userImages.count, 1, "Expected 1 user image, got \(userImages.count)")
+        XCTAssertEqual(userImages.first?.display_name, displayName, "Expected display name \(displayName), got \(userImages.first?.display_name ?? "nil")")
 
-        guard let first = userImages.first else {
-            XCTFail("User images list unexpectedly empty after upload")
-            return
-        }
+        // Update (overwrite) image
+        let updateSuccess = await api.updateImage(makeTestPNG(color: .red), displayName)
+        XCTAssertTrue(updateSuccess, "Updating image \(displayName) should succeed")
 
-        // Validate metadata
-        XCTAssertEqual(first.display_name, displayName, "Display name mismatch: expected \(displayName), got \(first.display_name)")
-        XCTAssertTrue(first.file_url.contains("token="), "File URL should be signed (contain token), got: \(first.file_url)")
+        allMappings = await api.fetchImages([])
+        let updatedImage = allMappings["user"]?.first
+        XCTAssertNotNil(updatedImage, "Expected updated image to exist, got nil")
+        XCTAssertEqual(updatedImage?.display_name, displayName, "Expected updated display name to remain \(displayName), got \(updatedImage?.display_name ?? "nil")")
 
+        // Delete image
+        let deleteSuccess = await api.deleteImage(displayName)
+        XCTAssertTrue(deleteSuccess, "Deleting \(displayName) should succeed")
 
-        // Upload again with same display name — should fail
-        let overwriteSuccess = await api.upsertImage(imageData: testData, filename: displayName)
-        XCTAssertFalse(overwriteSuccess, "Second upsert with same display name should fail (overwrite forbidden), but it succeeded")
+        allMappings = await api.fetchImages([])
+        XCTAssertTrue(allMappings.isEmpty, "Expected no images after delete, got \(allMappings)")
+
         print("[-TESTER/APIHANDLER-] TESTING SUCCESSFUL: User Image Service")
     }
     
-    func testUserImageForceOverwrite() async throws {
-        print("[-TESTER/APIHANDLER-] NOW TESTING: User Image Force Overwrite")
+    func testLibraryImageFetch() async throws {
+        print("[-TESTER/APIHANDLER-] NOW TESTING: Library Image Fetch")
 
+        // Login
         let loginSuccess = await api.login(email: email, password: password)
-        XCTAssertTrue(loginSuccess, "Login should succeed before force overwrite tests")
+        XCTAssertTrue(loginSuccess, "Login should succeed before library image tests")
         XCTAssertTrue(api.isAuthenticated, "User should be authenticated after login")
 
-        let filename = "ForceOverwriteImage"
+        // Fetch available libraries
+        let availableLibraries = await api.fetchExistingLibraries()
+        XCTAssertFalse(availableLibraries.isEmpty,
+                       "Available libraries should not be empty before image fetch, got []")
 
-        // First upload
-        let firstUpload = await api.upsertImage(imageData: makeTestPNG(color: .green), filename: filename, force: false)
-        XCTAssertTrue(firstUpload, "First upload for \(filename) should succeed")
+        // Pick a known library (use system_name if needed)
+        guard let standardLibrary = availableLibraries.first(where: { $0.system_name == "standard_library" }) else {
+            XCTFail("Expected to find 'standard_library' in available libraries, got: \(availableLibraries)")
+            return
+        }
 
-        // Force overwrite
-        let secondUpload = await api.upsertImage(imageData: makeTestPNG(color: .red), filename: filename, force: true)
-        XCTAssertTrue(secondUpload, "Force overwrite for \(filename) should succeed")
+        // Add library to connect it
+        let addSuccess = await api.addLibrary("standard_library")
+        XCTAssertTrue(addSuccess, "Adding standard_library should succeed, failed with \(warningHandler.lastWarning ?? "Unsurfaced error")")
 
-        // Fetch mappings and check only 1 image remains
-        let mappings = await api.fetchImageURLs(using: [])
-        let userImages = mappings["user"] ?? []
-        XCTAssertEqual(userImages.count, 1, "Expected 1 image after force overwrite, got \(userImages.count)")
-        XCTAssertEqual(userImages.first?.display_name, filename,
-                       "Expected display name to remain \(filename), got \(userImages.first?.display_name ?? "nil")")
+        // Fetch images from the connected library
+        let mappings = await api.fetchImages([standardLibrary])
+        XCTAssertTrue(mappings.keys.contains(standardLibrary.localized_name),
+                      "Mappings should contain key for \(standardLibrary.localized_name), got \(mappings.keys)")
+
+        let libImages = mappings[standardLibrary.localized_name] ?? []
+        XCTAssertFalse(libImages.isEmpty, "Expected non-empty image list for \(standardLibrary.localized_name), got []")
+
+        // Validate metadata of first image
+        guard let firstImage = libImages.first else {
+            XCTFail("Library images unexpectedly empty for \(standardLibrary.localized_name)")
+            return
+        }
+
+        XCTAssertFalse(firstImage.display_name.isEmpty, "First image display name should not be empty")
+        XCTAssertTrue(firstImage.file_url.contains("token="),
+                      "First image URL should be signed (contain token), got: \(firstImage.file_url)")
+
+        print("[-TESTER/APIHANDLER-] TESTING SUCCESSFUL: Library Image Fetch")
     }
     
-    func testUserImageDelete() async throws {
-        print("[-TESTER/APIHANDLER-] NOW TESTING: User Image Delete")
-
-        let loginSuccess = await api.login(email: email, password: password)
-        XCTAssertTrue(loginSuccess, "Login should succeed before delete tests")
-        XCTAssertTrue(api.isAuthenticated, "User should be authenticated after login")
-
-        let filename = "DeleteMe"
-
-        // Upload
-        let uploadSuccess = await api.upsertImage(imageData: makeTestPNG(color: .yellow), filename: filename, force: false)
-        XCTAssertTrue(uploadSuccess, "Upload before delete should succeed")
-
-        // Delete
-        let deleteSuccess = await api.deleteImage(filename: filename)
-        XCTAssertTrue(deleteSuccess, "Deleting \(filename) should succeed")
-
-        // Verify mappings are empty again
-        let mappings = await api.fetchImageURLs(using: [])
-        XCTAssertTrue(mappings.isEmpty ,
-                      "Expected no images after delete, got: \(mappings)")
-    }
+    
     
     func testLogoutMidFetch() async throws {
         print("[-TESTER/APIHANDLER-] NOW TESTING: Logout Mid-Fetch")
@@ -337,7 +398,7 @@ class APIHandlerIntegrationTests: XCTestCase {
         XCTAssertTrue(loginSuccess, "Login should succeed")
 
         let mockEvent = makeMockEvent()
-        let upserted = await api.upsertEvents([mockEvent])
+        let upserted = await api.createEvent(mockEvent)
         XCTAssertTrue(upserted, "Event upsert should succeed")
 
         // Logout before fetch

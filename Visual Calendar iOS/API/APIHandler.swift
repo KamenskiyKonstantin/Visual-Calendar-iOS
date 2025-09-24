@@ -85,14 +85,14 @@ class APIHandler: ObservableObject {
     func upsertEvents(_ events: [Event]) async throws {
         try await wrap("upsertEvents") {
             self.eventList = events
-            try await eventService.upsertEvents(events)
+            try await eventService.createEvent(events[0])
         }
     }
 
     func deleteEvent(_ uid: UUID) async throws {
         try await wrap("deleteEvent") {
             self.eventList.removeAll { $0.id == uid }
-            try await eventService.upsertEvents(self.eventList)
+            try await eventService.deleteEvent(uid)
         }
     }
 
@@ -100,13 +100,13 @@ class APIHandler: ObservableObject {
 
     func upsertImage(imageData: Data, filename: String) async throws {
         try await wrap("upsertImage(\(filename))") {
-            try await imageService.upsertImage(imageData: imageData, name: filename)
+            try await imageService.createImage(imageData: imageData, displayName: filename)
         }
     }
 
     func fetchImageURLs() async throws {
         try await wrap("fetchImageURLs") {
-            let systemNames = try await libraryService.fetchConnectedSystemNames()
+            let systemNames = try await libraryService.fetchConnectedLibraries().map { $0.system_name }
             let libraries = resolveLibraries(from: systemNames, using: availableLibraries)
             let result = try await imageService.fetchAllImageMappings(libraries: libraries)
             self.images = result
@@ -124,7 +124,7 @@ class APIHandler: ObservableObject {
 
     func addLibrary(_ systemName: String) async throws {
         try await wrap("addLibrary(\(systemName))") {
-            try await libraryService.addLibrary(systemName: systemName, from: availableLibraries)
+            try await libraryService.addLibrary(systemName: systemName)
             let libraries = try await libraryService.fetchAllLibraries()
             let result = try await imageService.fetchAllImageMappings(libraries: libraries)
             self.images = result
@@ -136,18 +136,17 @@ class APIHandler: ObservableObject {
     func fetchPresets() async throws {
         try await wrap("fetchPresets") {
             let loaded = try await presetService.fetchPresets()
-            for preset_name in loaded.keys {
-                print("Preset: \(preset_name), URL: \(loaded[preset_name]!.mainImageURL)")
+            self.presets = [:]
+            for preset in loaded {
+                let preset_name = preset.presetName
+                self.presets[preset_name] = preset
+                print("Preset: \(preset_name), URL: \(preset.mainImageURL)")
             }
-            self.presets = loaded
         }
     }
 
-    func upsertPresets(title: String, preset: Preset) async throws {
-        try await wrap("upsertPresets(\(title))") {
-            _ = try await presetService.uploadUserPreset(title: title, preset: preset)
-            self.presets[title] = preset
-        }
+    func upsertPresets(preset: Preset) async throws {
+        _ = try await presetService.createPreset(preset)
     }
 
     // MARK: - Timer Polling

@@ -148,7 +148,7 @@ struct EventEditor: View {
                 sideImageURLs: sideImagesURL
             )
             
-            try await APIHandler.upsertPresets(title: title, preset: current_preset)
+            try await APIHandler.upsertPresets(preset: current_preset)
             
             await MainActor.run {
                 updateEvents()

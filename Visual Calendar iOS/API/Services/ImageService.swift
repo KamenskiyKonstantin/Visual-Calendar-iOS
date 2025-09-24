@@ -26,99 +26,102 @@ class ImageService: ObservableObject {
 
     /// Generate a signed URL for a given path
     private func signedURL(for path: String, from bucket: String, expiresIn seconds: Int = 6 * 3600) async throws -> URL {
-        return try await client.storage
+        try await client.storage
             .from(bucket)
             .createSignedURL(path: path, expiresIn: seconds)
     }
 }
 
-// MARK: - User Images
+// MARK: - User Images (CRUD)
 
 extension ImageService {
 
-    func isFilenameAvailable(_ name: String) async throws -> Bool {
-        let userID = try await uid
-        let userFolder = userID.uuidString.lowercased()
-
-        let response = try await client
-            .from("custom_files")
-            .select("id")
-            .eq("user_uuid", value: userFolder)
-            .eq("display_name", value: name)
-            .limit(1)
-            .execute()
-
-        let rows = try JSONSerialization.jsonObject(with: response.data, options: []) as? [[String: Any]]
-        return rows?.isEmpty ?? true
+    // MARK: Create
+    func createImage(imageData: Data, displayName: String) async throws {
+        try await upsertImage(imageData: imageData, displayName: displayName, force: false)
+        // print("[-SERVICES/IMAGE] CREATED IMAGE: \(displayName)")
     }
 
+    // MARK: Read
     func fetchUserImages() async throws -> [CustomFile] {
         let userID = try await uid
-        let userFolder = userID.uuidString.lowercased()
+        let folder = userID.uuidString.lowercased()
 
         let response = try await client
             .from("custom_files")
-            .select("user_uuid, display_name, file_url") // file_url stores the PATH
-            .eq("user_uuid", value: userFolder)
+            .select("user_uuid, display_name, file_url")
+            .eq("user_uuid", value: folder)
             .execute()
 
         var files = try JSONDecoder().decode([CustomFile].self, from: response.data)
 
-        // Resolve signed URLs for SwiftUI
+        // Attach signed URLs
         for i in files.indices {
-            let path = files[i].file_url // treat file_url as path
+            let path = files[i].file_url // stored as path
             let signed = try await signedURL(for: path, from: "user_data")
             files[i].file_url = signed.absoluteString
         }
 
+        // print("[-SERVICES/IMAGE] FETCHED IMAGES: \(files.map { $0.display_name })")
+
         return files
     }
-    
-    func deleteImage(name: String) async throws {
-        let userID = try await uid
-        let userFolder = userID.uuidString.lowercased()
 
-        // Look up file path
+    // MARK: Update
+    func updateImage(imageData: Data, displayName: String) async throws {
+        try await upsertImage(imageData: imageData, displayName: displayName, force: true)
+        // print("[-SERVICES/IMAGE] UPDATED IMAGE: \(displayName)")
+    }
+
+    // MARK: Delete
+    func deleteImage(displayName: String) async throws {
+        let userID = try await uid
+        let folder = userID.uuidString.lowercased()
+
+        // Query DB row
         let response = try await client
             .from("custom_files")
             .select("file_url")
-            .eq("user_uuid", value: userFolder)
-            .eq("display_name", value: name)
+            .eq("user_uuid", value: folder)
+            .eq("display_name", value: displayName)
             .single()
             .execute()
 
-        let row = try JSONSerialization.jsonObject(with: response.data) as! [String: Any]
-        if let path = row["file_url"] as? String {
-            // Delete file from storage
-            _ = try await client.storage.from("user_data").remove(paths: [path])
+        guard let row = try JSONSerialization.jsonObject(with: response.data) as? [String: Any],
+              let path = row["file_url"] as? String else {
+            throw AppError.notFound
         }
+
+        // Delete file from storage
+        _ = try await client.storage.from("user_data").remove(paths: [path])
 
         // Delete DB row
         _ = try await client
             .from("custom_files")
             .delete()
-            .eq("user_uuid", value: userFolder)
-            .eq("display_name", value: name)
+            .eq("user_uuid", value: folder)
+            .eq("display_name", value: displayName)
             .execute()
+
+        // print("[-SERVICES/IMAGE] DELETED IMAGE: \(displayName)")
     }
 
-    func upsertImage(imageData: Data, name: String, force: Bool = false) async throws {
+    // MARK: Internal Upsert (used by create/update)
+    private func upsertImage(imageData: Data, displayName: String, force: Bool) async throws {
         let userID = try await uid
-        let userFolder = userID.uuidString.lowercased()
+        let folder = userID.uuidString.lowercased()
         let timestamp = Int(Date().timeIntervalSince1970)
         let filename = "\(timestamp).png"
-        let path = "\(userFolder)/images/\(filename)"
+        let path = "\(folder)/images/\(filename)"
 
-        // Cache the availability check
-        let isAvailable = try await isFilenameAvailable(name)
+        let isAvailable = try await isFilenameAvailable(displayName)
 
         switch (isAvailable, force) {
         case (false, false):
-            // Case 1: duplicate exists, no force
             throw AppError.duplicateFile
 
         case (false, true):
-            // Case 2: duplicate exists, force enabled → overwrite DB row
+            // overwrite DB row
             try await client.storage.from("user_data").upload(
                 path: path,
                 file: imageData,
@@ -128,12 +131,12 @@ extension ImageService {
             _ = try await client
                 .from("custom_files")
                 .update(["file_url": path])
-                .eq("user_uuid", value: userFolder)
-                .eq("display_name", value: name)
+                .eq("user_uuid", value: folder)
+                .eq("display_name", value: displayName)
                 .execute()
 
         case (true, _):
-            // Case 3: available → normal insert
+            // insert new row
             try await client.storage.from("user_data").upload(
                 path: path,
                 file: imageData,
@@ -143,10 +146,27 @@ extension ImageService {
             _ = try await client
                 .from("custom_files")
                 .insert([
-                    ["user_uuid": userFolder, "display_name": name, "file_url": path]
+                    ["user_uuid": folder, "display_name": displayName, "file_url": path]
                 ])
                 .execute()
         }
+    }
+
+    // MARK: Availability check
+    private func isFilenameAvailable(_ name: String) async throws -> Bool {
+        let userID = try await uid
+        let folder = userID.uuidString.lowercased()
+
+        let response = try await client
+            .from("custom_files")
+            .select("id")
+            .eq("user_uuid", value: folder)
+            .eq("display_name", value: name)
+            .limit(1)
+            .execute()
+
+        let rows = try JSONSerialization.jsonObject(with: response.data) as? [[String: Any]]
+        return rows?.isEmpty ?? true
     }
 }
 
