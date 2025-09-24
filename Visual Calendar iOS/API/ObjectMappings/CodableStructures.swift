@@ -40,7 +40,7 @@ struct EventJSON: Codable {
     
 }
 
-protocol NamedURL: Sendable {
+protocol NamedURL: Sendable, Equatable {
     var display_name: String { get }
     var file_url: String { get }
 }
@@ -51,14 +51,14 @@ struct LibraryInfo: Codable, Hashable {
     let localized_name: String
 }
 
-struct PublicImage: Codable, Hashable, NamedURL {
+struct PublicImage: Codable, Hashable, Equatable, NamedURL {
     let library_uuid: UUID
     let display_name: String
-    let file_url: String
+    var file_url: String
 }
 
-struct CustomFile: Codable, Hashable, NamedURL {
+struct CustomFile: Codable, Hashable, Equatable, NamedURL {
     let user_uuid: UUID
     let display_name: String
-    let file_url: String
+    var file_url: String
 }

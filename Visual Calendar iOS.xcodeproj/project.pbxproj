@@ -123,6 +123,7 @@
 		ED9910C62E815DC90082E202 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		ED9AAC9D2E28B30A00AAA8CE /* ErrorClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorClassifier.swift; sourceTree = "<group>"; };
 		ED9AAC9F2E28C82E00AAA8CE /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
+		EDAC46FA2E82C3590077A8FC /* Visual Calendar iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Visual Calendar iOS.xctestplan"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -162,6 +163,7 @@
 		ED41F0812C5BD15500954ACF = {
 			isa = PBXGroup;
 			children = (
+				EDAC46FA2E82C3590077A8FC /* Visual Calendar iOS.xctestplan */,
 				ED41F08C2C5BD15500954ACF /* Visual Calendar iOS */,
 				ED3503562C9B3FF2002BE9D4 /* Visual Calendar */,
 				ED3503712C9B3FF3002BE9D4 /* Visual CalendarUITests */,

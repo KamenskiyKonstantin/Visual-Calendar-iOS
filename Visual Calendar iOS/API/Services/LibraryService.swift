@@ -51,8 +51,8 @@ class LibraryService {
         _ = try await client
             .from("connected_libraries")
             .insert([
-                "user_uuid": uid.uuidString,
-                "library_uuid": info.library_uuid.uuidString,
+                "user_uuid": uid.uuidString.lowercased(),
+                "library_uuid": info.library_uuid.uuidString.lowercased(),
                 "system_name": info.system_name
             ])
             .execute()

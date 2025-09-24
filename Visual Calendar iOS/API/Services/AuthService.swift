@@ -23,11 +23,12 @@ class AuthService {
     }
     
     func verifySession() async throws {
-        //print("[SERVICES/AUTH] VERIFYING SESSION")
+        print("[-SERVICES/AUTH] VERIFYING SESSION")
         do {
             try await auth.refreshSession()
+            print("[-SERVICES/AUTH] SESSION VALID")
         } catch {
-            //print("[SERVICES/AUTH] SESSION INVALIDATED")
+            print("[-SERVICES/AUTH] SESSION INVALIDATED")
             throw AppError.authSessionExpired
             
         }
@@ -51,27 +52,30 @@ class AuthService {
     }
 
     func createUserFolders(uid: UUID) async throws {
+        let folder = uid.uuidString.lowercased()
         let encoder = JSONEncoder()
+        
+        print("[-SERVICES/AUTH-] SETTING UP USER FOLDER FOR: /\(folder)")
 
         // Upload empty calendar.json
-        let starterCalendar = CalendarJSON(events: [], uid: uid.uuidString)
+        let starterCalendar = CalendarJSON(events: [], uid: folder)
         let calendarData = try encoder.encode(starterCalendar)
         try await client.storage.from("user_data").upload(
-            path: "\(uid.uuidString)/calendar.json",
+            path: "\(folder)/calendar.json",
             file: calendarData,
             options: .init(cacheControl: "0", contentType: "application/json", upsert: true)
         )
 
         // Upload .keep to create folder
         try await client.storage.from("user_data").upload(
-            path: "\(uid.uuidString)/images/.keep",
+            path: "\(folder)/images/.keep",
             file: Data(),
             options: .init(cacheControl: "0", contentType: "text/plain", upsert: true)
         )
 
         let emptyPresetsData = try encoder.encode([String: Preset]())
         try await client.storage.from("user_data").upload(
-            path: "\(uid.uuidString)/presets.json",
+            path: "\(folder)/presets.json",
             file: emptyPresetsData,
             options: .init(cacheControl: "0", contentType: "application/json", upsert: true)
         )

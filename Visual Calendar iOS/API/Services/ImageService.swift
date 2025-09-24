@@ -4,6 +4,7 @@
 //
 //  Created by Konstantin Kamenskiy on 06.06.2025.
 //
+
 import Foundation
 import Supabase
 import Combine
@@ -22,6 +23,13 @@ class ImageService: ObservableObject {
             try await client.auth.user().id
         }
     }
+
+    /// Generate a signed URL for a given path
+    private func signedURL(for path: String, from bucket: String, expiresIn seconds: Int = 6 * 3600) async throws -> URL {
+        return try await client.storage
+            .from(bucket)
+            .createSignedURL(path: path, expiresIn: seconds)
+    }
 }
 
 // MARK: - User Images
@@ -30,11 +38,12 @@ extension ImageService {
 
     func isFilenameAvailable(_ name: String) async throws -> Bool {
         let userID = try await uid
+        let userFolder = userID.uuidString.lowercased()
 
         let response = try await client
             .from("custom_files")
             .select("id")
-            .eq("user_uuid", value: userID)
+            .eq("user_uuid", value: userFolder)
             .eq("display_name", value: name)
             .limit(1)
             .execute()
@@ -45,43 +54,99 @@ extension ImageService {
 
     func fetchUserImages() async throws -> [CustomFile] {
         let userID = try await uid
+        let userFolder = userID.uuidString.lowercased()
 
         let response = try await client
             .from("custom_files")
-            .select("user_uuid, display_name, file_url")
-            .eq("user_uuid", value: userID)
+            .select("user_uuid, display_name, file_url") // file_url stores the PATH
+            .eq("user_uuid", value: userFolder)
             .execute()
 
-        return try JSONDecoder().decode([CustomFile].self, from: response.data)
-    }
+        var files = try JSONDecoder().decode([CustomFile].self, from: response.data)
 
-    func upsertImage(imageData: Data, name: String) async throws {
-        let userID = try await uid
-        let timestamp = Int(Date().timeIntervalSince1970)
-        let filename = "\(timestamp).png"
-        let path = "\(userID.uuidString)/images/\(filename)"
-
-        // Validate availability
-        if try await !isFilenameAvailable(name) {
-            throw AppError.duplicateFile
+        // Resolve signed URLs for SwiftUI
+        for i in files.indices {
+            let path = files[i].file_url // treat file_url as path
+            let signed = try await signedURL(for: path, from: "user_data")
+            files[i].file_url = signed.absoluteString
         }
 
-        // Upload file
-        try await client.storage.from("user_data").upload(
-            path: path,
-            file: imageData,
-            options: .init(cacheControl: "0", contentType: "image/png", upsert: true)
-        )
+        return files
+    }
+    
+    func deleteImage(name: String) async throws {
+        let userID = try await uid
+        let userFolder = userID.uuidString.lowercased()
 
-        // Register in database
-        let fileURL = try client.storage.from("user_data").getPublicURL(path: path).absoluteString
+        // Look up file path
+        let response = try await client
+            .from("custom_files")
+            .select("file_url")
+            .eq("user_uuid", value: userFolder)
+            .eq("display_name", value: name)
+            .single()
+            .execute()
 
+        let row = try JSONSerialization.jsonObject(with: response.data) as! [String: Any]
+        if let path = row["file_url"] as? String {
+            // Delete file from storage
+            _ = try await client.storage.from("user_data").remove(paths: [path])
+        }
+
+        // Delete DB row
         _ = try await client
             .from("custom_files")
-            .insert([
-                ["user_uuid": userID.uuidString, "display_name": name, "file_url": fileURL]
-            ])
+            .delete()
+            .eq("user_uuid", value: userFolder)
+            .eq("display_name", value: name)
             .execute()
+    }
+
+    func upsertImage(imageData: Data, name: String, force: Bool = false) async throws {
+        let userID = try await uid
+        let userFolder = userID.uuidString.lowercased()
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let filename = "\(timestamp).png"
+        let path = "\(userFolder)/images/\(filename)"
+
+        // Cache the availability check
+        let isAvailable = try await isFilenameAvailable(name)
+
+        switch (isAvailable, force) {
+        case (false, false):
+            // Case 1: duplicate exists, no force
+            throw AppError.duplicateFile
+
+        case (false, true):
+            // Case 2: duplicate exists, force enabled → overwrite DB row
+            try await client.storage.from("user_data").upload(
+                path: path,
+                file: imageData,
+                options: .init(cacheControl: "0", contentType: "image/png", upsert: true)
+            )
+
+            _ = try await client
+                .from("custom_files")
+                .update(["file_url": path])
+                .eq("user_uuid", value: userFolder)
+                .eq("display_name", value: name)
+                .execute()
+
+        case (true, _):
+            // Case 3: available → normal insert
+            try await client.storage.from("user_data").upload(
+                path: path,
+                file: imageData,
+                options: .init(cacheControl: "0", contentType: "image/png", upsert: true)
+            )
+
+            _ = try await client
+                .from("custom_files")
+                .insert([
+                    ["user_uuid": userFolder, "display_name": name, "file_url": path]
+                ])
+                .execute()
+        }
     }
 }
 
@@ -92,18 +157,26 @@ extension ImageService {
     func fetchLibraryImages(_ library: LibraryInfo) async throws -> [PublicImage] {
         let response = try await client
             .from("public_images")
-            .select("library_uuid, display_name, file_url")
-            .eq("library_uuid", value: library.library_uuid.uuidString)
+            .select("library_uuid, display_name, file_url") // file_url stores PATH
+            .eq("library_uuid", value: library.library_uuid.uuidString.lowercased())
             .execute()
 
-        return try JSONDecoder().decode([PublicImage].self, from: response.data)
+        var images = try JSONDecoder().decode([PublicImage].self, from: response.data)
+
+        // Resolve signed URLs
+        for i in images.indices {
+            let path = images[i].file_url // treat file_url as path
+            let signed = try await signedURL(for: path, from: "publiclibraries")
+            images[i].file_url = signed.absoluteString
+        }
+
+        return images
     }
 
-    func fetchAllImageMappings(libraries: [LibraryInfo]) async throws -> [String: [NamedURL]] {
-        var result: [String: [NamedURL]] = [:]
-        
+    func fetchAllImageMappings(libraries: [LibraryInfo]) async throws -> [String: [any NamedURL]] {
+        var result: [String: [any NamedURL]] = [:]
 
-        try await withThrowingTaskGroup(of: (String, [NamedURL]).self) { group in
+        try await withThrowingTaskGroup(of: (String, [any NamedURL]).self) { group in
             for library in libraries {
                 group.addTask {
                     let images = try await self.fetchLibraryImages(library)
@@ -121,6 +194,6 @@ extension ImageService {
             }
         }
 
-        return result
+        return result.filter {!$0.value.isEmpty}
     }
 }

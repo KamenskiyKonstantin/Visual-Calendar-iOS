@@ -18,10 +18,11 @@ class EventService: ObservableObject {
 
     func fetchEvents() async throws -> [Event] {
         let uid = try await client.auth.user().id
+        let folder = uid.uuidString.lowercased()
         
-        //print("[SERVICES/EVENT] NOW FETCHING EVENTS FOR USER WITH UID: \(uid)")
+        // print("[-SERVICES/EVENT] NOW FETCHING EVENTS FOR USER WITH UID: \(folder)")
         
-        let path = "\(uid.uuidString)/calendar.json"
+        let path = "\(folder)/calendar.json"
         
         let data = try await client.storage.from("user_data").download(path: path)
         let calendar = try JSONDecoder().decode(CalendarJSON.self, from: data)
@@ -29,18 +30,18 @@ class EventService: ObservableObject {
     }
 
     func upsertEvents(_ events: [Event]) async throws {
-        let uid = try await client.auth.user().id.uuidString
+        let uid = try await client.auth.user().id
+        let folder = uid.uuidString.lowercased()
         
-        //print("[SERVICES/EVENT] NOW UPSERTING EVENTS FOR USER WITH UID: \(uid)")
+        // print("[-SERVICES/EVENT] NOW UPSERTING EVENTS FOR USER WITH UID: \(folder)")
         
-        let path = "\(uid)/calendar.json"
-        let calendarPayload = CalendarJSON(events: events.map { $0.toEventJSON() }, uid: uid)
+        let path = "\(folder)/calendar.json"
+        let calendarPayload = CalendarJSON(events: events.map { $0.toEventJSON() }, uid: folder)
         
-       // print("[SERVICES/EVENT] UPSERTING: \(calendarPayload)")
+        // print("[-SERVICES/EVENT] UPSERTING: \(calendarPayload)")
         
         let data = try JSONEncoder().encode(calendarPayload)
         
-
         try await client.storage.from("user_data").upload(
             path: path,
             file: data,

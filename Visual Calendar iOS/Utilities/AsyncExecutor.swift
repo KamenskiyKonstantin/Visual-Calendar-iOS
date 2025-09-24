@@ -56,6 +56,7 @@ final class AsyncExecutor {
         } catch {
             await warningHandler.showWarning("Error during \(jobName): \(error.localizedDescription)")
             try? await logoutSequence()
+            print("[-EXECUTOR/RUN-] JOB FAILED: \(jobName) with low-level error: \(error)")
             return .failure(error)
         }
     }

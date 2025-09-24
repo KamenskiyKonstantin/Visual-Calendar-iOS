@@ -27,8 +27,8 @@ final class APIHandler {
     // MARK: - Setup
     init() {
         let client = SupabaseClient(
-            supabaseURL: URL(string: "https://wlviarpvbxdaoytfeqnm.supabase.co")!,
-            supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsdmlhcnB2YnhkYW95dGZlcW5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjIxNTk0MzksImV4cCI6MjAzNzczNTQzOX0.zoQJTA3Tu_fpe24BrxDjhMtlfxfd_3Nx8TM1t8V3PK0",
+            supabaseURL: URL(string: "https://kkmvjjzoouqqmempnxrg.supabase.co")!,
+            supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbXZqanpvb3VxcW1lbXBueHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjgyMTEsImV4cCI6MjA3NDIwNDIxMX0.ZeziIaDzLApRnTLKQdl0MMlqR5zjaI7BpuUhPvebcco",
             options: SupabaseClientOptions(
                 auth: .init(
                     storage: KeychainLocalStorage(service: "com.calmtable.app", accessGroup: nil),
@@ -89,69 +89,76 @@ final class APIHandler {
 
     // MARK: - Events
     func fetchEvents() async -> [Event] {
-        await verifySession()
+        guard await verifySession() else { return [] }
         return await requireExecutor().run("fetchEvents") {
             try await self.eventService.fetchEvents()
         }.value ?? []
     }
 
     func upsertEvents(_ events: [Event]) async -> Bool {
-        await verifySession()
+        guard await verifySession() else { return false }
         return await requireExecutor().run("upsertEvents") {
             try await self.eventService.upsertEvents(events)
         }.value != nil
     }
 
     func deleteEvent(_ uid: UUID, from currentList: [Event]) async -> Bool {
+        guard await verifySession() else { return false }
         let updated = currentList.filter { $0.id != uid }
-        let success = await requireExecutor().run("deleteEvent") {
+        return await requireExecutor().run("deleteEvent") {
             try await self.eventService.upsertEvents(updated)
         }.value != nil
-
-        return success
     }
 
     // MARK: - Images
-    func upsertImage(imageData: Data, filename: String) async -> Bool {
-        await self.verifySession()
+    func upsertImage(imageData: Data, filename: String, force: Bool = false) async -> Bool {
+        guard await verifySession() else { return false }
         return await requireExecutor().run("upsertImage(\(filename))") {
-            
-            try await self.imageService.upsertImage(imageData: imageData, name: filename)
+            try await self.imageService.upsertImage(imageData: imageData, name: filename, force: force)
         }.value != nil
     }
 
-    func fetchImageURLs(using libraries: [LibraryInfo]) async -> [String: [NamedURL]] {
-        await self.verifySession()
+    func fetchImageURLs(using libraries: [LibraryInfo]) async -> [String: [any NamedURL]] {
+        guard await verifySession() else { return [:] }
         return await requireExecutor().run("fetchImageURLs") {
             try await self.imageService.fetchAllImageMappings(libraries: libraries)
         }.value ?? [:]
     }
+    
+    func deleteImage(filename: String) async -> Bool {
+        guard await verifySession() else { return false }
+        return await requireExecutor().run("Delete Image") {
+            try await self.imageService.deleteImage(name: filename)
+        }.value != nil
+    }
 
     // MARK: - Libraries
     func fetchExistingLibraries() async -> [LibraryInfo] {
-        await requireExecutor().run("fetchAllLibraries") {
+        guard await verifySession() else { return [] }
+        return await requireExecutor().run("fetchAllLibraries") {
             try await self.libraryService.fetchAllLibraries()
         }.value ?? []
     }
 
-    func addLibrary(_ systemName: String, available: [LibraryInfo]) async -> [String: [NamedURL]] {
-        let result = await requireExecutor().run("addLibrary") {
+    func addLibrary(_ systemName: String, available: [LibraryInfo]) async -> Bool {
+        guard await verifySession() else { return false }
+        return await requireExecutor().run("addLibrary") {
             try await self.libraryService.addLibrary(systemName: systemName, from: available)
-            let libraries = try await self.libraryService.fetchAllLibraries()
-            return try await self.imageService.fetchAllImageMappings(libraries: libraries)
-        }
-        return result.value ?? [:]
+            return true
+        }.value ?? false
     }
 
     // MARK: - Presets
     func fetchPresets() async -> [String: Preset] {
-        await requireExecutor().run("fetchPresets") {
+        guard await verifySession() else { return [:] }
+        return await requireExecutor().run("fetchPresets") {
             try await self.presetService.fetchPresets()
         }.value ?? [:]
     }
 
     func upsertPreset(title: String, preset: Preset) async -> Bool {
-        await requireExecutor().run("upsertPreset(\(title))") {
+        guard await verifySession() else { return false }
+        return await requireExecutor().run("upsertPreset(\(title))") {
             try await self.presetService.uploadUserPreset(title: title, preset: preset)
         }.value != nil
     }

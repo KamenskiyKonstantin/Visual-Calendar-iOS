@@ -16,9 +16,15 @@ class PresetService {
         self.client = client
     }
 
+    private var userFolder: String {
+        get async throws {
+            try await client.auth.user().id.uuidString.lowercased()
+        }
+    }
+
     func fetchPresets() async throws -> [String: Preset] {
-        let uid = try await client.auth.user().id
-        let path = "\(uid.uuidString)/presets.json"
+        let folder = try await userFolder
+        let path = "\(folder)/presets.json"
 
         // Fetch user presets
         let userData = try await client.storage.from("user_data").download(path: path)
@@ -29,15 +35,14 @@ class PresetService {
         let officialData = try await client.storage.from("presets").download(path: "presets.json")
         print(String(data: officialData, encoding: .utf8) ?? "No official data")
         let officialPresets = try JSONDecoder().decode([String: Preset].self, from: officialData)
-        
 
         // Merge user presets (override if keys overlap)
         return officialPresets.merging(userPresets) { _, user in user }
     }
 
     func uploadUserPreset(title: String, preset: Preset, force: Bool = true) async throws -> Bool {
-        let uid = try await client.auth.user().id
-        let path = "\(uid.uuidString)/presets.json"
+        let folder = try await userFolder
+        let path = "\(folder)/presets.json"
 
         // Load existing presets
         var presets = try await fetchUserOnlyPresets()
@@ -48,6 +53,7 @@ class PresetService {
 
         presets[title] = preset
         let data = try JSONEncoder().encode(presets)
+
         try await client.storage.from("user_data").upload(
             path: path,
             file: data,
@@ -57,8 +63,8 @@ class PresetService {
     }
 
     func fetchUserOnlyPresets() async throws -> [String: Preset] {
-        let uid = try await client.auth.user().id
-        let path = "\(uid.uuidString)/presets.json"
+        let folder = try await userFolder
+        let path = "\(folder)/presets.json"
 
         let data = try await client.storage.from("user_data").download(path: path)
         return try JSONDecoder().decode([String: Preset].self, from: data)

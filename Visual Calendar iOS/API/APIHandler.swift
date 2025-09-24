@@ -13,7 +13,7 @@ class APIHandler: ObservableObject {
     private let apiClient: SupabaseClient
 
     @Published private(set) var eventList: [Event] = []
-    @Published private(set) var images: [String:[NamedURL]] = [:]
+    @Published private(set) var images: [String:[any NamedURL]] = [:]
     @Published private(set) var availableLibraries: [LibraryInfo] = []
     @Published private(set) var presets: [String: Preset] = [:]
     

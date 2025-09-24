@@ -205,7 +205,7 @@ struct PickerView: View{
     
     @Binding var selection: String
     
-    var groupedImageSections: [(group: String, items: [NamedURL])] {
+    var groupedImageSections: [(group: String, items: [any NamedURL])] {
         api.images.map { (key, value) in
             (group: key, items: value.sorted { $0.display_name < $1.display_name })
         }.sorted { $0.group < $1.group }
