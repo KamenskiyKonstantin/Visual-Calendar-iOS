@@ -21,6 +21,8 @@ struct LoadingView: View {
 
 struct ContentView: View {
     let loginViewModel: LoginViewModel
+    let selectRoleModel: SelectRoleViewModel
+    let calendarViewModel: CalendarViewModel
     
     @ObservedObject var viewSwitcher: ViewSwitcher
     @ObservedObject var warningManager: WarningHandler
@@ -28,11 +30,11 @@ struct ContentView: View {
     var currentView: some View {
         switch viewSwitcher.activeView {
             case .login:
-            AnyView(LoginView(viewModel: loginViewModel))
+                AnyView(LoginView(viewModel: loginViewModel))
             case .selectRole:
-                AnyView(SelectRoleView())
-            case let .calendar(isAdult):
-                AnyView(CalendarView())
+                AnyView(SelectRoleView(viewModel: selectRoleModel))
+            case .calendar(_):
+                AnyView(CalendarView(viewModel: calendarViewModel))
             case .loading:
                 AnyView(LoadingView())
             

@@ -20,9 +20,14 @@ class ViewSwitcher: ObservableObject {
     @Published var activeView: ActiveView = .login
     
     private var resets: [ActiveView: () -> Void] = [:]
+    private var userCallback: (Bool) -> Void = { _ in fatalError("FATAL: No user role callback registered for view: \(ActiveView.self). You must call setUserRoleCallback(:) before switching.") }
 
     func setResetCallback(_ callback: @escaping () -> Void, for view: ActiveView) {
         resets[view] = callback
+    }
+    
+    func setUserRoleCallback(_ callback: @escaping (Bool) -> Void) {
+        userCallback = callback
     }
 
     private func requireReset(for view: ActiveView) {
@@ -31,20 +36,25 @@ class ViewSwitcher: ObservableObject {
         }
         reset()
     }
-
+    
+    private func requireUserRoleCallback(isAdult: Bool) {
+        userCallback(isAdult)
+    }
+    
     func switchToSelectRole() {
-        //requireReset(for: .selectRole)
+        requireReset(for: .selectRole)
         activeView = .selectRole
     }
 
     func switchToLogin() {
-        //requireReset(for: .login)
+        requireReset(for: .login)
         activeView = .login
     }
 
     func switchToCalendar(isAdult: Bool = false) {
+        requireReset(for: .calendar(isAdult: isAdult))
+        requireUserRoleCallback(isAdult: isAdult)
         let targetView = ActiveView.calendar(isAdult: isAdult)
-        //requireReset(for: targetView)
         activeView = targetView
     }
 }

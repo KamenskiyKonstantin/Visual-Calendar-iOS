@@ -15,6 +15,8 @@ struct Visual_Calendar_iOSApp: App {
     private let warningHandler: WarningHandler
     
     private let loginModel: LoginViewModel
+    private let selectRoleModel: SelectRoleViewModel
+    private let calendarModel: CalendarViewModel
 
 
     init() {
@@ -28,6 +30,7 @@ struct Visual_Calendar_iOSApp: App {
         func logoutSequence() async {
             _ = await api.logout()
             viewSwitcher.switchToLogin()
+            UserDefaultsManager.shared.clearAll()
         }
         
         // create AsyncExecutor
@@ -37,10 +40,15 @@ struct Visual_Calendar_iOSApp: App {
         
         // Create ViewModels
         let loginModel = LoginViewModel(api: api, viewSwitcher: viewSwitcher)
-        func resetSwitchToRole(){print("SWITCHTOROLERESET")}
+        let selectRoleModel = SelectRoleViewModel(api: api, viewSwitcher: viewSwitcher, warningHandler: warningHandler)
+        let calendarModel = CalendarViewModel(api: api, warningHandler: warningHandler, viewSwitcher: viewSwitcher)
         
         viewSwitcher.setResetCallback(loginModel.reset, for: .login)
-        viewSwitcher.setResetCallback(resetSwitchToRole, for: .selectRole)
+        viewSwitcher.setResetCallback(selectRoleModel.reset, for: .selectRole)
+        viewSwitcher.setResetCallback(calendarModel.reset, for: .calendar(isAdult: true))
+        viewSwitcher.setResetCallback(calendarModel.reset, for: .calendar(isAdult: false))
+        
+        viewSwitcher.setUserRoleCallback(calendarModel.setParentMode)
         
         // inject into self
         self.api = api
@@ -48,13 +56,14 @@ struct Visual_Calendar_iOSApp: App {
         self.warningHandler = warningHandler
         
         self.loginModel = loginModel
-        
+        self.selectRoleModel = selectRoleModel
+        self.calendarModel = calendarModel
         
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView(loginViewModel: self.loginModel, viewSwitcher: self.viewSwitcher, warningManager: self.warningHandler)
+            ContentView(loginViewModel: self.loginModel, selectRoleModel: self.selectRoleModel, calendarViewModel: calendarModel, viewSwitcher: self.viewSwitcher, warningManager: self.warningHandler, )
         }
     }
 }

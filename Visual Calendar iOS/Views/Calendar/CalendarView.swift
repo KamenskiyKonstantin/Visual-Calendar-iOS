@@ -8,9 +8,15 @@
 import SwiftUI
 
 struct CalendarView: View {
+    @ObservedObject var viewModel: CalendarViewModel
+    
     var body: some View {
-        Text("UNDER CONSTRUCTION")
+        Text("UNDER CONSTRUCTION: \(viewModel.isParentMode ? "parent" : "child") view")
+            .task{
+                viewModel.load()
+            }
     }
+       
 }
 
 

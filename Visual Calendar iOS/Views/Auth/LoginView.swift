@@ -68,6 +68,9 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
                 }
                 
             }
+            .task{
+                viewModel.load()
+            }
         }
         
     }

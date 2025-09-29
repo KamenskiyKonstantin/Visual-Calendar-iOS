@@ -41,7 +41,6 @@
 		ED567D722E2CC3E5005FA014 /* UtilsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED567D712E2CC3E5005FA014 /* UtilsUI.swift */; };
 		ED6DB6E22D422D9F00F518A2 /* EventEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED6DB6E12D422D9F00F518A2 /* EventEditorView.swift */; };
 		ED7B0F0A2E2625C300042ED3 /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F082E2625C300042ED3 /* SignUpView.swift */; };
-		ED7B0F0B2E2625C300042ED3 /* SelectRoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F072E2625C300042ED3 /* SelectRoleView.swift */; };
 		ED7B0F0C2E2625C300042ED3 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F062E2625C300042ED3 /* LoginView.swift */; };
 		ED7B0F152E2626A200042ED3 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F0E2E2626A200042ED3 /* AuthService.swift */; };
 		ED7B0F162E2626A200042ED3 /* CodableStructures.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F0F2E2626A200042ED3 /* CodableStructures.swift */; };
@@ -71,6 +70,10 @@
 		ED9E8A882C5E765F0098D8FD /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A872C5E765F0098D8FD /* Realtime */; };
 		ED9E8A8A2C5E765F0098D8FD /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A892C5E765F0098D8FD /* Storage */; };
 		ED9E8A8C2C5E765F0098D8FD /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = ED9E8A8B2C5E765F0098D8FD /* Supabase */; };
+		EDB3E6E22E8AB43B00D31696 /* SelectRoleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB3E6E12E8AB43B00D31696 /* SelectRoleViewModel.swift */; };
+		EDB3E6E42E8ACEBB00D31696 /* SelectRoleView 2.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB3E6E32E8ACEBB00D31696 /* SelectRoleView 2.swift */; };
+		EDB3E6E62E8AD30D00D31696 /* UserDefaultsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB3E6E52E8AD30D00D31696 /* UserDefaultsManager.swift */; };
+		EDB3E6E72E8AD30D00D31696 /* UserDefaultsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB3E6E52E8AD30D00D31696 /* UserDefaultsManager.swift */; };
 		EDD987D72C9D454C0063CF00 /* SymbolPicker in Frameworks */ = {isa = PBXBuildFile; productRef = EDD987D62C9D454C0063CF00 /* SymbolPicker */; };
 /* End PBXBuildFile section */
 
@@ -100,7 +103,6 @@
 		ED567D712E2CC3E5005FA014 /* UtilsUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsUI.swift; sourceTree = "<group>"; };
 		ED6DB6E12D422D9F00F518A2 /* EventEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditorView.swift; sourceTree = "<group>"; };
 		ED7B0F062E2625C300042ED3 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		ED7B0F072E2625C300042ED3 /* SelectRoleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectRoleView.swift; sourceTree = "<group>"; };
 		ED7B0F082E2625C300042ED3 /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
 		ED7B0F0E2E2626A200042ED3 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		ED7B0F0F2E2626A200042ED3 /* CodableStructures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableStructures.swift; sourceTree = "<group>"; };
@@ -126,6 +128,9 @@
 		ED9AAC9D2E28B30A00AAA8CE /* ErrorClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorClassifier.swift; sourceTree = "<group>"; };
 		ED9AAC9F2E28C82E00AAA8CE /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		EDAC46FA2E82C3590077A8FC /* Visual Calendar iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Visual Calendar iOS.xctestplan"; sourceTree = "<group>"; };
+		EDB3E6E12E8AB43B00D31696 /* SelectRoleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectRoleViewModel.swift; sourceTree = "<group>"; };
+		EDB3E6E32E8ACEBB00D31696 /* SelectRoleView 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SelectRoleView 2.swift"; sourceTree = "<group>"; };
+		EDB3E6E52E8AD30D00D31696 /* UserDefaultsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -211,7 +216,7 @@
 			isa = PBXGroup;
 			children = (
 				ED7B0F062E2625C300042ED3 /* LoginView.swift */,
-				ED7B0F072E2625C300042ED3 /* SelectRoleView.swift */,
+				EDB3E6E32E8ACEBB00D31696 /* SelectRoleView 2.swift */,
 				ED7B0F082E2625C300042ED3 /* SignUpView.swift */,
 			);
 			path = Auth;
@@ -259,6 +264,7 @@
 		ED7B0F202E26273E00042ED3 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				EDB3E6E52E8AD30D00D31696 /* UserDefaultsManager.swift */,
 				ED0E6FFA2E817DB4003ADB9C /* WarningHandler.swift */,
 				ED9910992E812E5F0082E202 /* ViewSwitcher.swift */,
 				ED567D712E2CC3E5005FA014 /* UtilsUI.swift */,
@@ -286,6 +292,7 @@
 			children = (
 				ED83D7D32E793BB400F4E74B /* CalendarViewModel.swift */,
 				ED99109D2E812F490082E202 /* LoginViewModel.swift */,
+				EDB3E6E12E8AB43B00D31696 /* SelectRoleViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -463,6 +470,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EDB3E6E22E8AB43B00D31696 /* SelectRoleViewModel.swift in Sources */,
 				ED7B0F252E273A0B00042ED3 /* APIConverters.swift in Sources */,
 				ED97F3952DE2E22F007D316B /* CalendarConstants.swift in Sources */,
 				ED4ABE462DE472DC0036B16F /* EditorSections.swift in Sources */,
@@ -482,8 +490,8 @@
 				ED7B0F182E2626A200042ED3 /* ImageService.swift in Sources */,
 				ED7B0F192E2626A200042ED3 /* LibraryService.swift in Sources */,
 				ED7B0F1A2E2626A200042ED3 /* PresetService.swift in Sources */,
+				EDB3E6E42E8ACEBB00D31696 /* SelectRoleView 2.swift in Sources */,
 				ED99109E2E812F490082E202 /* LoginViewModel.swift in Sources */,
-				ED7B0F0B2E2625C300042ED3 /* SelectRoleView.swift in Sources */,
 				ED7B0F222E2633D300042ED3 /* EventView.swift in Sources */,
 				ED7B0F0C2E2625C300042ED3 /* LoginView.swift in Sources */,
 				ED567D722E2CC3E5005FA014 /* UtilsUI.swift in Sources */,
@@ -493,6 +501,7 @@
 				ED6DB6E22D422D9F00F518A2 /* EventEditorView.swift in Sources */,
 				ED97F39B2DE2EAE4007D316B /* LogicHelpers.swift in Sources */,
 				ED97F3932DE2E1C6007D316B /* WeekdayHeader.swift in Sources */,
+				EDB3E6E62E8AD30D00D31696 /* UserDefaultsManager.swift in Sources */,
 				ED97F3992DE2E990007D316B /* CalendarTable.swift in Sources */,
 				ED83D7D42E793BB400F4E74B /* CalendarViewModel.swift in Sources */,
 				ED41F08E2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift in Sources */,
@@ -507,6 +516,7 @@
 				ED0E6FFD2E817DF6003ADB9C /* UtilsUI.swift in Sources */,
 				ED0E6FEB2E817A05003ADB9C /* LibraryService.swift in Sources */,
 				ED0E6FF02E817A1F003ADB9C /* CodableStructures.swift in Sources */,
+				EDB3E6E72E8AD30D00D31696 /* UserDefaultsManager.swift in Sources */,
 				ED0E6FF12E817A1F003ADB9C /* APIConverters.swift in Sources */,
 				ED0E6FEC2E817A05003ADB9C /* ImageService.swift in Sources */,
 				ED0E6FED2E817A05003ADB9C /* PresetService.swift in Sources */,
