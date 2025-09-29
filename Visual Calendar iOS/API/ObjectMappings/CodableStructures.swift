@@ -14,11 +14,6 @@
 
 import Foundation
 
-struct CalendarJSON: Codable {
-    let events: [EventJSON]
-    let uid: String
-}
-
 struct Preset: Codable, Hashable {
     var presetName: String = ""
     var selectedSymbol: String
@@ -27,9 +22,9 @@ struct Preset: Codable, Hashable {
     var sideImageURLs: [String]
 }
 
-
 struct EventJSON: Codable {
-    let timeStart, timeEnd: [Int]
+    let timeStart: [Int]
+    let timeEnd: [Int]
     let systemImage: String
     let backgroundColor: String
     let textColor: String
@@ -37,9 +32,30 @@ struct EventJSON: Codable {
     let sideImageURLS: [String]
     let id: UUID
     let repetitionType: String
-    let reactionString: String
-
     
+    enum CodingKeys: String, CodingKey {
+        case timeStart = "time_start"
+        case timeEnd = "time_end"
+        case systemImage = "system_image"
+        case backgroundColor = "background_color"
+        case textColor = "text_color"
+        case mainImageURL = "main_image_url"
+        case sideImageURLS = "side_image_urls"
+        case id
+        case repetitionType = "repetition_type"
+    }
+}
+
+struct EventReactionRow: Codable, Hashable, Equatable {
+    let eventID: UUID
+    let timestamp: [Int]
+    let reaction: String
+
+    enum CodingKeys: String, CodingKey {
+        case eventID = "event_id"
+        case timestamp = "time_start"
+        case reaction
+    }
 }
 
 protocol NamedURL: Sendable, Equatable {

@@ -29,11 +29,10 @@ class WarningHandler: ObservableObject {
         }
         Task{
             do {
-                try await api.logout()
+                _ = await api.logout()
                 viewSwitcher.switchToLogin()
                 
             }
-            catch {}
         }
     }
 }

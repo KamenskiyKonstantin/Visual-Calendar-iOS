@@ -34,7 +34,7 @@ extension AsyncResult {
     }
 }
 
-#if TESTING
+@MainActor
 final class AsyncExecutor {
     private let warningHandler: WarningHandler
     private let logoutSequence: @Sendable () async throws -> Void
@@ -54,34 +54,10 @@ final class AsyncExecutor {
             let result = try await operation()
             return .success(result)
         } catch {
-            await warningHandler.showWarning("Error during \(jobName): \(error.localizedDescription)")
+            warningHandler.showWarning("Error during \(jobName): \(error.localizedDescription)")
             try? await logoutSequence()
             print("[-EXECUTOR/RUN-] JOB FAILED: \(jobName) with low-level error: \(error)")
             return .failure(error)
         }
     }
 }
-#else
-@MainActor
-struct AsyncExecutor {
-    static func runWithWarningHandler(
-        warningHandler: WarningHandler,
-        api: APIHandler,
-        viewSwitcher: ViewSwitcher,
-        task: @escaping () async throws -> Void
-    ) {
-        Task {
-            do {
-                try await task()
-            } catch {
-                if let appError = error as? AppError, appError.isFatal {
-                    print("Fatal error: \(error)")
-                    warningHandler.forceLogout(with: appError.localizedDescription, api: api, viewSwitcher: viewSwitcher)
-                } else {
-                    warningHandler.showWarning(error.localizedDescription)
-                }
-            }
-        }
-    }
-}
-#endif

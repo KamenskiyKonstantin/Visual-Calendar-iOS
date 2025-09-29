@@ -8,68 +8,75 @@
 
 import SwiftUI
 
-struct SignUpView: View {
-    @State var APIinteractor: APIHandler
-    @State var email: String = ""
-    @State var password: String = ""
-    
-    @EnvironmentObject var viewSwitcher: ViewSwitcher
-    @EnvironmentObject var warningHandler: WarningHandler
+struct SignUpView<ViewModel: LoginViewModelProtocol>: View {
+    @ObservedObject var viewModel: ViewModel
     
     @Environment(\.dismiss) private var dismiss
-    
-    
-    init(APIinteractor: APIHandler) {
-        self.APIinteractor = APIinteractor
-        
-    }
-    
-    func signup() {
-        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: APIinteractor, viewSwitcher: viewSwitcher) {
-            try await self.APIinteractor.signUp(email: email, password: password)
-            try await self.APIinteractor.login(email: email, password: password)
 
-            await MainActor.run {
-                if self.APIinteractor.isAuthenticated {
-                    dismiss()
-                    self.viewSwitcher.switchToSelectRole()
-                    print("Signup successful")
-                    print("Current view: \(self.viewSwitcher.activeView)")
-                } else {
-                    self.viewSwitcher.switchToLogin()
-                }
-            }
-        }
-    }
-    var body: some View{
-        VStack{
-            Spacer()
-            HStack{
+    var body: some View {
+        NavigationStack {
+            HStack {
                 Spacer()
-                VStack{
-                    TextField("E-mail",
-                              text: $email)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+                    .frame(maxWidth: .infinity)
+
+                VStack {
+                    Spacer()
                     
-                    SecureField("Password",
-                                text: $password)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
+                    VStack {
+                        VStack(spacing: 16) {
+                            TextField("E-mail", text: $viewModel.emailSignup)
+                                .textFieldStyle(.roundedBorder)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+                            
+                            VStack(spacing:7){
+                                
+                                SecureField("Password", text: $viewModel.passwordSignup)
+                                    .textFieldStyle(.roundedBorder)
+                                    .autocapitalization(.none)
+                                    .disableAutocorrection(true)
+                                
+                                SecureField("Confirm Password", text: $viewModel.confirmPasswordSignup)
+                                    .textFieldStyle(.roundedBorder)
+                                    .autocapitalization(.none)
+                                    .disableAutocorrection(true)
+                            }
+                        }
+
+                        Button("Sign Up") {
+                            viewModel.signUp()
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: 10)
+                        .padding()
+                        .buttonBorderShape(.automatic)
+                        .background(Color.blue)
+                        .cornerRadius(20)
+                        .foregroundColor(.white)
+
+                        Button("Back to Login"){
+                            dismiss()
+                        }
+                        .frame(width: 200)
+                        .buttonStyle(.borderless)
+                    }
+                    
+                    #if DEBUG
+                    //.border(Color.blue, width: 1)
+                    #endif
+                    
+                    Spacer()
                 }
-                .frame(width:250, height: 100, alignment: .center)
+
+                #if DEBUG
+                //.border(Color.red, width: 1)
+                #endif
+
                 Spacer()
+                    .frame(maxWidth: .infinity)
             }
-            HStack{
-                
-                Button(action:signup)
-                {
-                    Text("sign up")
-                        .frame(width:250)
-                }
-                
-            }
-            Spacer()
         }
     }
+}
+#Preview {
+    SignUpView(viewModel: MockLoginViewModel())
 }

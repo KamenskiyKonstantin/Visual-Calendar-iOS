@@ -18,92 +18,88 @@ class EventService {
 
     // MARK: - Create
     func createEvent(_ event: Event) async throws {
-        var events = try await fetchEvents()
-        events.append(event)
-        try await saveEvents(events)
+        print("[-SERVICES/EVENT] CREATING EVENT: \(event)")
 
-        // Debug
-        // print("[-SERVICES/EVENT] CREATED EVENT: \(event)")
+        let uid = try await client.auth.user().id.uuidString.lowercased()
+
+        let startArray = "{" + event.dateTimeStart.toIntList().map(String.init).joined(separator: ",") + "}"
+        let endArray = "{" + event.dateTimeEnd.toIntList().map(String.init).joined(separator: ",") + "}"
+        let sideImageArray = "{" + event.sideImagesURL.map { "\"\($0)\"" }.joined(separator: ",") + "}"
+
+        let insertResult = try await client
+            .from("events")
+            .insert([
+                "id": event.id.uuidString.lowercased(),
+                "user_uuid": uid,
+                "time_start": startArray,
+                "time_end": endArray,
+                "system_image": event.systemImage,
+                "background_color": event.backgroundColor,
+                "text_color": event.textColor,
+                "main_image_url": event.mainImageURL,
+                "side_image_urls": sideImageArray,
+                "repetition_type": event.repetitionType.displayName
+            ])
+            .execute()
+
+        print("[-SERVICES/EVENT] CREATED EVENT: \(event)")
     }
 
     // MARK: - Read
     func fetchEvents() async throws -> [Event] {
-        let uid = try await client.auth.user().id
-        let folder = uid.uuidString.lowercased()
-        let path = "\(folder)/calendar.json"
+        print("[-SERVICES/EVENT] FETCHING EVENTS...")
 
-        // Debug
-        // print("[-SERVICES/EVENT] FETCHING EVENTS for user folder: \(folder), path: \(path)")
+        let uid = try await client.auth.user().id.uuidString.lowercased()
 
-        let data = try await client.storage
-            .from("user_data")
-            .download(path: path)
+        let response = try await client
+            .from("events")
+            .select()
+            .eq("user_uuid", value: uid)
+            .execute()
 
-        // Debug
-        // print("[-SERVICES/EVENT] RAW JSON: \(String(data: data, encoding: .utf8) ?? "nil")")
+        let data = response.data
+        let events = try JSONDecoder().decode([EventJSON].self, from: data).compactMap { $0.toEvent() }
 
-        let calendar = try JSONDecoder().decode(CalendarJSON.self, from: data)
-        let events = calendar.events.map { $0.toEvent() }
-
-        // Debug
-        // print("[-SERVICES/EVENT] DECODED EVENTS: \(events)")
-
+        print("[-SERVICES/EVENT] DECODED EVENTS: \(events)")
         return events
     }
 
     // MARK: - Update
     func updateEvent(_ newEvent: Event) async throws {
-        var events = try await fetchEvents()
-        guard let index = events.firstIndex(where: { $0.id == newEvent.id }) else {
-            throw AppError.notFound
-        }
-        events[index] = newEvent
-        try await saveEvents(events)
+        print("[-SERVICES/EVENT] UPDATING EVENT: \(newEvent)")
 
-        // Debug
-        // print("[-SERVICES/EVENT] UPDATED EVENT: \(event)")
+        let startArray = "{" + newEvent.dateTimeStart.toIntList().map(String.init).joined(separator: ",") + "}"
+        let endArray = "{" + newEvent.dateTimeEnd.toIntList().map(String.init).joined(separator: ",") + "}"
+        let sideImageArray = "{" + newEvent.sideImagesURL.map { "\"\($0)\"" }.joined(separator: ",") + "}"
+
+        try await client
+            .from("events")
+            .update([
+                "time_start": startArray,
+                "time_end": endArray,
+                "system_image": newEvent.systemImage,
+                "background_color": newEvent.backgroundColor,
+                "text_color": newEvent.textColor,
+                "main_image_url": newEvent.mainImageURL,
+                "side_image_urls": sideImageArray,
+                "repetition_type": newEvent.repetitionType.displayName
+            ])
+            .eq("id", value: newEvent.id.uuidString.lowercased())
+            .execute()
+
+        print("[-SERVICES/EVENT] UPDATED EVENT: \(newEvent)")
     }
 
     // MARK: - Delete
     func deleteEvent(_ id: UUID) async throws {
-        var events = try await fetchEvents()
-        events.removeAll { $0.id == id }
-        try await saveEvents(events)
+        print("[-SERVICES/EVENT] DELETING EVENT WITH ID: \(id)")
 
-        // Debug
-        // print("[-SERVICES/EVENT] DELETED EVENT WITH ID: \(id)")
-    }
+        try await client
+            .from("events")
+            .delete()
+            .eq("id", value: id.uuidString.lowercased())
+            .execute()
 
-    // MARK: - Internal helper
-    private func saveEvents(_ events: [Event]) async throws {
-        let uid = try await client.auth.user().id
-        let folder = uid.uuidString.lowercased()
-        let path = "\(folder)/calendar.json"
-
-        let calendarPayload = CalendarJSON(
-            events: events.map { $0.toEventJSON() },
-            uid: folder
-        )
-
-        let data = try JSONEncoder().encode(calendarPayload)
-
-        // Debug
-        // print("[-SERVICES/EVENT] SAVING EVENTS to path: \(path)")
-        // print("[-SERVICES/EVENT] PAYLOAD: \(String(data: data, encoding: .utf8) ?? "nil")")
-
-        try await client.storage
-            .from("user_data")
-            .upload(
-                path: path,
-                file: data,
-                options: .init(
-                    cacheControl: "0",
-                    contentType: "application/json",
-                    upsert: true
-                )
-            )
-
-        // Debug
-        // print("[-SERVICES/EVENT] SAVE SUCCESSFUL")
+        print("[-SERVICES/EVENT] DELETED EVENT WITH ID: \(id)")
     }
 }

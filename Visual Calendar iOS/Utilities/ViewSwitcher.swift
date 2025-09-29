@@ -7,7 +7,7 @@
 import Foundation
 import Combine
 
-enum ActiveView: Equatable {
+enum ActiveView: Equatable, Hashable {
     case login
     case selectRole
     case calendar(isAdult: Bool)
@@ -17,23 +17,34 @@ enum ActiveView: Equatable {
 @MainActor
 class ViewSwitcher: ObservableObject {
     
-
-    
     @Published var activeView: ActiveView = .login
     
+    private var resets: [ActiveView: () -> Void] = [:]
+
+    func setResetCallback(_ callback: @escaping () -> Void, for view: ActiveView) {
+        resets[view] = callback
+    }
+
+    private func requireReset(for view: ActiveView) {
+        guard let reset = resets[view] else {
+            fatalError("FATAL: No reset callback registered for view \(view). You must call setResetCallback(_:for:) before switching.")
+        }
+        reset()
+    }
+
     func switchToSelectRole() {
+        //requireReset(for: .selectRole)
         activeView = .selectRole
     }
-    
+
     func switchToLogin() {
+        //requireReset(for: .login)
         activeView = .login
     }
-    
-    func switchToCalendar(isAdult: Bool = false)
-    {
-        activeView = .calendar(isAdult: isAdult)
-    }
-    func switchToLoading() {
-        activeView = .loading
+
+    func switchToCalendar(isAdult: Bool = false) {
+        let targetView = ActiveView.calendar(isAdult: isAdult)
+        //requireReset(for: targetView)
+        activeView = targetView
     }
 }

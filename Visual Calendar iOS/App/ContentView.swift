@@ -20,20 +20,19 @@ struct LoadingView: View {
 }
 
 struct ContentView: View {
-    @EnvironmentObject var api: APIHandler
-    @EnvironmentObject var warningManager: WarningHandler
-    @EnvironmentObject var viewSwitcher: ViewSwitcher
-
+    let loginViewModel: LoginViewModel
+    
+    @ObservedObject var viewSwitcher: ViewSwitcher
+    @ObservedObject var warningManager: WarningHandler
     
     var currentView: some View {
         switch viewSwitcher.activeView {
             case .login:
-                AnyView(LoginView() )
+            AnyView(LoginView(viewModel: loginViewModel))
             case .selectRole:
-                AnyView(SelectRoleView(viewSwitcher: viewSwitcher))
+                AnyView(SelectRoleView())
             case let .calendar(isAdult):
-                AnyView(CalendarView(
-                    viewModel: CalendarViewModel(api:api, warningHandler: warningManager, viewSwitcher:viewSwitcher), warningHandler:_warningManager, viewSwitcher: viewSwitcher))
+                AnyView(CalendarView())
             case .loading:
                 AnyView(LoadingView())
             

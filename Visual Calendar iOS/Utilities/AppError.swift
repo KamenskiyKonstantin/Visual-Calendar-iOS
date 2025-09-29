@@ -13,6 +13,7 @@ enum AppError: Error, LocalizedError, Equatable{
     case authInvalidCredentials
     case authSessionUnavailable
     case authSessionExpired
+    case authMismatchSignupPassword
 
     // MARK: - Network/API
     case networkUnavailable
@@ -50,6 +51,7 @@ enum AppError: Error, LocalizedError, Equatable{
         case .authInvalidCredentials: return "Invalid login credentials. Please try again."
         case .authSessionUnavailable: return "No session found. Please log in again."
         case .authSessionExpired: return "Your session has expired. Please log in again."
+        case .authMismatchSignupPassword: return "Passwords don't match"
             
         case .duplicateFile: return "A file with the same name already exists."
         case .duplicateLibrary: return "A library with the same name is already added"

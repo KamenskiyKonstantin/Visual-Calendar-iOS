@@ -9,89 +9,71 @@ import SwiftUI
 
 import Foundation
 
-struct LoginView: View {
-    @State private var email: String = ""
-    @State private var password: String = ""
-    
-    @State private var isCheckingSession = true
-    
-    @EnvironmentObject var warningManager: WarningHandler
-    @EnvironmentObject var APIinteractor: APIHandler
-    @EnvironmentObject var viewSwitcher: ViewSwitcher
+struct LoginView<ViewModel: LoginViewModelProtocol>: View {
+    @ObservedObject var viewModel: ViewModel
 
     var body: some View {
-        Group {
-            if isCheckingSession {
+        if viewModel.isLoadingSession {
                 ProgressView("Checking session...")
-            } else {
-                NavigationStack {
+        }
+        else {
+            NavigationStack {
+                HStack{
+                    Spacer()
+                        .frame(maxWidth: .infinity)
                     VStack {
                         Spacer()
-                        HStack {
-                            Spacer()
+                        VStack{
                             VStack {
-                                TextField("E-mail", text: $email)
+                                TextField("E-mail", text: $viewModel.emailLogin)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
 
-                                SecureField("Password", text: $password)
+                                SecureField("Password", text: $viewModel.passwordLogin)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
                             }
-                            .frame(width: 275, height: 100)
-                            Spacer()
-                        }
-
-                        HStack {
+                            .frame(maxWidth: .infinity)
+                            
                             Button("Log in") {
-                                AsyncExecutor.runWithWarningHandler(warningHandler: warningManager, api: APIinteractor, viewSwitcher: viewSwitcher) {
-                                    try await APIinteractor.login(email: email, password: password)
-                                    if APIinteractor.isAuthenticated {
-                                        viewSwitcher.switchToSelectRole()
-                                    } else {
-                                        throw AppError.authInvalidCredentials
-                                    }
-                                }
+                                viewModel.login()
                             }
-                            .frame(width: 250)
-                            .buttonBorderShape(.capsule)
+                            .frame(maxWidth: .infinity, maxHeight: 10)
+                            .padding()
+                            .buttonBorderShape(.automatic)
                             .background(Color.blue)
                             .cornerRadius(20)
-                            .buttonStyle(BorderedButtonStyle())
                             .foregroundColor(.white)
-                        }
 
-                        HStack {
-                            Spacer()
                             NavigationLink {
-                                SignUpView(APIinteractor: APIinteractor)
+                                SignUpView(viewModel: viewModel)
                             } label: {
                                 Text("Sign up")
                                     .frame(width: 200)
                             }
                             .buttonStyle(.borderless)
-                            Spacer()
                         }
-
+                        #if DEBUG
+                        //.border(Color.blue, width: 1)
+                        #endif
                         Spacer()
                     }
+                    #if DEBUG
+                    //.border(Color.red, width: 1)
+                    #endif
+                    Spacer()
+                        .frame(maxWidth: .infinity)
                 }
+                
             }
         }
-        .task {
-            AsyncExecutor.runWithWarningHandler(warningHandler: warningManager,api: APIinteractor, viewSwitcher: viewSwitcher) {
-                defer {
-                    isCheckingSession = false
-                }
-                if APIinteractor.isAuthenticated {
-                    try await APIinteractor.verifySession()
-                    viewSwitcher.switchToSelectRole()  // View logic stays in the view
-                } else {
-                    throw AppError.authSessionUnavailable
-                }
-            }
-        }
+        
     }
 }
+
+#Preview {
+    LoginView(viewModel: MockLoginViewModel())
+}
+

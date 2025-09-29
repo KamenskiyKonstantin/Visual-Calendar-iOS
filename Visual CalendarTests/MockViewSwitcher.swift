@@ -23,10 +23,5 @@ final class MockViewSwitcher: ViewSwitcher {
         super.switchToSelectRole()
         switchHistory.append(.selectRole)
     }
-
-    override func switchToLoading() {
-        super.switchToLoading()
-        switchHistory.append(.loading)
-    }
 }
 

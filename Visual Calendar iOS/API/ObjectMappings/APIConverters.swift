@@ -40,7 +40,7 @@ extension Event {
             sideImageURLS: self.sideImagesURL,
             id: self.id,
             repetitionType: self.repetitionType.displayName,
-            reactionString: self.reaction.emoji
+
         )
     }
 }
@@ -58,7 +58,7 @@ extension EventJSON {
             bgcolor: backgroundColor,
             textcolor: textColor,
             repetitionType: repetitionType,
-            reactionString: reactionString
+            reactionString: "NULL",
         )
     }
 }

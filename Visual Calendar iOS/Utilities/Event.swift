@@ -25,6 +25,16 @@ enum EventReaction: CaseIterable{
         case .upset: return "😡"
         }
     }
+    
+    var rawValue: String {
+        switch self {
+        case .none: return "none"
+        case .smiley: return "smiley"
+        case .thumbsUp: return "thumbsUp"
+        case .thumbsDown: return "thumbsDown"
+        case .upset: return "upset"
+        }
+    }
 }
 
 enum EventRepetitionType{
@@ -117,7 +127,7 @@ struct Event: Identifiable{
     let mainImageURL: String
     let sideImagesURL: [String]
     
-    let repetitionType: EventRepetitionType
+    var repetitionType: EventRepetitionType
     var reaction: EventReaction
     
 

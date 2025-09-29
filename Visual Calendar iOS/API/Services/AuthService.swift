@@ -15,7 +15,7 @@ class AuthService {
 
     init(client: SupabaseClient) {
         self.client = client
-        self.auth = client.auth
+        self.auth = client.auth 
     }
 
     var isAuthenticated: Bool {
@@ -33,9 +33,10 @@ class AuthService {
             
         }
     }
-    func signUp(email: String, password: String) async throws {
+    func signUp(email: String, password: String, confirmPassword: String) async throws {
+        guard password == confirmPassword else {throw AppError.authMismatchSignupPassword}
         let session = try await auth.signUp(email: email, password: password)
-        let userID = session.user.id 
+        let userID = session.user.id
         try await createUserFolders(uid: userID)
     }
 
@@ -56,16 +57,6 @@ class AuthService {
         let encoder = JSONEncoder()
         
         print("[-SERVICES/AUTH-] SETTING UP USER FOLDER FOR: /\(folder)")
-
-        // Upload empty calendar.json
-        let starterCalendar = CalendarJSON(events: [], uid: folder)
-        let calendarData = try encoder.encode(starterCalendar)
-        try await client.storage.from("user_data").upload(
-            path: "\(folder)/calendar.json",
-            file: calendarData,
-            options: .init(cacheControl: "0", contentType: "application/json", upsert: true)
-        )
-
         // Upload .keep to create folder
         try await client.storage.from("user_data").upload(
             path: "\(folder)/images/.keep",

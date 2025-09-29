@@ -14,11 +14,8 @@ struct Visual_Calendar_iOSApp: App {
     private let viewSwitcher: ViewSwitcher
     private let warningHandler: WarningHandler
     
-    
-    func logoutSequence() async throws {
-        try await api.logout()
-        viewSwitcher.switchToLogin()
-    }
+    private let loginModel: LoginViewModel
+
 
     init() {
         // define references
@@ -26,29 +23,38 @@ struct Visual_Calendar_iOSApp: App {
         let api = APIHandler()
         let warningHandler = WarningHandler()
         
+        @Sendable
+        @MainActor
+        func logoutSequence() async {
+            _ = await api.logout()
+            viewSwitcher.switchToLogin()
+        }
+        
+        // create AsyncExecutor
+        let executor = AsyncExecutor(warningHandler: warningHandler, logoutSequence: logoutSequence)
+        
+        api.setExecutor(executor)
+        
+        // Create ViewModels
+        let loginModel = LoginViewModel(api: api, viewSwitcher: viewSwitcher)
+        func resetSwitchToRole(){print("SWITCHTOROLERESET")}
+        
+        viewSwitcher.setResetCallback(loginModel.reset, for: .login)
+        viewSwitcher.setResetCallback(resetSwitchToRole, for: .selectRole)
+        
         // inject into self
         self.api = api
         self.viewSwitcher = viewSwitcher
         self.warningHandler = warningHandler
         
-        // create AsyncExecutor
-        func logoutSequence() async throws {
-            try await api.logout()
-            viewSwitcher.switchToLogin()
-        }
-        
-        
-        
+        self.loginModel = loginModel
         
         
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(api)
-                .environmentObject(warningHandler)
-                .environmentObject(viewSwitcher)
+            ContentView(loginViewModel: self.loginModel, viewSwitcher: self.viewSwitcher, warningManager: self.warningHandler)
         }
     }
 }
