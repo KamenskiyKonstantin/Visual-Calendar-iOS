@@ -54,6 +54,10 @@ struct EventView: View {
                 viewModel.detailViewModel.setEvent(event)
                 viewModel.detailViewModel.setTimeStart(dateStart)
                 viewModel.detailViewModel.setReaction(reaction)
+                if viewModel.imageURLs.contains(where: {event.id == $0.eventID}){
+                    viewModel.detailViewModel.setImageMapping(viewModel.imageURLs.first(where: { $0.eventID == event.id })!)
+                }
+                
             }
         })
         .frame(

@@ -49,6 +49,8 @@ final class CalendarViewModel: CalendarViewModelProtocol {
     @Published var mode: CalendarMode = .Week
     @Published var events: [Event] = []
     @Published var images: [String: [any NamedURL]] = [:]
+    @Published var imageURLs: [ImageMapping] = []
+
     @Published var libraries: [LibraryInfo] = []
     @Published var reactions: [UUID:[EventReactionRow]] = [:]
     @Published var isLoading: Bool = false
@@ -173,6 +175,10 @@ final class CalendarViewModel: CalendarViewModelProtocol {
         async let fetchedEvents = api.fetchEvents()
         let events = await fetchedEvents
         self.events = events
+        
+        async let fetchedImageMappings = api.resolveImageURLs(for: events)
+        let imagesMap = await fetchedImageMappings
+        self.imageURLs = imagesMap
     }
     
     private func fetchImages() async {
@@ -190,12 +196,14 @@ final class CalendarViewModel: CalendarViewModelProtocol {
         async let fetchedEvents = api.fetchEvents()
         let events = await fetchedEvents
         self.events = events
-        //let libraries = await fetchedLibraries
-        //let imagesMap = await api.fetchImages(libraries)
         
         async let fetchedReactions = api.fetchAllReactions(for: events)
         let reactions = await fetchedReactions
         self.reactions = reactions
+        
+        async let fetchedImageMappings = api.resolveImageURLs(for: events)
+        let imagesMap = await fetchedImageMappings
+        self.imageURLs = imagesMap
 
     }
 }

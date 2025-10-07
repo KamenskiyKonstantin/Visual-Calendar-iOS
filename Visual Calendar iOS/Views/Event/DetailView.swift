@@ -22,10 +22,27 @@ struct DetailView: View {
     private func DetailViewBody(event: Event) -> some View {
         ScrollView {
             VStack(spacing: 16) {
-                mainImage(url: event.mainImageURL)
-                Divider()
-                sideImages(urls: event.sideImagesURL)
-                Divider()
+                if viewModel.imageMapping != nil {
+                    let mapping = viewModel.imageMapping!
+                    mainImage(url: mapping.mainImageSignedURL)
+                    Divider()
+                    sideImages(urls: mapping.sideImageSignedURLs)
+                    Divider()
+                }
+                else{
+                    VStack{
+                        let image = emojiToImage("❌", fontSize: 128)
+                        if image != nil {
+                            Image(uiImage: image!)
+                                .resizable()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .padding(event.duration >= 60 ? 10 : 5)
+                                .aspectRatio(1, contentMode: .fit)
+                        }
+                        
+                    }
+                    Divider()
+                }
                 reactionButtons()
             }
             .padding()
@@ -33,8 +50,8 @@ struct DetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func mainImage(url: String) -> some View {
-        AsyncImage(url: URL(string: url)) { phase in
+    private func mainImage(url: URL) -> some View {
+        AsyncImage(url: url) { phase in
             if let image = phase.image {
                 image
                     .resizable()
@@ -47,10 +64,10 @@ struct DetailView: View {
         }
     }
 
-    private func sideImages(urls: [String]) -> some View {
+    private func sideImages(urls: [URL]) -> some View {
         VStack {
             ForEach(urls, id: \.self) { url in
-                AsyncImage(url: URL(string: url)) { phase in
+                AsyncImage(url: url) { phase in
                     if let image = phase.image {
                         image
                             .resizable()

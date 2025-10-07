@@ -127,6 +127,13 @@ final class APIHandler {
         }.value ?? [:]
     }
     
+    func resolveImageURLs(for events: [Event]) async -> [ImageMapping]{
+        guard await verifySession() else { return [] }
+        return await requireExecutor().run("fetchImageURLs") {
+            try await self.imageService.resolveSignedURLs(for: events)
+        }.value ?? []
+    }
+    
     func updateImage(_ imageData: Data, _ displayName: String) async -> Bool {
         guard await verifySession() else { return false }
         return await requireExecutor().run("upsertImage (\(displayName))") {

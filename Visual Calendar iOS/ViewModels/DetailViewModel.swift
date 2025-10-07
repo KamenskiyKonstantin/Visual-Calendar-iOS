@@ -32,6 +32,7 @@ class DetailViewModel: ObservableObject {
     @Published private(set) var timeStart: [Int] = []
     @Published private(set) var currentReaction: EventReaction = .none
     @Published private(set) var isInUITImeout: Bool = false
+    @Published private(set) var imageMapping: ImageMapping? = nil
 
     // MARK: - Init
     init(api: APIHandler, warningHandler: WarningHandler) {
@@ -54,6 +55,10 @@ class DetailViewModel: ObservableObject {
     
     func setReaction(_ reaction: EventReaction){
         self.currentReaction = reaction
+    }
+    
+    func setImageMapping(_ imageMapping: ImageMapping){
+        self.imageMapping = imageMapping
     }
     
     func toggleReaction(_ newReaction: EventReaction) {

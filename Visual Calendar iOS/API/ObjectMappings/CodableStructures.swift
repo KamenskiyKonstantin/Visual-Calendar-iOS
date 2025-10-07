@@ -46,6 +46,12 @@ struct EventJSON: Codable {
     }
 }
 
+struct ImageMapping: Codable, Hashable {
+    let eventID: UUID
+    let mainImageSignedURL: URL
+    let sideImageSignedURLs: [URL]
+}
+
 
 struct EventReactionRow: Codable, Hashable, Equatable {
     // THIS REPRESENTS HOW A SERVER SEES AN ENTRY FOR AN EVENT REACTION

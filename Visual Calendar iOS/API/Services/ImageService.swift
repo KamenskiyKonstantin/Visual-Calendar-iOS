@@ -39,7 +39,6 @@ extension ImageService {
     // MARK: Create
     func createImage(imageData: Data, displayName: String) async throws {
         try await upsertImage(imageData: imageData, displayName: displayName, force: false)
-        // print("[-SERVICES/IMAGE] CREATED IMAGE: \(displayName)")
     }
 
     // MARK: Read
@@ -65,6 +64,44 @@ extension ImageService {
         // print("[-SERVICES/IMAGE] FETCHED IMAGES: \(files.map { $0.display_name })")
 
         return files
+    }
+    
+    func resolveSignedURLs(for events: [Event]) async throws -> [ImageMapping] {
+        print("[-SERVICES/IMAGE-] FETCHING URLS FOR A SERIES OF EVENTS")
+        
+        var result: [ImageMapping] = []
+        
+        for event in events {
+            let mainImageURL = event.mainImageURL
+            
+            var mainImageSignedURL: URL
+            
+            print("[-SERVICES/IMAGE-] NOW LOADING URL FOR: \(mainImageURL)")
+            
+            if mainImageURL.contains("_library") {
+                mainImageSignedURL = try await client.storage.from("publiclibraries").createSignedURL(path: mainImageURL, expiresIn: 3600)
+            }
+            else{
+                mainImageSignedURL = try await client.storage.from("user_data").createSignedURL(path: mainImageURL, expiresIn: 3600)
+            }
+            
+            var sideImagesURLs: [URL] = []
+            
+            for current in event.sideImagesURL{
+                print("[-SERVICES/IMAGE-] NOW LOADING URL FOR: \(current)")
+                if current.contains("_library") {
+                    sideImagesURLs.append(try await client.storage.from("publiclibraries").createSignedURL(path: current, expiresIn: 3600))
+                }
+                else{
+                    sideImagesURLs.append(try await client.storage.from("user_data").createSignedURL(path: current, expiresIn: 3600))
+                }
+            }
+            
+            result.append(ImageMapping(eventID: event.id, mainImageSignedURL: mainImageSignedURL, sideImageSignedURLs: sideImagesURLs))
+            
+        }
+        
+        return result
     }
 
     // MARK: Update
@@ -151,6 +188,7 @@ extension ImageService {
                 .execute()
         }
     }
+    
 
     // MARK: Availability check
     private func isFilenameAvailable(_ name: String) async throws -> Bool {
