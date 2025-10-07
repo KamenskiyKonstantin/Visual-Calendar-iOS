@@ -26,7 +26,7 @@ class EventService {
         let endArray = "{" + event.dateTimeEnd.toIntList().map(String.init).joined(separator: ",") + "}"
         let sideImageArray = "{" + event.sideImagesURL.map { "\"\($0)\"" }.joined(separator: ",") + "}"
 
-        let insertResult = try await client
+        _ = try await client
             .from("events")
             .insert([
                 "id": event.id.uuidString.lowercased(),

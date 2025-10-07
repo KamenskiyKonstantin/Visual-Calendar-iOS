@@ -66,3 +66,23 @@ struct RuntimeWarning: Error {
     init(_ message: String) { self.message = message }
     var localizedDescription: String { message }
 }
+
+
+func dateWithTime(from baseDate: Date, using timeSource: Date) -> Date {
+    let calendar = Calendar.current
+    let dateComponents = calendar.dateComponents([.year, .month, .day], from: baseDate)
+    let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: timeSource)
+
+    var combined = DateComponents()
+    combined.year = dateComponents.year
+    combined.month = dateComponents.month
+    combined.day = dateComponents.day
+    combined.hour = timeComponents.hour
+    combined.minute = timeComponents.minute
+    combined.second = timeComponents.second
+    
+    let result = calendar.date(from: combined) ?? baseDate
+    
+    print("[-UTILITIES/DateTimeConstructor-] Constructed date: \(result.toIntList())")
+    return result
+}

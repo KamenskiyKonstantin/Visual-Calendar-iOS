@@ -42,21 +42,26 @@ struct SignUpView<ViewModel: LoginViewModelProtocol>: View {
                                     .disableAutocorrection(true)
                             }
                         }
-
-                        Button("Sign Up") {
-                            viewModel.signUp()
+                        
+                        HStack{
+                            Spacer()
+                                Button("Sign Up") {
+                                    viewModel.signUp()
+                                }
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 20)
+                                .buttonBorderShape(.automatic)
+                                .background(Color.blue)
+                                .cornerRadius(20)
+                                .foregroundColor(.white)
+                            Spacer()
                         }
-                        .frame(maxWidth: .infinity, maxHeight: 10)
-                        .padding()
-                        .buttonBorderShape(.automatic)
-                        .background(Color.blue)
-                        .cornerRadius(20)
-                        .foregroundColor(.white)
+
+                        
 
                         Button("Back to Login"){
                             dismiss()
                         }
-                        .frame(width: 200)
                         .buttonStyle(.borderless)
                     }
                     

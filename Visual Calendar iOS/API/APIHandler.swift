@@ -92,14 +92,14 @@ final class APIHandler {
 
     func createEvent(_ event: Event) async -> Bool {
         guard await verifySession() else { return false }
-        return await requireExecutor().run("upsertEvents") {
+        return await requireExecutor().run("create Event") {
             try await self.eventService.createEvent(event)
         }.value != nil
     }
     
     func updateEvent(_ newEvent: Event) async -> Bool {
         guard await verifySession() else { return false }
-        return await requireExecutor().run("upsertEvents") {
+        return await requireExecutor().run("update Event") {
             try await self.eventService.updateEvent(newEvent)
         }.value != nil
     }
@@ -209,12 +209,12 @@ final class APIHandler {
             }.value ?? [:]
         }
 
-        func setReaction(for eventID: UUID, timeStart: [Int], reaction: EventReaction) async -> Bool {
-            guard await verifySession() else { return false }
-            return await requireExecutor().run("setReaction") {
-                try await self.reactionService.setReaction(for: eventID, timeStart: timeStart, reaction: reaction)
-            }.value != nil
-        }
+    func setReaction(for eventID: UUID, timeStart: [Int], reaction: EventReaction) async -> Bool {
+        guard await verifySession() else { return false }
+        return await requireExecutor().run("setReaction") {
+            try await self.reactionService.setReaction(for: eventID, timeStart: timeStart, reaction: reaction)
+        }.value != nil
+    }
 
 }
 

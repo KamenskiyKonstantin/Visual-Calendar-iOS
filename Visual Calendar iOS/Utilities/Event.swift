@@ -100,7 +100,7 @@ func repetitionStringToEnum(_ repetitionString: String) -> EventRepetitionType {
     }
 }
 
-func emojiStringToEnum(_ emojiString: String) -> EventReaction {
+func reactionStringToEnum(_ emojiString: String) -> EventReaction {
     switch emojiString {
         case "😊":
             return .smiley
@@ -111,11 +111,11 @@ func emojiStringToEnum(_ emojiString: String) -> EventReaction {
         case "😡":
             return .upset
         default:
-            return .smiley
+            return .none
     }
 }
 
-struct Event: Identifiable{
+struct Event: Identifiable, Hashable{
     let id: UUID
     var backgroundColor: String
     let textColor: String
@@ -150,7 +150,7 @@ struct Event: Identifiable{
         self.duration = Int(self.dateTimeEnd.timeIntervalSince(self.dateTimeStart) / 60)
         
         self.repetitionType = repetitionStringToEnum(repetitionType)
-        self.reaction = emojiStringToEnum(reactionString)
+        self.reaction = reactionStringToEnum(reactionString)
     }
     
     func getString() -> String {
@@ -219,12 +219,41 @@ extension Event {
     }
 }
 
-extension Event: Hashable, Equatable {
+extension Event: Equatable {
     static func == (lhs: Event, rhs: Event) -> Bool {
         lhs.id == rhs.id
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+    }
+}
+
+extension Event {
+    static func mock(
+        id: UUID = UUID(),
+        systemImage: String = "😊",
+        start: Date = Date(),
+        durationMinutes: Int = 60,
+        mainImageURL: String = "https://example.com/image.png",
+        sideImagesURL: [String] = ["https://example.com/image1.png", "https://example.com/image2.png"],
+        backgroundColor: String = "Mint",
+        textColor: String = "Blue",
+        repetitionType: String = "weekly",
+        reactionString: String = "😊"
+    ) -> Event {
+        let end = Calendar.current.date(byAdding: .minute, value: durationMinutes, to: start)!
+        return Event(
+            systemImage: systemImage,
+            dateTimeStart: start,
+            dateTimeEnd: end,
+            mainImageURL: mainImageURL,
+            sideImagesURL: sideImagesURL,
+            id: id,
+            bgcolor: backgroundColor,
+            textcolor: textColor,
+            repetitionType: repetitionType,
+            reactionString: reactionString
+        )
     }
 }

@@ -37,15 +37,21 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
                             }
                             .frame(maxWidth: .infinity)
                             
-                            Button("Log in") {
-                                viewModel.login()
+                            HStack{
+                                Spacer()
+                                Button("Log in") {
+                                    viewModel.login()
+                                }
+                                .padding(.vertical, 10)
+                                .padding(.horizontal,20)
+                                .buttonBorderShape(.automatic)
+                                .background(Color.blue)
+                                .cornerRadius(30)
+                                .foregroundColor(.white)
+                                Spacer()
                             }
-                            .frame(maxWidth: .infinity, maxHeight: 10)
-                            .padding()
-                            .buttonBorderShape(.automatic)
-                            .background(Color.blue)
-                            .cornerRadius(20)
-                            .foregroundColor(.white)
+                            
+                           
 
                             NavigationLink {
                                 SignUpView(viewModel: viewModel)

@@ -8,7 +8,22 @@
 import Foundation
 
 @MainActor
-class SelectRoleViewModel: ObservableObject {
+protocol SelectRoleViewModelProtocol: ObservableObject {
+    var userVerificationAnswer: String { get set}
+    
+    var verificationValA: Int { get set}
+    var verificationValB: Int { get set}
+    
+    func load()
+    func reset()
+    
+    func switchChild()
+    func switchAdult()
+    
+}
+
+@MainActor
+class SelectRoleViewModel: SelectRoleViewModelProtocol {
     private var hasLoaded: Bool = false
     
     @Published var userVerificationAnswer: String = ""
@@ -43,6 +58,10 @@ class SelectRoleViewModel: ObservableObject {
     }
     
     func reset() {
+        verificationValA = Int.random(in: 1...10)
+        verificationValB = Int.random(in: 1...10)
+        userVerificationAnswer = ""
+        
         hasLoaded = false
     }
     
@@ -71,8 +90,26 @@ class SelectRoleViewModel: ObservableObject {
         viewSwitcher.switchToCalendar(isAdult: true)
     }
     
+}
+
+class MockSelectRoleViewModel: SelectRoleViewModelProtocol{
+    @Published var userVerificationAnswer: String = "7"
+    @Published var verificationValA: Int = 1
+    @Published var verificationValB: Int = 6
     
+    func load() {
+        print("Load")
+    }
     
+    func reset() {
+        print("Reset")
+    }
     
+    func switchAdult() {
+        print("Switch Adult")
+    }
     
+    func switchChild() {
+        print("Switch Child")
+    }
 }

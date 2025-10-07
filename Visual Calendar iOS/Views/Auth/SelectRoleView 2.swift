@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct SelectRoleView: View {
-    @StateObject var viewModel: SelectRoleViewModel
+struct SelectRoleView<ViewModel: SelectRoleViewModelProtocol>: View {
+    @StateObject var viewModel: ViewModel
     @State private var showAdultModal = false
 
     var body: some View {
@@ -53,8 +53,8 @@ struct SelectRoleView: View {
     }
 }
 
-struct AdultVerificationModal: View {
-    @ObservedObject var viewModel: SelectRoleViewModel
+struct AdultVerificationModal<ViewModel: SelectRoleViewModelProtocol>: View {
+    @ObservedObject var viewModel: ViewModel
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -85,4 +85,8 @@ struct AdultVerificationModal: View {
         }
         .padding()
     }
+}
+
+#Preview {
+    SelectRoleView(viewModel: MockSelectRoleViewModel())
 }

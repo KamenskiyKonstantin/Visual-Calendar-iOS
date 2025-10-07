@@ -93,6 +93,11 @@ final class LoginViewModel: LoginViewModelProtocol {
     
     func reset() {
         hasLoaded = false
+        emailLogin = ""
+        passwordLogin = ""
+        emailSignup = ""
+        passwordSignup = ""
+        confirmPasswordSignup = ""
     }
 }
 

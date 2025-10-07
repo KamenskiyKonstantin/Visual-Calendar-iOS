@@ -54,10 +54,23 @@ final class AsyncExecutor {
             let result = try await operation()
             return .success(result)
         } catch {
-            warningHandler.showWarning("Error during \(jobName): \(error.localizedDescription)")
-            try? await logoutSequence()
-            print("[-EXECUTOR/RUN-] JOB FAILED: \(jobName) with low-level error: \(error)")
-            return .failure(error)
-        }
+            
+            do {
+                try ErrorClassifier.classifyAndThrow(error)
+            }
+            catch{
+                warningHandler.showWarning("Error during \(jobName): \(error.localizedDescription)")
+                if error is AppError{
+                    if error as! AppError == .authSessionExpired{
+                        try? await logoutSequence()
+                    }
+                }
+                
+                print("[-EXECUTOR/RUN-] JOB FAILED: \(jobName) with low-level error: \(error)")
+                return .failure(error)
+            }
+            }
+            
+            
     }
 }

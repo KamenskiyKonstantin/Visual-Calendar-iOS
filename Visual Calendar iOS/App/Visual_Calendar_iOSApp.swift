@@ -25,23 +25,30 @@ struct Visual_Calendar_iOSApp: App {
         let api = APIHandler()
         let warningHandler = WarningHandler()
         
+
+        
+        // create AsyncExecutor
+
+        
+        // Create ViewModels
+        let loginModel = LoginViewModel(api: api, viewSwitcher: viewSwitcher)
+        let selectRoleModel = SelectRoleViewModel(api: api, viewSwitcher: viewSwitcher, warningHandler: warningHandler)
+        let calendarModel = CalendarViewModel(api: api, warningHandler: warningHandler, viewSwitcher: viewSwitcher)
+        
         @Sendable
         @MainActor
         func logoutSequence() async {
             _ = await api.logout()
             viewSwitcher.switchToLogin()
             UserDefaultsManager.shared.clearAll()
+            loginModel.reset()
+            selectRoleModel.reset()
+            calendarModel.reset()
         }
         
-        // create AsyncExecutor
         let executor = AsyncExecutor(warningHandler: warningHandler, logoutSequence: logoutSequence)
         
         api.setExecutor(executor)
-        
-        // Create ViewModels
-        let loginModel = LoginViewModel(api: api, viewSwitcher: viewSwitcher)
-        let selectRoleModel = SelectRoleViewModel(api: api, viewSwitcher: viewSwitcher, warningHandler: warningHandler)
-        let calendarModel = CalendarViewModel(api: api, warningHandler: warningHandler, viewSwitcher: viewSwitcher)
         
         viewSwitcher.setResetCallback(loginModel.reset, for: .login)
         viewSwitcher.setResetCallback(selectRoleModel.reset, for: .selectRole)

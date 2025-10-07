@@ -46,7 +46,9 @@ struct EventJSON: Codable {
     }
 }
 
+
 struct EventReactionRow: Codable, Hashable, Equatable {
+    // THIS REPRESENTS HOW A SERVER SEES AN ENTRY FOR AN EVENT REACTION
     let eventID: UUID
     let timestamp: [Int]
     let reaction: String
@@ -56,6 +58,22 @@ struct EventReactionRow: Codable, Hashable, Equatable {
         case timestamp = "time_start"
         case reaction
     }
+    
+    func timestampMatches(_ date: Date) -> Bool {
+        return self.timestamp == date.toIntList()
+    }
+    
+    var emoji: String {
+        switch self.reaction
+        {
+            case "smiley": return "😊"
+            case "thumbsUp": return "👍"
+            case "thumbsDown": return "👎"
+            case "upset": return "😡"
+            default : return ""
+        }
+    }
+    
 }
 
 protocol NamedURL: Sendable, Equatable {

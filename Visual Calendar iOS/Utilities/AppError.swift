@@ -87,7 +87,6 @@ enum AppError: Error, LocalizedError, Equatable{
         if self == .authSessionExpired {
             return true
         }
-        
         return false
     }
     
