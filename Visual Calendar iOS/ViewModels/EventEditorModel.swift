@@ -66,7 +66,9 @@ final class EventEditorModel: ObservableObject {
 
     // MARK: - Form State
     @Published var title: String = ""
+    
     @Published var selectedSymbol: String = "😀"
+    @Published var isEmojiPickerShown: Bool = false
 
     @Published var backgroundColor: String = ""
     @Published var textColor: String = ""
@@ -88,6 +90,7 @@ final class EventEditorModel: ObservableObject {
     @Published var isNameEditorShown: Bool = false
     @Published var addedFilename: String = "Unnamed"
     @Published var addedFilePath: URL?
+    
     
     @Published var isLoading: Bool = false
     

@@ -39,7 +39,7 @@ struct EventEditor: View {
                     // MARK: - Appearance
                     EventAppearanceSection(
                         selectedSymbol: $model.selectedSymbol,
-                        isSymbolPickerShown: .constant(false),
+                        isSymbolPickerShown: $model.isEmojiPickerShown,
                         backgroundColor: $model.backgroundColor,
                         textColor: $model.textColor
                     )
@@ -87,7 +87,6 @@ struct EventEditor: View {
                     NameEditor(
                         viewModel: model,
                         name: $model.addedFilename,
-                        
                         fileURL: $model.addedFilePath,
                         isPresented: $model.isNameEditorShown
                     )
@@ -100,6 +99,7 @@ struct EventEditor: View {
                         }
                     )
                 }
+                
             }
         }
     }
