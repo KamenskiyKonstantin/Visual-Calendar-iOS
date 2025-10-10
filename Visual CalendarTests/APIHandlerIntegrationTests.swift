@@ -25,7 +25,6 @@ extension Preset {
     ]
 }
 
-#if TESTING
 @MainActor
 class APIHandlerIntegrationTests: XCTestCase {
     var api: APIHandler!
@@ -495,4 +494,3 @@ class APIHandlerIntegrationTests: XCTestCase {
     }
 }
 
-#endif // TESTING

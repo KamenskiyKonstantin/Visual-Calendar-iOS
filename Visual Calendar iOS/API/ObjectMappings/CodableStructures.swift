@@ -15,11 +15,19 @@
 import Foundation
 
 struct Preset: Codable, Hashable {
-    var presetName: String = ""
+    var presetName: String
     var selectedSymbol: String
     var backgroundColor: String
     var mainImageURL: String
     var sideImageURLs: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case presetName = "preset_name"
+        case selectedSymbol = "selected_symbol"
+        case backgroundColor = "background_color"
+        case mainImageURL = "main_image_url"
+        case sideImageURLs = "side_image_urls"
+    }
 }
 
 struct EventJSON: Codable {

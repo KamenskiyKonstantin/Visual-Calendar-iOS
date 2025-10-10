@@ -14,29 +14,33 @@ struct NameEditor: View {
     @Binding var name: String
     @Binding var fileURL: URL?
     @Binding var isPresented: Bool
-
-    @State private var isUploading = false
+    
+    
 
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Enter a name for your image")) {
                     TextField("Image name", text: $name)
-                        .disabled(isUploading)
+                        .disabled(viewModel.isUploadingImage)
                 }
 
-                if isUploading {
+                if viewModel.isUploadingImage {
                     Section {
                         ProgressView("Uploading...")
                             .progressViewStyle(CircularProgressViewStyle())
                     }
                 }
+                else{
+                    Section {
+                        Button("Upload") {
+                            viewModel.createUserImage(with: name)
+                            
+                        }
+                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
 
-                Section {
-                    Button("Upload") {
-                        viewModel.createUserImage(with: name)
-                    }
-                    .disabled(isUploading || name.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+
                 }
             }
             .navigationTitle("Upload File")
@@ -45,7 +49,7 @@ struct NameEditor: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         isPresented = false
-                    }.disabled(isUploading)
+                    }.disabled(viewModel.isUploadingImage)
                 }
             }
         }

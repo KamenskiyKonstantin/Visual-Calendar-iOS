@@ -93,7 +93,7 @@ final class EventEditorModel: ObservableObject {
     
     
     @Published var isLoading: Bool = false
-    
+    @Published var isUploadingImage = false
     @Published var isSubmitting: Bool = false
     
     
@@ -342,13 +342,19 @@ final class EventEditorModel: ObservableObject {
         }
         
         Task {
+            
             do {
+                isUploadingImage = true
                 let imageData = try Data(contentsOf: filePath)
                 let _ = await api.createImage(imageData, name)
                 
                 await fetchEventsCallback!()
                 self.images = await self.api.fetchImages(self.connectedLibraries)
                 print("[-MODELS/EDITOR-] LOADED IMAGES FROM DATABASE: \(self.images)")
+                
+                isUploadingImage = false
+                isNameEditorShown = false
+                
             }
             catch {
                 warningHandler.showWarning("Failed to read file")

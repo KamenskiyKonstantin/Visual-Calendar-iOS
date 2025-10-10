@@ -89,3 +89,9 @@ func dateWithTime(from baseDate: Date, using timeSource: Date) -> Date {
     print("[-UTILITIES/DateTimeConstructor-] Constructed date: \(result.toIntList())")
     return result
 }
+
+extension Array where Element == String {
+    func asPostgresArrayString() -> String {
+        "{" + self.map { "\"\($0)\"" }.joined(separator: ",") + "}"
+    }
+}
