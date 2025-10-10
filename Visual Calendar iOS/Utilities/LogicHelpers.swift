@@ -34,6 +34,9 @@ func levenshtein(_ lhs: String, _ rhs: String) -> Int {
     let m = lhsChars.count
     let n = rhsChars.count
     
+    if m == 0 { return n }
+    if n == 0 { return m }
+    
     var dp = Array(repeating: Array(repeating: 0, count: n + 1), count: m + 1)
     
     for i in 0...m { dp[i][0] = i }

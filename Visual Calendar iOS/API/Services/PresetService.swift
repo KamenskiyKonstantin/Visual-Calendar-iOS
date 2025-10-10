@@ -72,7 +72,8 @@ class PresetService {
     func updatePreset(_ preset: Preset) async throws {
         var presets = try await fetchUserOnlyPresets()
         guard let index = presets.firstIndex(where: { $0.presetName == preset.presetName }) else {
-            throw AppError.notFound
+            try await createPreset(preset)
+            return
         }
         presets[index] = preset
         try await saveUserPresets(presets)

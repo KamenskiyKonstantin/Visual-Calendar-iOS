@@ -52,14 +52,7 @@ extension ImageService {
             .eq("user_uuid", value: folder)
             .execute()
 
-        var files = try JSONDecoder().decode([CustomFile].self, from: response.data)
-
-        // Attach signed URLs
-        for i in files.indices {
-            let path = files[i].file_url // stored as path
-            let signed = try await signedURL(for: path, from: "user_data")
-            files[i].file_url = signed.absoluteString
-        }
+        let files = try JSONDecoder().decode([CustomFile].self, from: response.data)
 
         // print("[-SERVICES/IMAGE] FETCHED IMAGES: \(files.map { $0.display_name })")
 
@@ -75,6 +68,8 @@ extension ImageService {
             let mainImageURL = event.mainImageURL
             
             var mainImageSignedURL: URL
+            
+            print("[-SERVICES/IMAGE-] EVENT: \(event)")
             
             print("[-SERVICES/IMAGE-] NOW LOADING URL FOR: \(mainImageURL)")
             
@@ -219,15 +214,8 @@ extension ImageService {
             .eq("library_uuid", value: library.library_uuid.uuidString.lowercased())
             .execute()
 
-        var images = try JSONDecoder().decode([PublicImage].self, from: response.data)
-
-        // Resolve signed URLs
-        for i in images.indices {
-            let path = images[i].file_url // treat file_url as path
-            let signed = try await signedURL(for: path, from: "publiclibraries")
-            images[i].file_url = signed.absoluteString
-        }
-
+        let images = try JSONDecoder().decode([PublicImage].self, from: response.data)
+        print("[-SERVICES/IMAGE-] Fetched \(images.count) images from library: \(library.localized_name) as follows: \(images)")
         return images
     }
 

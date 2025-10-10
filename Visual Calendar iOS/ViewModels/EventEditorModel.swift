@@ -70,14 +70,14 @@ final class EventEditorModel: ObservableObject {
     @Published var selectedSymbol: String = "😀"
     @Published var isEmojiPickerShown: Bool = false
 
-    @Published var backgroundColor: String = ""
+    @Published var backgroundColor: String = "Black"
     @Published var textColor: String = ""
 
     @Published var dateStart: Date = Date()
     @Published var dateEnd: Date = Date().addingTimeInterval(3600)
     @Published var repeatType: EventRepetitionType = .once
 
-    @Published var mainImageURL: String = ""
+    @Published var mainImageURL: String = "/standard_library/no_image.png"
     @Published var sideImagesURL: [String] = []
 
     @Published var saveAsPreset: Bool = false
@@ -133,7 +133,7 @@ final class EventEditorModel: ObservableObject {
         self.repeatType = event.repetitionType
         self.mainImageURL = event.mainImageURL
         self.sideImagesURL = event.sideImagesURL
-        self.title = "Event"
+        self.title = ""
     }
     
     func setDismissal(_ dismiss: @escaping () -> Void){
@@ -149,22 +149,32 @@ final class EventEditorModel: ObservableObject {
             allLibraries = await api.fetchExistingLibraries()
             connectedLibraries = await api.fetchConnectedLibraries()
             images = await api.fetchImages(connectedLibraries)
-            
+            print("[-MODELS/EDITOR-] LOADED IMAGES FROM DATABASE: \(self.images)")
             isLoading = false
             hasLoaded = true
         }
     }
     
-    func reset() {
+    func defaultFields() {
         self.eventID = nil
-        self.selectedSymbol = "calendar"
-        self.backgroundColor = "#007AFF"
+        self.title = ""
+        self.selectedSymbol = "😀"
+        self.backgroundColor = "Black"
         self.textColor = "#FFFFFF"
         self.dateStart = Date()
         self.dateEnd = Date().addingTimeInterval(3600)
         self.repeatType = .once
-        self.mainImageURL = ""
+        self.mainImageURL = "/standard_library/no_image.png"
         self.sideImagesURL = []
+        
+        self.isForced = false
+        self.isSubmitting = false
+        self.validationError = nil
+        self.saveAsPreset = false
+    }
+    
+    func reset() {
+        defaultFields()
         self.hasLoaded = false
     }
 
@@ -244,7 +254,7 @@ final class EventEditorModel: ObservableObject {
             
             isSubmitting = false
             dismissalCallback!()
-            reset()
+            defaultFields()
 
         }
     }
@@ -265,6 +275,7 @@ final class EventEditorModel: ObservableObject {
             } else {
                 validationError = "Failed to delete event."
             }
+            defaultFields()
         }
     }
 
@@ -281,10 +292,12 @@ final class EventEditorModel: ObservableObject {
             }
             
             let preset = Preset(
+                presetName: title,
                 selectedSymbol: selectedSymbol,
                 backgroundColor: backgroundColor,
                 mainImageURL: mainImageURL,
-                sideImageURLs: sideImagesURL
+                sideImageURLs: sideImagesURL,
+                
             )
             
             // Create or update preset
@@ -294,6 +307,8 @@ final class EventEditorModel: ObservableObject {
                 _ = await api.createPreset(preset: preset)
             }
             
+            self.presets = await api.fetchPresets()
+            //print("[-MODEL/EDITOR-]: Preset '\(title)' saved. New presets: \(self.presets)")
             
             updateOrCreateEvent()
         }
@@ -333,6 +348,7 @@ final class EventEditorModel: ObservableObject {
                 
                 await fetchEventsCallback!()
                 self.images = await self.api.fetchImages(self.connectedLibraries)
+                print("[-MODELS/EDITOR-] LOADED IMAGES FROM DATABASE: \(self.images)")
             }
             catch {
                 warningHandler.showWarning("Failed to read file")
@@ -352,10 +368,7 @@ final class EventEditorModel: ObservableObject {
             self.connectedLibraries = await self.api.fetchConnectedLibraries()
             await self.fetchEventsCallback!()
             self.images = await self.api.fetchImages(self.connectedLibraries)
-            
+            print("[-MODELS/EDITOR-] LOADED IMAGES FROM DATABASE: \(self.images)")
         }
     }
-
-
-
 }

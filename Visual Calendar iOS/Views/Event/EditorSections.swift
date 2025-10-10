@@ -73,10 +73,8 @@ struct EventDateSection: View {
 }
 
 struct EventAppearanceSection: View {
-    @Binding var selectedSymbol: String
-    @Binding var isSymbolPickerShown: Bool
-    @Binding var backgroundColor: String
-    @Binding var textColor: String
+    @ObservedObject var viewModel: EventEditorModel
+    
     
     let colorOptions = [
         "Black", "Blue", "Brown", "Cyan", "Gray", "Green", "Indigo", "Mint",
@@ -90,16 +88,16 @@ struct EventAppearanceSection: View {
                     Text("Select emoji")
                     Spacer()
                     Button("Change") {
-                        isSymbolPickerShown.toggle()
+                        viewModel.isEmojiPickerShown = true
                     }
-                    .emojiPicker(isPresented: $isSymbolPickerShown, selectedEmoji: $selectedSymbol)
+                    .emojiPicker(isPresented: $viewModel.isEmojiPickerShown, selectedEmoji: $viewModel.selectedSymbol)
                     .buttonStyle(.bordered)
-                    Text(selectedSymbol)
+                    Text(viewModel.selectedSymbol)
                 }
                 HStack {
                     Text("Select background color")
                     Spacer()
-                    Picker("", selection: self.$backgroundColor) {
+                    Picker("", selection: self.$viewModel.backgroundColor) {
                         Text("Select a color").tag("")
                         ForEach(colorOptions, id:\.self){
                             color in
@@ -145,13 +143,13 @@ struct EventContentSection: View {
             .buttonStyle(.bordered)
             
             if !viewModel.images.isEmpty {
-                PickerView(viewModel: viewModel, name: "main Image", selection: self.$mainImage)
+                PickerView(viewModel: viewModel, name: "main Image", selection: self.$viewModel.mainImageURL)
             }
             
             if !sideImages.isEmpty {
                 ForEach(sideImages.indices, id: \.self) { index in
                     if !viewModel.images.isEmpty {
-                        PickerView(viewModel: viewModel, name: "Side image \(index+1)", selection: self.$sideImages[index])
+                        PickerView(viewModel: viewModel, name: "Side image \(index+1)", selection: self.$viewModel.sideImagesURL[index])
                     }
                 }
             }

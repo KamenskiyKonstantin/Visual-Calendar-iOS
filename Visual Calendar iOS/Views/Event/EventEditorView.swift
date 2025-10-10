@@ -38,10 +38,7 @@ struct EventEditor: View {
                     
                     // MARK: - Appearance
                     EventAppearanceSection(
-                        selectedSymbol: $model.selectedSymbol,
-                        isSymbolPickerShown: $model.isEmojiPickerShown,
-                        backgroundColor: $model.backgroundColor,
-                        textColor: $model.textColor
+                        viewModel: model
                     )
                     
                     // MARK: - Content
@@ -109,6 +106,18 @@ struct DuplicatePresetWarning: View {
     @Binding var isPresented: Bool
     var onContinue: () -> Void
     var body: some View {
-        Text("This preset already exists, continuing will overwrite it.")
+        HStack {
+            Spacer()
+            VStack{
+                Text("This preset already exists, continuing will overwrite it.")
+
+                Button("Continue anyway") {
+                    onContinue()
+                    isPresented = false
+                }
+            }
+            
+            Spacer()
+        }
     }
 }

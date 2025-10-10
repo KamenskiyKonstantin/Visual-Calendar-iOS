@@ -87,15 +87,15 @@ final class CalendarViewModel: CalendarViewModelProtocol {
         isLoading = true
         Task{
 
-            print("Loading Begins")
             
             self.detailViewModel.setFetchCallback(self.fetchReactions)
             self.eventEditorModel.setEventFetchCallback(self.fetchEvents)
             self.eventEditorModel.setImageFetchCallback(self.fetchImages)
             await fetchAll()
             _ = await api.addLibrary("standard_library")
+            eventEditorModel.load()
+        
             startPolling()
-            print("loading complete")
             hasLoaded = true
             isLoading = false
         }
