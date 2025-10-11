@@ -24,10 +24,6 @@ struct Visual_Calendar_iOSApp: App {
         let viewSwitcher = ViewSwitcher()
         let api = APIHandler()
         let warningHandler = WarningHandler()
-        
-
-        
-        // create AsyncExecutor
 
         
         // Create ViewModels
@@ -46,6 +42,8 @@ struct Visual_Calendar_iOSApp: App {
             calendarModel.reset()
         }
         
+        // create AsyncExecutor
+        
         let executor = AsyncExecutor(warningHandler: warningHandler, logoutSequence: logoutSequence)
         
         api.setExecutor(executor)
@@ -58,6 +56,8 @@ struct Visual_Calendar_iOSApp: App {
         viewSwitcher.setUserRoleCallback(calendarModel.setParentMode)
         
         // inject into self
+        
+        
         self.api = api
         self.viewSwitcher = viewSwitcher
         self.warningHandler = warningHandler

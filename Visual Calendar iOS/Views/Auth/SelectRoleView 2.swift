@@ -20,7 +20,7 @@ struct SelectRoleView<ViewModel: SelectRoleViewModelProtocol>: View {
                 Button(action: {
                     viewModel.switchChild()
                 }) {
-                    Text("SelectRole.Selector.Child.Button.Title")
+                    Text("SelectRole.Selector.Child.Button.Title".localized)
                         .font(.title)
                         .frame(width: 300, height: 80)
                         .background(Color.blue)
@@ -32,7 +32,7 @@ struct SelectRoleView<ViewModel: SelectRoleViewModelProtocol>: View {
                 Button(action: {
                     showAdultModal = true
                 }) {
-                    Text("SeletRole.Selector.Adult.Button.Title")
+                    Text("SeletRole.Selector.Adult.Button.Title".localized)
                         .font(.title)
                         .frame(width: 300, height: 80)
                         .background(Color.green)
@@ -71,7 +71,7 @@ struct AdultVerificationModal<ViewModel: SelectRoleViewModelProtocol>: View {
                 .frame(width: 100)
                 .textFieldStyle(.roundedBorder)
 
-            Button("SelectRole.Verification.Submit.Button.Title") {
+            Button("SelectRole.Verification.Submit.Button.Title".localized) {
                 viewModel.switchAdult()
             }
             .font(.title2)

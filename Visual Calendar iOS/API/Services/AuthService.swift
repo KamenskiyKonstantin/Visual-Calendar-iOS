@@ -63,12 +63,5 @@ class AuthService {
             file: Data(),
             options: .init(cacheControl: "0", contentType: "text/plain", upsert: true)
         )
-
-        let emptyPresetsData = try encoder.encode([Preset]())
-        try await client.storage.from("user_data").upload(
-            path: "\(folder)/presets.json",
-            file: emptyPresetsData,
-            options: .init(cacheControl: "0", contentType: "application/json", upsert: true)
-        )
     }
 }

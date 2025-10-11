@@ -72,8 +72,8 @@ final class APIHandler {
         }.value != nil
     }
 
-    func verifySession() async -> Bool {
-        await requireExecutor().run("verifySession") {
+    func verifySession(_ quiet: Bool = false) async -> Bool {
+        await requireExecutor().run("verifySession", quiet) {
             try await self.authService.verifySession()
         }.value != nil
     }

@@ -264,18 +264,20 @@ final class EventEditorModel: ObservableObject {
         guard self.fetchEventsCallback != nil else { fatalError("Fetch Events Callback is nil, required for deleteEvent") }
         guard self.dismissalCallback != nil else { fatalError("Dismissal Callback is nil, required for deleteEvent") }
         
+        
         Task {
-            defer {
-                reset()
-            }
+            isSubmitting = true
             let success = await api.deleteEvent(id)
             if success {
                 await self.fetchEventsCallback!()
-                dismissalCallback!()
+                
             } else {
                 validationError = "Failed to delete event."
             }
+            isSubmitting = false
+            dismissalCallback!()
             defaultFields()
+            
         }
     }
 

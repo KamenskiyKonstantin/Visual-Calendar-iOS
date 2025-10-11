@@ -48,6 +48,7 @@ final class AsyncExecutor {
 
     func run<T>(
         _ jobName: String = "Unnamed job",
+        _ beQuiet: Bool = false,
         _ operation: @escaping @Sendable () async throws -> T
     ) async -> AsyncResult<T> {
         do {
@@ -59,7 +60,14 @@ final class AsyncExecutor {
                 try ErrorClassifier.classifyAndThrow(error)
             }
             catch{
-                warningHandler.showWarning("Error during \(jobName): \(error.localizedDescription)")
+                if !beQuiet{
+                    let message = String(
+                        format: NSLocalizedString("Job.Error.Description", comment: "Error message shown when a job fails"),
+                        jobName,
+                        error.localizedDescription
+                    )
+                    warningHandler.showWarning(message)
+                }
                 if error is AppError{
                     if error as! AppError == .authSessionExpired{
                         try? await logoutSequence()

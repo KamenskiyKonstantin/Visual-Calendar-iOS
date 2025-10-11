@@ -29,8 +29,8 @@ struct ContentView: View {
     
     var body: some View {
         currentView
-            .alert("WarningHandler.Warning.Modal.Title", isPresented: $warningManager.isShown) {
-                        Button("WarningHandler.Warning.OK.Button.Title", role: .cancel) {
+            .alert("WarningHandler.Warning.Modal.Title".localized, isPresented: $warningManager.isShown) {
+                        Button("WarningHandler.Warning.OK.Button.Title".localized, role: .cancel) {
                             warningManager.hideWarning()
                         }
                     } message: {

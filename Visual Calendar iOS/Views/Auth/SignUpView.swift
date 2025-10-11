@@ -24,19 +24,19 @@ struct SignUpView<ViewModel: LoginViewModelProtocol>: View {
                     
                     VStack {
                         VStack(spacing: 16) {
-                            TextField("Auth.Signup.Email.Field.Placeholder", text: $viewModel.emailSignup)
+                            TextField("Auth.Signup.Email.Field.Placeholder".localized, text: $viewModel.emailSignup)
                                 .textFieldStyle(.roundedBorder)
                                 .autocapitalization(.none)
                                 .disableAutocorrection(true)
                             
                             VStack(spacing:7){
                                 
-                                SecureField("Auth.Signup.Password.Field.Placeholder", text: $viewModel.passwordSignup)
+                                SecureField("Auth.Signup.Password.Field.Placeholder".localized, text: $viewModel.passwordSignup)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
                                 
-                                SecureField("Auth.Signup.ConfirmPassword.Field.Placeholder", text: $viewModel.confirmPasswordSignup)
+                                SecureField("Auth.Signup.ConfirmPassword.Field.Placeholder".localized, text: $viewModel.confirmPasswordSignup)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
@@ -45,7 +45,7 @@ struct SignUpView<ViewModel: LoginViewModelProtocol>: View {
                         
                         HStack{
                             Spacer()
-                                Button("Auth.Signup.Signup.Button.Title") {
+                                Button("Auth.Signup.Signup.Button.Title".localized) {
                                     viewModel.signUp()
                                 }
                                 .padding(.vertical, 10)
@@ -59,7 +59,7 @@ struct SignUpView<ViewModel: LoginViewModelProtocol>: View {
 
                         
 
-                        Button("Auth.Signup.Cancel.Button.Title"){
+                        Button("Auth.Signup.Cancel.Button.Title".localized){
                             dismiss()
                         }
                         .buttonStyle(.borderless)

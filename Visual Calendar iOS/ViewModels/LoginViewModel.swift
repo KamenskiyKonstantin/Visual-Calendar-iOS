@@ -57,7 +57,7 @@ final class LoginViewModel: LoginViewModelProtocol {
         if !hasLoaded {
             Task {
                 isLoadingSession = true
-                let hasSession = await api.verifySession()
+                let hasSession = await api.verifySession(true)
                 if hasSession {viewSwitcher.switchToSelectRole()}
                 print("LOADING LOGINVIEW COMPLETE")
                 hasLoaded = true

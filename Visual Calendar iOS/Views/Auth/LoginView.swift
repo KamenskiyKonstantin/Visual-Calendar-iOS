@@ -14,7 +14,7 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
 
     var body: some View {
         if viewModel.isLoadingSession {
-                ProgressView("Auth.Login.Loading.ProgressView.Title")
+            ProgressView("Auth.Login.Loading.ProgressView.Title".localized)
         }
         else {
             NavigationStack {
@@ -25,12 +25,12 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
                         Spacer()
                         VStack{
                             VStack {
-                                TextField("Auth.Login.Email.Field.Placeholder", text: $viewModel.emailLogin)
+                                TextField("Auth.Login.Email.Field.Placeholder".localized, text: $viewModel.emailLogin)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
 
-                                SecureField("Auth.Login.Password.Field.Placeholder", text: $viewModel.passwordLogin)
+                                SecureField("Auth.Login.Password.Field.Placeholder".localized, text: $viewModel.passwordLogin)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
@@ -39,7 +39,7 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
                             
                             HStack{
                                 Spacer()
-                                Button("Auth.Login.Login.Button.Title") {
+                                Button("Auth.Login.Login.Button.Title".localized) {
                                     viewModel.login()
                                 }
                                 .padding(.vertical, 10)
@@ -56,7 +56,7 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
                             NavigationLink {
                                 SignUpView(viewModel: viewModel)
                             } label: {
-                                Text("Auth.Login.DontHaveAccount.Button.Title")
+                                Text("Auth.Login.DontHaveAccount.Button.Title".localized)
                                     .frame(width: 200)
                             }
                             .buttonStyle(.borderless)
