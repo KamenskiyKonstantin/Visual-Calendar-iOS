@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ED07F7CE2E9A5F830005089B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = ED07F7CD2E9A5F830005089B /* Localizable.xcstrings */; };
 		ED095CAB2C8765B800559F3A /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = ED095CAA2C8765B800559F3A /* SwiftyJSON */; };
 		ED0E6FEB2E817A05003ADB9C /* LibraryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F122E2626A200042ED3 /* LibraryService.swift */; };
 		ED0E6FEC2E817A05003ADB9C /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED7B0F112E2626A200042ED3 /* ImageService.swift */; };
@@ -92,6 +93,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		ED07F7CD2E9A5F830005089B /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		ED0E6FFA2E817DB4003ADB9C /* WarningHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningHandler.swift; sourceTree = "<group>"; };
 		ED1410E82C7F29E300D152A6 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		ED1554492E9296F7005104E0 /* EventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventView.swift; sourceTree = "<group>"; };
@@ -344,6 +346,7 @@
 				ED99109B2E812E900082E202 /* File.txt */,
 				ED3503502C9B3F8F002BE9D4 /* Visual Calendar iOS.entitlements */,
 				ED41F08D2C5BD15500954ACF /* Visual_Calendar_iOSApp.swift */,
+				ED07F7CD2E9A5F830005089B /* Localizable.xcstrings */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -439,6 +442,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ru,
 			);
 			mainGroup = ED41F0812C5BD15500954ACF;
 			packageReferences = (
@@ -464,6 +468,7 @@
 			files = (
 				ED41F0952C5BD15600954ACF /* Preview Assets.xcassets in Resources */,
 				ED41F0922C5BD15600954ACF /* Assets.xcassets in Resources */,
+				ED07F7CE2E9A5F830005089B /* Localizable.xcstrings in Resources */,
 				ED99109C2E812E900082E202 /* File.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -624,6 +629,7 @@
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -682,6 +688,7 @@
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

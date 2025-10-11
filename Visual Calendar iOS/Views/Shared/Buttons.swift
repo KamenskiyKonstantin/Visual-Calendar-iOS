@@ -10,18 +10,6 @@ import SwiftUI
 struct EditButtonView: View {
     @ObservedObject var viewModel: EventEditorModel
     var body: some View {
-        Button(action:{print("underconstruction")}){
-            RoundedRectangle(cornerRadius: 10)
-                .foregroundColor(Color(.systemGreen))
-                .overlay(alignment: .center){
-                    Image(systemName: "pencil")
-                        .resizable()
-                        .scaledToFit()
-                        .padding(5)
-                }
-                .padding(10)
-            
-        }
         NavigationLink(destination:
                         EventEditor(model: viewModel)){
             RoundedRectangle(cornerRadius: 10)

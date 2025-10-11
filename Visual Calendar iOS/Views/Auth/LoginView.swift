@@ -14,7 +14,7 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
 
     var body: some View {
         if viewModel.isLoadingSession {
-                ProgressView("Checking session...")
+                ProgressView("Auth.Login.Loading.ProgressView.Title")
         }
         else {
             NavigationStack {
@@ -25,12 +25,12 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
                         Spacer()
                         VStack{
                             VStack {
-                                TextField("E-mail", text: $viewModel.emailLogin)
+                                TextField("Auth.Login.Email.Field.Placeholder", text: $viewModel.emailLogin)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
 
-                                SecureField("Password", text: $viewModel.passwordLogin)
+                                SecureField("Auth.Login.Password.Field.Placeholder", text: $viewModel.passwordLogin)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
@@ -39,7 +39,7 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
                             
                             HStack{
                                 Spacer()
-                                Button("Log in") {
+                                Button("Auth.Login.Login.Button.Title") {
                                     viewModel.login()
                                 }
                                 .padding(.vertical, 10)
@@ -56,19 +56,13 @@ struct LoginView<ViewModel: LoginViewModelProtocol>: View {
                             NavigationLink {
                                 SignUpView(viewModel: viewModel)
                             } label: {
-                                Text("Sign up")
+                                Text("Auth.Login.DontHaveAccount.Button.Title")
                                     .frame(width: 200)
                             }
                             .buttonStyle(.borderless)
                         }
-                        #if DEBUG
-                        //.border(Color.blue, width: 1)
-                        #endif
                         Spacer()
                     }
-                    #if DEBUG
-                    //.border(Color.red, width: 1)
-                    #endif
                     Spacer()
                         .frame(maxWidth: .infinity)
                 }

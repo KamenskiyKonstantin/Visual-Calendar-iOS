@@ -7,18 +7,6 @@
 
 import SwiftUI
 
-struct LoadingView: View {
-    var body: some View {
-        VStack {
-            ProgressView("Loading your data…")
-                .progressViewStyle(CircularProgressViewStyle())
-                .padding()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
-    }
-}
-
 struct ContentView: View {
     let loginViewModel: LoginViewModel
     let selectRoleModel: SelectRoleViewModel
@@ -35,16 +23,14 @@ struct ContentView: View {
                 AnyView(SelectRoleView(viewModel: selectRoleModel))
             case .calendar(_):
                 AnyView(CalendarView(viewModel: calendarViewModel))
-            case .loading:
-                AnyView(LoadingView())
             
         }
     }
     
     var body: some View {
         currentView
-            .alert("Error", isPresented: $warningManager.isShown) {
-                        Button("OK", role: .cancel) {
+            .alert("WarningHandler.Warning.Modal.Title", isPresented: $warningManager.isShown) {
+                        Button("WarningHandler.Warning.OK.Button.Title", role: .cancel) {
                             warningManager.hideWarning()
                         }
                     } message: {

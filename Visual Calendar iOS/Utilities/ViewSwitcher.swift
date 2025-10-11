@@ -11,7 +11,6 @@ enum ActiveView: Equatable, Hashable {
     case login
     case selectRole
     case calendar(isAdult: Bool)
-    case loading
 }
 
 @MainActor

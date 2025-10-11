@@ -15,7 +15,7 @@ struct EventEditor: View {
     var body: some View {
         
         if model.isLoading {
-            ProgressView("Loading...")
+            ProgressView("Editor.Loading.ProgressView.Title")
         }
         else{
             NavigationStack {
@@ -57,20 +57,20 @@ struct EventEditor: View {
                                 .font(.caption)
                         }
                         
-                        Button("Submit") {
+                        Button("Editor.Action.Save.Button.Title") {
                             model.submit()
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(.blue)
                         
                         if model.eventID != nil {
-                            Button("Delete", role: .destructive) {
+                            Button("Editor.Action.Delete.Button.Title", role: .destructive) {
                                 model.deleteEvent()
                             }
                         }
                     }
                 }
-                .navigationTitle("Edit Event")
+                .navigationTitle("Editor.Header.EditEvent")
                 .onAppear {
                     model.load()
                     model.setDismissal {dismiss()}
@@ -109,9 +109,9 @@ struct DuplicatePresetWarning: View {
         HStack {
             Spacer()
             VStack{
-                Text("This preset already exists, continuing will overwrite it.")
+                Text("Editor.DuplicatePreset.Warning.Title")
 
-                Button("Continue anyway") {
+                Button("Editor.DuplicatePreset.ContinueAnyway.Button.Title") {
                     onContinue()
                     isPresented = false
                 }

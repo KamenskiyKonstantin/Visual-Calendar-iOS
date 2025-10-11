@@ -20,20 +20,20 @@ struct NameEditor: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Enter a name for your image")) {
-                    TextField("Image name", text: $name)
+                Section(header: Text("Editor.Image.ImageName.Section.Header")) {
+                    TextField("Editor.Image.ImageName.Field.Placeholder", text: $name)
                         .disabled(viewModel.isUploadingImage)
                 }
 
                 if viewModel.isUploadingImage {
                     Section {
-                        ProgressView("Uploading...")
+                        ProgressView("Editor.Images.Uploading.ProgressView.Title")
                             .progressViewStyle(CircularProgressViewStyle())
                     }
                 }
                 else{
                     Section {
-                        Button("Upload") {
+                        Button("Editor.Image.Upload.Button.Title") {
                             viewModel.createUserImage(with: name)
                             
                         }
@@ -43,11 +43,11 @@ struct NameEditor: View {
 
                 }
             }
-            .navigationTitle("Upload File")
+            .navigationTitle("Editor.Image.Upload.Button.Title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button("Editor.Image.CancelUpload.Button.Title") {
                         isPresented = false
                     }.disabled(viewModel.isUploadingImage)
                 }
@@ -63,11 +63,11 @@ struct EventDateSection: View {
     @Binding var repeatType: EventRepetitionType
     
     var body: some View {
-        Section(header: Text("Time Interval")) {
-            DatePicker("Start Date", selection: $dateStart, displayedComponents: [.date, .hourAndMinute])
-            DatePicker("End Date", selection: $dateEnd, displayedComponents: [.date, .hourAndMinute])
+        Section(header: Text("Editor.Date.Section.Header")) {
+            DatePicker("Editor.Date.Start.Picker.Label", selection: $dateStart, displayedComponents: [.date, .hourAndMinute])
+            DatePicker("Editor.Date.End.Picker.Label", selection: $dateEnd, displayedComponents: [.date, .hourAndMinute])
             
-            Picker("Repeat", selection: $repeatType) {
+            Picker("Editor.Date.Repetition.Picker.Label", selection: $repeatType) {
                 ForEach(EventRepetitionType.allValues, id: \.self) { option in
                     Text(String(option.displayName)).tag(option)
                 }
@@ -85,13 +85,13 @@ struct EventAppearanceSection: View {
         "Orange", "Pink", "Purple", "Red", "Teal", "White", "Yellow"
     ]
     var body: some View {
-        Section(header: Text("Appearance")) {
+        Section(header: Text("Editor.Appearance.Section.Header")) {
             VStack{
                 HStack {
 
-                    Text("Select emoji")
+                    Text("Editor.Appearance.Emoji.Picker.Label")
                     Spacer()
-                    Button("Change") {
+                    Button("Editor.Appearance.PickEmojiButtonLabel") {
                         viewModel.isEmojiPickerShown = true
                     }
                     .emojiPicker(isPresented: $viewModel.isEmojiPickerShown, selectedEmoji: $viewModel.selectedSymbol)
@@ -99,10 +99,10 @@ struct EventAppearanceSection: View {
                     Text(viewModel.selectedSymbol)
                 }
                 HStack {
-                    Text("Select background color")
+                    Text("Editor.Appearance.BackgroundColor.Picker.Label")
                     Spacer()
                     Picker("", selection: self.$viewModel.backgroundColor) {
-                        Text("Select a color").tag("")
+                        Text("Editor.Appearance.DefaultColor.Picker.Label").tag("")
                         ForEach(colorOptions, id:\.self){
                             color in
                             Text(color).tag(color)
@@ -126,11 +126,11 @@ struct EventContentSection: View {
     @ObservedObject var viewModel: EventEditorModel
     
     var body: some View {
-        Section(header: Text("Content")) {
+        Section(header: Text("Editor.Content.Section.Header")) {
             Button {
                 isLibrarySheetShown = true
             } label: {
-                Label("Add Library", systemImage: "books.vertical")
+                Label("Editor.Content.AddLibrary.Button.Title", systemImage: "books.vertical")
             }
             .buttonStyle(.borderedProminent)
             .tint(.green)
@@ -142,23 +142,23 @@ struct EventContentSection: View {
             Button {
                 fileImporterPresented = true
             } label: {
-                Label("Add Image", systemImage: "plus")
+                Label("Editor.Content.AddFile.Button.Title", systemImage: "plus")
             }
             .buttonStyle(.bordered)
             
             if !viewModel.images.isEmpty {
-                PickerView(viewModel: viewModel, name: "main Image", selection: self.$viewModel.mainImageURL)
+                PickerView(viewModel: viewModel, name: "Editor.Content.MainImage.Picker.Title", selection: self.$viewModel.mainImageURL)
             }
             
             if !sideImages.isEmpty {
                 ForEach(sideImages.indices, id: \.self) { index in
                     if !viewModel.images.isEmpty {
-                        PickerView(viewModel: viewModel, name: "Side image \(index+1)", selection: self.$viewModel.sideImagesURL[index])
+                        PickerView(viewModel: viewModel, name: "Editor.Content.SideImage.Picker.Title \(index+1)", selection: self.$viewModel.sideImagesURL[index])
                     }
                 }
             }
             
-            Button("Add Side Image") {
+            Button("Editor.Content.AddSideImage.Button.Title") {
                 sideImages.append("")
             }
             .buttonStyle(.borderedProminent)
@@ -185,7 +185,7 @@ struct PickerView: View{
             Text(name)
             Spacer()
             Picker("", selection: $selection) {
-                Text("Select \(name)").tag("")
+                Text("Editor.Picker.DefaultOption.Text \(name)").tag("")
 
                 ForEach(groupedImageSections, id: \.group) { section in
                     Section(header: Text(section.group)) {
@@ -231,7 +231,7 @@ struct LibrarySelectionSheet: View {
         }
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel", action: dismiss)
+                Button("Editor.AddLibrary.Cancel.Button.Title", action: dismiss)
                     .disabled(isProcessing)
             }
         }
@@ -252,12 +252,12 @@ struct TitleManagement: View {
     var applyPreset: (String, Preset) -> Void  // Add this to the parent when calling this view
 
     var body: some View {
-        Section(header: Text("Quick Setup").font(.headline)) {
+        Section(header: Text("Editor.QuickSetup.Section.Title").font(.headline)) {
             VStack(alignment: .leading, spacing: 16) {
                 
                 // Label + TextEditor
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Title")
+                    Text("Editor.QuickSetup.Title.TextEdit.Label")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     TextEditor(text: $title)
@@ -277,7 +277,7 @@ struct TitleManagement: View {
                     }) {
                         HStack {
                             Image(systemName: "arrow.down.circle")
-                            Text("Use preset: \(preset)")
+                            Text("Editor.QuickSetup.UsePreset.Button.Title \(preset)")
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -288,7 +288,7 @@ struct TitleManagement: View {
                 }
 
                 // Save toggle
-                Toggle("Save as new preset", isOn: $saveAsPreset)
+                Toggle("Editor.QuickEdit.SaveAsPreset.Toggle.Title", isOn: $saveAsPreset)
             }
             .padding(.vertical, 4)
         }

@@ -24,19 +24,19 @@ struct SignUpView<ViewModel: LoginViewModelProtocol>: View {
                     
                     VStack {
                         VStack(spacing: 16) {
-                            TextField("E-mail", text: $viewModel.emailSignup)
+                            TextField("Auth.Signup.Email.Field.Placeholder", text: $viewModel.emailSignup)
                                 .textFieldStyle(.roundedBorder)
                                 .autocapitalization(.none)
                                 .disableAutocorrection(true)
                             
                             VStack(spacing:7){
                                 
-                                SecureField("Password", text: $viewModel.passwordSignup)
+                                SecureField("Auth.Signup.Password.Field.Placeholder", text: $viewModel.passwordSignup)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
                                 
-                                SecureField("Confirm Password", text: $viewModel.confirmPasswordSignup)
+                                SecureField("Auth.Signup.ConfirmPassword.Field.Placeholder", text: $viewModel.confirmPasswordSignup)
                                     .textFieldStyle(.roundedBorder)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
@@ -45,7 +45,7 @@ struct SignUpView<ViewModel: LoginViewModelProtocol>: View {
                         
                         HStack{
                             Spacer()
-                                Button("Sign Up") {
+                                Button("Auth.Signup.Signup.Button.Title") {
                                     viewModel.signUp()
                                 }
                                 .padding(.vertical, 10)
@@ -59,22 +59,14 @@ struct SignUpView<ViewModel: LoginViewModelProtocol>: View {
 
                         
 
-                        Button("Back to Login"){
+                        Button("Auth.Signup.Cancel.Button.Title"){
                             dismiss()
                         }
                         .buttonStyle(.borderless)
                     }
                     
-                    #if DEBUG
-                    //.border(Color.blue, width: 1)
-                    #endif
-                    
                     Spacer()
                 }
-
-                #if DEBUG
-                //.border(Color.red, width: 1)
-                #endif
 
                 Spacer()
                     .frame(maxWidth: .infinity)

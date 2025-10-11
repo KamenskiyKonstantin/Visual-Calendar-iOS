@@ -17,7 +17,7 @@ struct CalendarView: View {
     var body: some View {
         
         if viewModel.isLoading {
-            ProgressView("Loading...")
+            ProgressView("Calendar.Loading.ProgressView.Title")
         }
         else{
             NavigationStack {
@@ -43,14 +43,14 @@ struct CalendarView: View {
                     }
                 }
                 .confirmationDialog(
-                    "Are you sure you want to proceed?",
+                    "Calendar.Logout.ConfirmationDialog.Title",
                     isPresented: $logoutFormShown,
                     titleVisibility: .visible
                 ) {
-                    Button("OK") {
+                    Button("Calendar.Logout.ConfirmationDialog.OK") {
                         viewModel.logout()
                     }
-                    Button("Cancel", role: .cancel) {
+                    Button("Calendar.Logout.ConfirmationDialog.Cancel", role: .cancel) {
                         logoutFormShown = false
                     }
                 }
@@ -74,8 +74,4 @@ struct CalendarView: View {
     }
 }
 
-//#Preview {
-//    CalendarView(viewModel: MockCalendarViewModel().withParentMode)
-//}
-//
 
