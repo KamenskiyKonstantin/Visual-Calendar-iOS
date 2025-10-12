@@ -42,10 +42,17 @@ extension Date {
         return start
     }
     
-    func getFormattedDate() -> String {
+    func getFormattedDate(short: Bool = false) -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd"
-        return dateFormatter.string(from: self) + " " + getMonthName()
+        
+        if short {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd.MM" // FIXED: use capital MM for month
+            return formatter.string(from: self)
+        } else {
+            dateFormatter.dateFormat = "dd"
+            return dateFormatter.string(from: self) + " " + getMonthName()
+        }
     }
     
     func getMonthName() -> String {

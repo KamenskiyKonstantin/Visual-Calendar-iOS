@@ -7,6 +7,14 @@
 
 import Foundation
 
-public var defaultDaysOfWeek: [String] = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"]
+public var defaultDaysOfWeek: [String] = [
+    "Weekday.1".localized, // Monday
+    "Weekday.2".localized, // Tuesday
+    "Weekday.3".localized, // Wednesday
+    "Weekday.4".localized, // Thursday
+    "Weekday.5".localized, // Friday
+    "Weekday.6".localized, // Saturday
+    "Weekday.7".localized  // Sunday
+]
 public var defaultHStackOffset: CGFloat = 60
 public var defaultMinuteHeight: Int = 2

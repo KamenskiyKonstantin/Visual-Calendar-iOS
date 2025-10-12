@@ -9,10 +9,13 @@ import SwiftUI
 
 struct TimeOverlay: View {
     @ObservedObject var viewModel: CalendarViewModel
+    var currentDate: Date
+    
+    
     
     var body: some View {
         VStack{
-            let current = Date()
+            let current = currentDate
             let currentHour = Calendar.current.component(.hour, from: current)
             let currentMinute = Calendar.current.component(.minute, from: current)
             let totalMinutes = currentHour * 60 + currentMinute
@@ -23,6 +26,7 @@ struct TimeOverlay: View {
                 .fill(Color(.systemRed))
                 .frame(height:2, alignment: .topLeading)
                 .offset(y: offsetY + CGFloat(30 * viewModel.minuteHeight))
+                .id("nowLine")
             
         }
     }
@@ -31,6 +35,11 @@ struct TimeOverlay: View {
 struct CalendarView: View {
     // MARK: - View Model
     @ObservedObject var viewModel: CalendarViewModel
+    
+    @State private var currentDate = Date()
+    private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    
+
 
     // MARK: - Sheet
     @State private var logoutFormShown: Bool = false
@@ -50,26 +59,36 @@ struct CalendarView: View {
                         currentDate: $viewModel.currentDate,
                         mode: $viewModel.mode
                     )
-
-                    ScrollView(.vertical) {
-                        ZStack(alignment: .topLeading) {
-                            Color.clear
-
-
-                            HStack {
-                                Color.clear.frame(width: viewModel.HStackXOffset)
-                                CalendarTable(viewModel: viewModel)
-                                Color.clear.frame(width: viewModel.HStackXOffset)
+                    
+                    ScrollViewReader { proxy in
+                        
+                        ScrollView(.vertical) {
+                            ZStack(alignment: .topLeading) {
+                                Color.clear
+                                
+                                
+                                HStack {
+                                    Color.clear.frame(width: viewModel.HStackXOffset)
+                                    CalendarTable(viewModel: viewModel)
+                                    Color.clear.frame(width: viewModel.HStackXOffset)
+                                }
+                                
+                                
+                                CalendarBackgroundView(minuteHeight: viewModel.minuteHeight)
+                                HStack {
+                                    TimeOverlay(viewModel: viewModel, currentDate: currentDate)
+                                }
+                                
+                                
+                                
                             }
-                            
-
-                            CalendarBackgroundView(minuteHeight: viewModel.minuteHeight)
-                            HStack {
-                                TimeOverlay(viewModel: viewModel)
-                            }
-                            
-                            
-                            
+                        }
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        withAnimation {
+                                            proxy.scrollTo("nowLine", anchor: .top)
+                                        }
+                                    }
                         }
                     }
                 }
@@ -99,6 +118,9 @@ struct CalendarView: View {
             }
             .onAppear {
                 viewModel.load()
+            }
+            .onReceive(timer) { time in
+                currentDate = time
             }
         }
 
