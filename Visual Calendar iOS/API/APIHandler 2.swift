@@ -1,7 +1,10 @@
-import Foundation
-import Supabase
-import Combine
-import SwiftyJSON
+//
+//  APIHandler 2.swift
+//  Visual Calendar iOS
+//
+//  Created by Konstantin Kamenskiy on 25.09.2025.
+//
+
 
 @MainActor
 final class APIHandler {
@@ -11,7 +14,6 @@ final class APIHandler {
     private let imageService: ImageService
     private let libraryService: LibraryService
     private let presetService: PresetService
-    private let reactionService: ReactionService
 
     private let apiClient: SupabaseClient
     private var executor: AsyncExecutor?
@@ -37,7 +39,6 @@ final class APIHandler {
         self.imageService = ImageService(client: client)
         self.libraryService = LibraryService(client: client)
         self.presetService = PresetService(client: client)
-        self.reactionService = ReactionService(client: client)
     }
 
     // MARK: - Dependency Injection
@@ -53,10 +54,10 @@ final class APIHandler {
     }
 
     // MARK: - Auth
-    func signUp(email: String, password: String, confirmPassword: String) async -> Bool {
+    func signUp(email: String, password: String) async -> Bool {
         await requireExecutor().run("signUp")
         {
-            try await self.authService.signUp(email: email, password: password, confirmPassword: confirmPassword)
+            try await self.authService.signUp(email: email, password: password)
         }.value != nil
     }
 
@@ -72,8 +73,8 @@ final class APIHandler {
         }.value != nil
     }
 
-    func verifySession(_ quiet: Bool = false) async -> Bool {
-        await requireExecutor().run("verifySession", quiet) {
+    func verifySession() async -> Bool {
+        await requireExecutor().run("verifySession") {
             try await self.authService.verifySession()
         }.value != nil
     }
@@ -92,14 +93,14 @@ final class APIHandler {
 
     func createEvent(_ event: Event) async -> Bool {
         guard await verifySession() else { return false }
-        return await requireExecutor().run("create Event") {
+        return await requireExecutor().run("upsertEvents") {
             try await self.eventService.createEvent(event)
         }.value != nil
     }
     
     func updateEvent(_ newEvent: Event) async -> Bool {
         guard await verifySession() else { return false }
-        return await requireExecutor().run("update Event") {
+        return await requireExecutor().run("upsertEvents") {
             try await self.eventService.updateEvent(newEvent)
         }.value != nil
     }
@@ -125,13 +126,6 @@ final class APIHandler {
         return await requireExecutor().run("fetchImageURLs") {
             try await self.imageService.fetchAllImageMappings(libraries: libraries)
         }.value ?? [:]
-    }
-    
-    func resolveImageURLs(for events: [Event]) async -> [ImageMapping]{
-        guard await verifySession() else { return [] }
-        return await requireExecutor().run("fetchImageURLs") {
-            try await self.imageService.resolveSignedURLs(for: events)
-        }.value ?? []
     }
     
     func updateImage(_ imageData: Data, _ displayName: String) async -> Bool {
@@ -207,22 +201,5 @@ final class APIHandler {
             try await self.presetService.deletePreset(named: presetName)
         }.value != nil
     }
-    
-    // MARK: Reaction Service
-    func fetchAllReactions(for events: [Event]) async -> [UUID: [EventReactionRow]] {
-            guard await verifySession() else { return [:] }
-            return await requireExecutor().run("fetchAllReactions") {
-                try await self.reactionService.fetchAllReactions(for: events)
-            }.value ?? [:]
-        }
-
-    func setReaction(for eventID: UUID, timeStart: [Int], reaction: EventReaction) async -> Bool {
-        guard await verifySession() else { return false }
-        return await requireExecutor().run("setReaction") {
-            try await self.reactionService.setReaction(for: eventID, timeStart: timeStart, reaction: reaction)
-        }.value != nil
-    }
 
 }
-
-

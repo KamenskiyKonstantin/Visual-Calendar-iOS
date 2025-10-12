@@ -1,0 +1,30 @@
+{
+  "configurations" : [
+    {
+      "id" : "D3401531-ADDC-4E10-ABEF-E2A70FE69E64",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Visual Calendar iOS.xcodeproj",
+      "identifier" : "ED41F0892C5BD15500954ACF",
+      "name" : "Visual Calendar iOS"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Visual Calendar iOS.xcodeproj",
+        "identifier" : "ED9910B52E815D400082E202",
+        "name" : "Visual CalendarTests"
+      }
+    }
+  ],
+  "version" : 1
+}

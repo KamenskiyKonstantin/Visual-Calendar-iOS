@@ -1,9 +1,9 @@
-//
-//  WeekdayHeader.swift
-//  Visual Calendar iOS
-//
-//  Created by Konstantin Kamenskiy on 25.05.2025.
-//
+////
+////  WeekdayHeader.swift
+////  Visual Calendar iOS
+////
+////  Created by Konstantin Kamenskiy on 25.05.2025.
+////
 
 import SwiftUI
 
@@ -42,6 +42,7 @@ struct daysOfWeekHeader: View {
     @Binding var currentDate: Date
     @Binding var mode: CalendarMode
     
+    @Environment(\.horizontalSizeClass) var sizeClass
     
     
     var body: some View {
@@ -62,16 +63,31 @@ struct daysOfWeekHeader: View {
                         }){
                             VStack(alignment: .leading){
                                 if Calendar.current.isDateInToday(currentDate) {
-                                    Text(currentDate.getFormattedDate())
-                                        .foregroundStyle(Color(.systemGreen))
-                                        .frame(maxWidth: .infinity)
+                                    if sizeClass == .compact {
+                                        Text(currentDate.getFormattedDate(short: true))
+                                            .foregroundStyle(Color(.systemGreen))
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                    else{
+                                        Text(currentDate.getFormattedDate())
+                                            .foregroundStyle(Color(.systemGreen))
+                                            .frame(maxWidth: .infinity)
+                                    }
                                     Text(daysOfWeek[date])
                                         .foregroundStyle(Color(.systemGreen))
                                         .frame(maxWidth: .infinity)
                                 }
                                 else{
-                                    Text(currentDate.getFormattedDate())
-                                        .frame(maxWidth: .infinity)
+                                    if sizeClass == .compact {
+                                        Text(currentDate.getFormattedDate(short: true))
+                                            .foregroundStyle(Color(.systemBlue))
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                    else{
+                                        Text(currentDate.getFormattedDate())
+                                            .foregroundStyle(Color(.systemBlue))
+                                            .frame(maxWidth: .infinity)
+                                    }
                                     Text(daysOfWeek[date])
                                         .frame(maxWidth: .infinity)
                                     

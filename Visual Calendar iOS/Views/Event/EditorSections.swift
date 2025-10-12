@@ -1,82 +1,58 @@
-//
-//  Sections.swift
-//  Visual Calendar iOS
-//
-//  Created by Konstantin Kamenskiy on 26.05.2025.
-//
+////
+////  Sections.swift
+////  Visual Calendar iOS
+////
+////  Created by Konstantin Kamenskiy on 26.05.2025.
+////
 
 import SwiftUI
 import MCEmojiPicker
 
 struct NameEditor: View {
-    @EnvironmentObject var api: APIHandler
-    @EnvironmentObject var warningHandler: WarningHandler
-    @EnvironmentObject var viewSwitcher: ViewSwitcher
+    @ObservedObject var viewModel: EventEditorModel
     
     @Binding var name: String
     @Binding var fileURL: URL?
     @Binding var isPresented: Bool
-
-    @State private var isUploading = false
+    
+    
 
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Enter a name for your image")) {
-                    TextField("Image name", text: $name)
-                        .disabled(isUploading)
+                Section(header: Text("Editor.Image.ImageName.Section.Header".localized)) {
+                    TextField("Editor.Image.ImageName.Field.Placeholder".localized, text: $name)
+                        .disabled(viewModel.isUploadingImage)
                 }
 
-                if isUploading {
+                if viewModel.isUploadingImage {
                     Section {
-                        ProgressView("Uploading...")
+                        ProgressView("Editor.Images.Uploading.ProgressView.Title".localized)
                             .progressViewStyle(CircularProgressViewStyle())
                     }
                 }
-
-                Section {
-                    Button("Upload") {
-                        Task {
-                            await uploadFile()
+                else{
+                    Section {
+                        Button("Editor.Image.Upload.Button.Title".localized) {
+                            viewModel.createUserImage(with: name)
+                            
                         }
-                    }
-                    .disabled(isUploading || name.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                }
+
                 }
             }
-            .navigationTitle("Upload File")
+            .navigationTitle("Editor.Image.Upload.Button.Title".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button("Editor.Image.CancelUpload.Button.Title".localized) {
                         isPresented = false
-                    }.disabled(isUploading)
+                    }.disabled(viewModel.isUploadingImage)
                 }
             }
         }
-    }
-
-    private func uploadFile() async {
-        guard let url = fileURL else {
-            warningHandler.showWarning("No file selected.")
-            return
-        }
-
-        guard let data = try? Data(contentsOf: url) else {
-            warningHandler.showWarning("Could not read file.")
-            return
-        }
-
-        isUploading = true
-
-        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: api, viewSwitcher: viewSwitcher) {
-            try await api.upsertImage(imageData: data, filename: name)
-            try await api.fetchImageURLs()
-            await MainActor.run {
-                isPresented = false
-            }
-        }
-
-        isUploading = false
     }
 }
 
@@ -87,13 +63,13 @@ struct EventDateSection: View {
     @Binding var repeatType: EventRepetitionType
     
     var body: some View {
-        Section(header: Text("Time Interval")) {
-            DatePicker("Start Date", selection: $dateStart, displayedComponents: [.date, .hourAndMinute])
-            DatePicker("End Date", selection: $dateEnd, displayedComponents: [.date, .hourAndMinute])
+        Section(header: Text("Editor.Date.Section.Header".localized)) {
+            DatePicker("Editor.Date.Start.Picker.Label".localized, selection: $dateStart, displayedComponents: [.date, .hourAndMinute])
+            DatePicker("Editor.Date.End.Picker.Label".localized, selection: $dateEnd, displayedComponents: [.date, .hourAndMinute])
             
-            Picker("Repeat", selection: $repeatType) {
+            Picker("Editor.Date.Repetition.Picker.Label".localized, selection: $repeatType) {
                 ForEach(EventRepetitionType.allValues, id: \.self) { option in
-                    Text(String(option.displayName)).tag(option)
+                    Text(String("RepetitionOptions.\(option.displayName)".localized)).tag(option)
                 }
             }
         }
@@ -101,37 +77,35 @@ struct EventDateSection: View {
 }
 
 struct EventAppearanceSection: View {
-    @Binding var selectedSymbol: String
-    @Binding var isSymbolPickerShown: Bool
-    @Binding var backgroundColor: String
-    @Binding var textColor: String
+    @ObservedObject var viewModel: EventEditorModel
+    
     
     let colorOptions = [
         "Black", "Blue", "Brown", "Cyan", "Gray", "Green", "Indigo", "Mint",
         "Orange", "Pink", "Purple", "Red", "Teal", "White", "Yellow"
     ]
     var body: some View {
-        Section(header: Text("Appearance")) {
+        Section(header: Text("Editor.Appearance.Section.Header".localized)) {
             VStack{
                 HStack {
 
-                    Text("Select emoji")
+                    Text("Editor.Appearance.Emoji.Picker.Label".localized)
                     Spacer()
-                    Button("Change") {
-                        isSymbolPickerShown.toggle()
+                    Button("Editor.Appearance.PickEmojiButtonLabel".localized) {
+                        viewModel.isEmojiPickerShown = true
                     }
-                    .emojiPicker(isPresented: $isSymbolPickerShown, selectedEmoji: $selectedSymbol)
+                    .emojiPicker(isPresented: $viewModel.isEmojiPickerShown, selectedEmoji: $viewModel.selectedSymbol)
                     .buttonStyle(.bordered)
-                    Text(selectedSymbol)
+                    Text(viewModel.selectedSymbol)
                 }
                 HStack {
-                    Text("Select background color")
+                    Text("Editor.Appearance.BackgroundColor.Picker.Label".localized)
                     Spacer()
-                    Picker("", selection: self.$backgroundColor) {
-                        Text("Select a color").tag("")
+                    Picker("", selection: self.$viewModel.backgroundColor) {
+                        Text("Editor.Appearance.DefaultColor.Picker.Label".localized).tag("")
                         ForEach(colorOptions, id:\.self){
                             color in
-                            Text(color).tag(color)
+                            Text("Color.\(color)".localized).tag(color)
                         }
                     }
                 }
@@ -149,47 +123,42 @@ struct EventContentSection: View {
     
     @State private var isLibrarySheetShown = false
     
-    @EnvironmentObject var warningHandler: WarningHandler
-    @EnvironmentObject var api: APIHandler
-    @EnvironmentObject var viewSwitcher: ViewSwitcher
-    
+    @ObservedObject var viewModel: EventEditorModel
     
     var body: some View {
-        Section(header: Text("Content")) {
+        Section(header: Text("Editor.Content.Section.Header".localized)) {
             Button {
                 isLibrarySheetShown = true
             } label: {
-                Label("Add Library", systemImage: "books.vertical")
+                Label("Editor.Content.AddLibrary.Button.Title".localized, systemImage: "books.vertical")
             }
             .buttonStyle(.borderedProminent)
             .tint(.green)
             .sheet(isPresented: $isLibrarySheetShown) {
-                LibrarySelectionSheet() {
-                    isLibrarySheetShown = false
-                }
+                LibrarySelectionSheet(dismiss: {isLibrarySheetShown = false}, viewModel: viewModel)
             }
             
             //Manual file add
             Button {
                 fileImporterPresented = true
             } label: {
-                Label("Add Image", systemImage: "plus")
+                Label("Editor.Content.AddFile.Button.Title".localized, systemImage: "plus")
             }
             .buttonStyle(.bordered)
             
-            if !api.images.isEmpty {
-                PickerView(api: api, name: "main Image", selection: self.$mainImage)
+            if !viewModel.images.isEmpty {
+                PickerView(viewModel: viewModel, name: "Editor.Content.MainImage.Picker.Title".localized, selection: self.$viewModel.mainImageURL)
             }
             
             if !sideImages.isEmpty {
                 ForEach(sideImages.indices, id: \.self) { index in
-                    if !api.images.isEmpty {
-                        PickerView(api:api, name: "Side image \(index+1)", selection: self.$sideImages[index])
+                    if !viewModel.images.isEmpty {
+                        PickerView(viewModel: viewModel, name: String(format: "Editor.Content.SideImage.Picker.Title".localized, index+1), selection: self.$viewModel.sideImagesURL[index])
                     }
                 }
             }
             
-            Button("Add Side Image") {
+            Button("Editor.Content.AddSideImage.Button.Title".localized) {
                 sideImages.append("")
             }
             .buttonStyle(.borderedProminent)
@@ -200,13 +169,13 @@ struct EventContentSection: View {
 
 
 struct PickerView: View{
-    @ObservedObject var api: APIHandler
+    @ObservedObject var viewModel: EventEditorModel
     let name: String
     
     @Binding var selection: String
     
-    var groupedImageSections: [(group: String, items: [NamedURL])] {
-        api.images.map { (key, value) in
+    var groupedImageSections: [(group: String, items: [any NamedURL])] {
+        viewModel.images.map { (key, value) in
             (group: key, items: value.sorted { $0.display_name < $1.display_name })
         }.sorted { $0.group < $1.group }
     }
@@ -216,7 +185,7 @@ struct PickerView: View{
             Text(name)
             Spacer()
             Picker("", selection: $selection) {
-                Text("Select \(name)").tag("")
+                Text(String(format: "Editor.Picker.DefaultOption.Text".localized, name)).tag("")
 
                 ForEach(groupedImageSections, id: \.group) { section in
                     Section(header: Text(section.group)) {
@@ -234,16 +203,15 @@ struct PickerView: View{
 }
 
 struct LibrarySelectionSheet: View {
-    @EnvironmentObject var api: APIHandler
     var dismiss: () -> Void
-
-    @EnvironmentObject var warningHandler: WarningHandler
-    @EnvironmentObject var viewSwitcher: ViewSwitcher
+    
+    @ObservedObject var viewModel: EventEditorModel
+    
     @State private var isProcessing = false
     @State private var selectedLibrary: String?
 
     var body: some View {
-        List(api.availableLibraries, id: \.self) { library in
+        List(viewModel.allLibraries, id: \.self) { library in
             Button {
                 selectedLibrary = library.system_name
                 isProcessing = true
@@ -263,17 +231,14 @@ struct LibrarySelectionSheet: View {
         }
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel", action: dismiss)
+                Button("Editor.AddLibrary.Cancel.Button.Title".localized, action: dismiss)
                     .disabled(isProcessing)
             }
         }
     }
 
     private func handleAdd(library: LibraryInfo) async {
-        AsyncExecutor.runWithWarningHandler(warningHandler: warningHandler, api: api, viewSwitcher: viewSwitcher) {
-            try await api.addLibrary(library.system_name)
-            dismiss()
-        }
+        viewModel.addLibrary(libraryName: library.system_name)
         isProcessing = false
         selectedLibrary = nil
     }
@@ -281,17 +246,18 @@ struct LibrarySelectionSheet: View {
 
 struct TitleManagement: View {
     @Binding var title: String
-    @ObservedObject var api: APIHandler
     @Binding var saveAsPreset: Bool
+    
+    @ObservedObject var viewModel: EventEditorModel
     var applyPreset: (String, Preset) -> Void  // Add this to the parent when calling this view
 
     var body: some View {
-        Section(header: Text("Quick Setup").font(.headline)) {
+        Section(header: Text("Editor.QuickSetup.Section.Title".localized).font(.headline)) {
             VStack(alignment: .leading, spacing: 16) {
                 
                 // Label + TextEditor
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Title")
+                    Text("Editor.QuickSetup.Title.TextEdit.Label".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     TextEditor(text: $title)
@@ -302,19 +268,16 @@ struct TitleManagement: View {
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                         )
                 }
-
-                // Preset suggestion
-                
-                let preset = bestMatchingKeyword(from: title, keywords: Array(api.presets.keys))
+                let preset = bestMatchingKeyword(from: title, keywords: Array(viewModel.presets.compactMap({$0.presetName})))
                 
 
-                if preset != "Custom", let matchedPreset = api.presets[preset] {
+                if preset != "Custom", let matchedPreset = viewModel.presets.first(where:{$0.presetName == preset}) {
                     Button(action: {
                         applyPreset(preset, matchedPreset)
                     }) {
                         HStack {
                             Image(systemName: "arrow.down.circle")
-                            Text("Use preset: \(preset)")
+                            Text(String(format: "Editor.QuickSetup.UsePreset.Button.Title".localized, preset))
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -325,7 +288,7 @@ struct TitleManagement: View {
                 }
 
                 // Save toggle
-                Toggle("Save as new preset", isOn: $saveAsPreset)
+                Toggle("Editor.QuickEdit.SaveAsPreset.Toggle.Title".localized, isOn: $saveAsPreset)
             }
             .padding(.vertical, 4)
         }

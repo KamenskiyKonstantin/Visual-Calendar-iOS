@@ -34,6 +34,9 @@ func levenshtein(_ lhs: String, _ rhs: String) -> Int {
     let m = lhsChars.count
     let n = rhsChars.count
     
+    if m == 0 { return n }
+    if n == 0 { return m }
+    
     var dp = Array(repeating: Array(repeating: 0, count: n + 1), count: m + 1)
     
     for i in 0...m { dp[i][0] = i }
@@ -65,4 +68,30 @@ struct RuntimeWarning: Error {
     let message: String
     init(_ message: String) { self.message = message }
     var localizedDescription: String { message }
+}
+
+
+func dateWithTime(from baseDate: Date, using timeSource: Date) -> Date {
+    let calendar = Calendar.current
+    let dateComponents = calendar.dateComponents([.year, .month, .day], from: baseDate)
+    let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: timeSource)
+
+    var combined = DateComponents()
+    combined.year = dateComponents.year
+    combined.month = dateComponents.month
+    combined.day = dateComponents.day
+    combined.hour = timeComponents.hour
+    combined.minute = timeComponents.minute
+    combined.second = timeComponents.second
+    
+    let result = calendar.date(from: combined) ?? baseDate
+    
+    print("[-UTILITIES/DateTimeConstructor-] Constructed date: \(result.toIntList())")
+    return result
+}
+
+extension Array where Element == String {
+    func asPostgresArrayString() -> String {
+        "{" + self.map { "\"\($0)\"" }.joined(separator: ",") + "}"
+    }
 }

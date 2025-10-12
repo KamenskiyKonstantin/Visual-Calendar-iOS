@@ -13,6 +13,7 @@ enum AppError: Error, LocalizedError, Equatable{
     case authInvalidCredentials
     case authSessionUnavailable
     case authSessionExpired
+    case authMismatchSignupPassword
 
     // MARK: - Network/API
     case networkUnavailable
@@ -39,6 +40,7 @@ enum AppError: Error, LocalizedError, Equatable{
     case failedToUpsertPreset
     case failedToReadFile
     case libraryNotFound(String)
+    case notFound
 
     // MARK: - Unknown / fallback
     case unknown(Error)
@@ -46,12 +48,13 @@ enum AppError: Error, LocalizedError, Equatable{
     
     var errorDescription: String? {
         switch self {
-        case .authInvalidCredentials: return "Invalid login credentials. Please try again."
+        case .authInvalidCredentials: return "Error.Auth.InvalidCredentials".localized
         case .authSessionUnavailable: return "No session found. Please log in again."
-        case .authSessionExpired: return "Your session has expired. Please log in again."
+        case .authSessionExpired: return "Error.Auth.SessionExpired".localized
+        case .authMismatchSignupPassword: return "Error.Auth.PasswordMismatch".localized
             
-        case .duplicateFile: return "A file with the same name already exists."
-        case .duplicateLibrary: return "A library with the same name is already added"
+        case .duplicateFile: return "Error.API.DuplicateFile".localized
+        case .duplicateLibrary: return "Error.API.DuplicateLibrary".localized
             
         case .networkUnavailable: return "Network connection appears to be offline."
         case .serverError(let message): return "Server error: \(message)"
@@ -72,8 +75,9 @@ enum AppError: Error, LocalizedError, Equatable{
         case .failedToUpsertPreset: return "Failed to save the event preset."
         case .failedToReadFile: return "Could not read the selected file."
         case .libraryNotFound(let name): return "Library not found: \(name)."
+        case .notFound: return "Object Not Found"
         
-        case .unknown(let error): return "An unknown error occurred: \(error.localizedDescription)."
+        case .unknown(let error): return String(format: "Error.Unknown".localized, error.localizedDescription)
         case .multipleErrorsOccurred(let errors):
             return "Several operations failed:\n" + errors.map { $0.localizedDescription }.joined(separator: "\n")
         }
@@ -83,7 +87,6 @@ enum AppError: Error, LocalizedError, Equatable{
         if self == .authSessionExpired {
             return true
         }
-        
         return false
     }
     

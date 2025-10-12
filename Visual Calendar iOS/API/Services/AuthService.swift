@@ -15,7 +15,7 @@ class AuthService {
 
     init(client: SupabaseClient) {
         self.client = client
-        self.auth = client.auth
+        self.auth = client.auth 
     }
 
     var isAuthenticated: Bool {
@@ -23,15 +23,20 @@ class AuthService {
     }
     
     func verifySession() async throws {
+        print("[-SERVICES/AUTH] VERIFYING SESSION")
         do {
             try await auth.refreshSession()
+            print("[-SERVICES/AUTH] SESSION VALID")
         } catch {
+            print("[-SERVICES/AUTH] SESSION INVALIDATED")
             throw AppError.authSessionExpired
+            
         }
     }
-    func signUp(email: String, password: String) async throws {
+    func signUp(email: String, password: String, confirmPassword: String) async throws {
+        guard password == confirmPassword else {throw AppError.authMismatchSignupPassword}
         let session = try await auth.signUp(email: email, password: password)
-        let userID = session.user.id 
+        let userID = session.user.id
         try await createUserFolders(uid: userID)
     }
 
@@ -48,29 +53,15 @@ class AuthService {
     }
 
     func createUserFolders(uid: UUID) async throws {
+        let folder = uid.uuidString.lowercased()
         let encoder = JSONEncoder()
-
-        // Upload empty calendar.json
-        let starterCalendar = CalendarJSON(events: [], uid: uid.uuidString)
-        let calendarData = try encoder.encode(starterCalendar)
-        try await client.storage.from("user_data").upload(
-            path: "\(uid.uuidString)/calendar.json",
-            file: calendarData,
-            options: .init(cacheControl: "0", contentType: "application/json", upsert: true)
-        )
-
+        
+        print("[-SERVICES/AUTH-] SETTING UP USER FOLDER FOR: /\(folder)")
         // Upload .keep to create folder
         try await client.storage.from("user_data").upload(
-            path: "\(uid.uuidString)/images/.keep",
+            path: "\(folder)/images/.keep",
             file: Data(),
             options: .init(cacheControl: "0", contentType: "text/plain", upsert: true)
-        )
-
-        let emptyPresetsData = try encoder.encode([String: Preset]())
-        try await client.storage.from("user_data").upload(
-            path: "\(uid.uuidString)/presets.json",
-            file: emptyPresetsData,
-            options: .init(cacheControl: "0", contentType: "application/json", upsert: true)
         )
     }
 }

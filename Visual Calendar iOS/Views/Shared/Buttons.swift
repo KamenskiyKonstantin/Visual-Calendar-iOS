@@ -8,12 +8,10 @@
 import SwiftUI
 
 struct EditButtonView: View {
-    @EnvironmentObject var APIHandler: APIHandler
-    var updateEvents: (Event) async throws-> Void
-    
+    @ObservedObject var viewModel: EventEditorModel
     var body: some View {
         NavigationLink(destination:
-                        EventEditor(updateCallback:updateEvents)){
+                        EventEditor(model: viewModel)){
             RoundedRectangle(cornerRadius: 10)
                 .foregroundColor(Color(.systemGreen))
                 .overlay(alignment: .center){
@@ -51,7 +49,7 @@ struct SwitchModeButtonView: View {
     }
     
 }
-
+//
 struct LogoutButtonView: View {
     @Binding var logoutFormShown: Bool
     
@@ -107,10 +105,9 @@ struct ButtonPanel: View {
     @Binding var currentDate: Date
     @Binding var deleteMode: Bool
     
-    @EnvironmentObject var api: APIHandler
     @State var isParentMode: Bool
-    @State var updateEvents: (Event) async throws -> Void
     
+    @ObservedObject var viewModel: EventEditorModel
     
     var body: some View {
         HStack {
@@ -118,10 +115,7 @@ struct ButtonPanel: View {
             SwitchModeButtonView(calendarMode: $calendarMode, currentDate: $currentDate)
             Spacer()
             if isParentMode {
-                EditButtonView(
-                    updateEvents: self.updateEvents
-                )
-                DeleteButtonView(deleteMode: $deleteMode)
+                EditButtonView(viewModel: viewModel)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: 70)

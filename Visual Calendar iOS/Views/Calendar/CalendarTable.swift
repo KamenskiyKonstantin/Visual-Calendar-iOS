@@ -13,40 +13,35 @@ public enum CalendarMode {
 }
 
 
+import SwiftUI
+
 struct CalendarTable: View {
-    let minuteHeight: Int
-    @EnvironmentObject var api: APIHandler
-    @EnvironmentObject var warningHandler: WarningHandler
-    @Binding var currentDate: Date
-    @Binding var mode: CalendarMode
-    @Binding var deleteMode: Bool
-    
-    
-    private var daysWithEvents: [(Int, [Event])] {
-        eventsPerDay.enumerated().map { ($0.offset, $0.element) }
-    }
-    
-    private func dayOffset(for event: Event) -> Int {
-        let timeSinceWeekStart = event.dateTimeStart.timeIntervalSince(currentDate)
-        return Int(floor(timeSinceWeekStart / (60 * 60 * 24)))
-    }
-    
+    @ObservedObject var viewModel: CalendarViewModel
+
     var body: some View {
-        if mode == .Week {
+        if viewModel.mode == .Week {
             weekView
         } else {
             dayView
         }
     }
 
+    // MARK: - Week View
     private var weekView: some View {
         HStack {
-            ForEach(daysWithEvents, id: \.0) { dayOfWeekIndex, eventsForDay in
+            ForEach(eventsPerDay.enumerated().map { ($0.offset, $0.element) }, id: \.0) { dayIndex, eventsForDay in
+                let day = Calendar.current.date(byAdding: .day, value: dayIndex, to: viewModel.currentDate.startOfWeek()) ?? viewModel.currentDate
                 ZStack(alignment: .top) {
                     Color.clear
-                    
-                    ForEach(eventsForDay, id: \.self) { event in
-                        EventView(eventID: event.id, deleteMode: deleteMode)
+                    ForEach(eventsForDay, id:\.self) { event in
+                        
+                        let dateStart = dateWithTime(from: day, using: event.dateTimeStart)
+                        let reactions: [EventReactionRow] = viewModel.reactions[event.id] ?? []
+                        let currentReaction = reactions.first(where: { $0.timestampMatches(dateStart) })
+                        let matchingReaction = currentReaction?.emoji ?? ""
+                        let finalReaction = reactionStringToEnum(matchingReaction)
+                        
+                        EventView(eventID: event.id, viewModel: viewModel, minuteHeight: viewModel.minuteHeight, dateStart: dateStart.toIntList(), reaction: finalReaction)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -55,34 +50,39 @@ struct CalendarTable: View {
         }
     }
 
+    // MARK: - Day View
     private var dayView: some View {
         HStack {
             ZStack(alignment: .top) {
                 Color.clear
-                ForEach(eventsAtGivenDay(currentDate), id: \.self) { event in
-                    EventView(eventID: event.id, deleteMode: deleteMode)
+                ForEach(eventsAt(date: viewModel.currentDate)) { event in
+                    let dateStart = viewModel.currentDate
+                    let reactions: [EventReactionRow] = viewModel.reactions[event.id] ?? []
+                    let currentReaction = reactions.first(where: { $0.timestampMatches(dateStart) })
+                    let matchingReaction = currentReaction?.emoji ?? ""
+                    let finalReaction = reactionStringToEnum(matchingReaction)
+                    
+                    EventView(eventID: event.id, viewModel: viewModel, minuteHeight: viewModel.minuteHeight, dateStart: dateStart.toIntList(), reaction: finalReaction)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
-    
-}
 
-
-extension CalendarTable {
+    // MARK: - Helpers
     private var eventsPerDay: [[Event]] {
         let calendar = Calendar.current
-        return (0..<7).map { offset in
-            guard let targetDate = calendar.date(byAdding: .day, value: offset, to: currentDate) else {
-                return []
+        return (0..<7).compactMap { offset in
+            guard let date = calendar.date(byAdding: .day, value: offset, to: viewModel.currentDate) else {
+                return nil
             }
-            return eventsAtGivenDay(targetDate)
+            return eventsAt(date: date)
         }
     }
-    
-    private func eventsAtGivenDay(_ date: Date) -> [Event] {
-        api.eventList.filter { $0.occurs(on: date) }
+
+    private func eventsAt(date: Date) -> [Event] {
+        viewModel.events.filter { $0.occurs(on: date) }
     }
-    
 }
+
+

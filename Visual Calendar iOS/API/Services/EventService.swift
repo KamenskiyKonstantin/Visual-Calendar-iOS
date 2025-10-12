@@ -9,32 +9,97 @@ import Supabase
 import Combine
 
 @MainActor
-class EventService: ObservableObject {
+class EventService {
     private let client: SupabaseClient
 
     init(client: SupabaseClient) {
         self.client = client
     }
 
-    func fetchEvents() async throws -> [Event] {
-        let uid = try await client.auth.user().id
-        let path = "\(uid.uuidString)/calendar.json"
-        
-        let data = try await client.storage.from("user_data").download(path: path)
-        let calendar = try JSONDecoder().decode(CalendarJSON.self, from: data)
-        return calendar.events.map { $0.toEvent() }
+    // MARK: - Create
+    func createEvent(_ event: Event) async throws {
+        print("[-SERVICES/EVENT] CREATING EVENT: \(event)")
+
+        let uid = try await client.auth.user().id.uuidString.lowercased()
+
+        let startArray = "{" + event.dateTimeStart.toIntList().map(String.init).joined(separator: ",") + "}"
+        let endArray = "{" + event.dateTimeEnd.toIntList().map(String.init).joined(separator: ",") + "}"
+        let sideImageArray = "{" + event.sideImagesURL.map { "\"\($0)\"" }.joined(separator: ",") + "}"
+
+        _ = try await client
+            .from("events")
+            .insert([
+                "id": event.id.uuidString.lowercased(),
+                "user_uuid": uid,
+                "time_start": startArray,
+                "time_end": endArray,
+                "system_image": event.systemImage,
+                "background_color": event.backgroundColor,
+                "text_color": event.textColor,
+                "main_image_url": event.mainImageURL,
+                "side_image_urls": sideImageArray,
+                "repetition_type": event.repetitionType.displayName
+            ])
+            .execute()
+
+        print("[-SERVICES/EVENT] CREATED EVENT: \(event)")
     }
 
-    func upsertEvents(_ events: [Event]) async throws {
-        let uid = try await client.auth.user().id.uuidString
-        let path = "\(uid)/calendar.json"
-        let calendarPayload = CalendarJSON(events: events.map { $0.toEventJSON() }, uid: uid)
-        let data = try JSONEncoder().encode(calendarPayload)
+    // MARK: - Read
+    func fetchEvents() async throws -> [Event] {
+        print("[-SERVICES/EVENT] FETCHING EVENTS...")
 
-        try await client.storage.from("user_data").upload(
-            path: path,
-            file: data,
-            options: .init(cacheControl: "0", contentType: "application/json", upsert: true)
-        )
+        let uid = try await client.auth.user().id.uuidString.lowercased()
+
+        let response = try await client
+            .from("events")
+            .select()
+            .eq("user_uuid", value: uid)
+            .execute()
+
+        let data = response.data
+        let events = try JSONDecoder().decode([EventJSON].self, from: data).compactMap { $0.toEvent() }
+
+        print("[-SERVICES/EVENT] DECODED EVENTS: \(events)")
+        return events
+    }
+
+    // MARK: - Update
+    func updateEvent(_ newEvent: Event) async throws {
+        print("[-SERVICES/EVENT] UPDATING EVENT: \(newEvent)")
+
+        let startArray = "{" + newEvent.dateTimeStart.toIntList().map(String.init).joined(separator: ",") + "}"
+        let endArray = "{" + newEvent.dateTimeEnd.toIntList().map(String.init).joined(separator: ",") + "}"
+        let sideImageArray = "{" + newEvent.sideImagesURL.map { "\"\($0)\"" }.joined(separator: ",") + "}"
+
+        try await client
+            .from("events")
+            .update([
+                "time_start": startArray,
+                "time_end": endArray,
+                "system_image": newEvent.systemImage,
+                "background_color": newEvent.backgroundColor,
+                "text_color": newEvent.textColor,
+                "main_image_url": newEvent.mainImageURL,
+                "side_image_urls": sideImageArray,
+                "repetition_type": newEvent.repetitionType.displayName
+            ])
+            .eq("id", value: newEvent.id.uuidString.lowercased())
+            .execute()
+
+        print("[-SERVICES/EVENT] UPDATED EVENT: \(newEvent)")
+    }
+
+    // MARK: - Delete
+    func deleteEvent(_ id: UUID) async throws {
+        print("[-SERVICES/EVENT] DELETING EVENT WITH ID: \(id)")
+
+        try await client
+            .from("events")
+            .delete()
+            .eq("id", value: id.uuidString.lowercased())
+            .execute()
+
+        print("[-SERVICES/EVENT] DELETED EVENT WITH ID: \(id)")
     }
 }
