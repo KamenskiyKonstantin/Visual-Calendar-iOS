@@ -64,6 +64,12 @@ class LibraryService {
         }
         print("[-SERVICES/LIBRARY-] LIBRARY LOCATED, UUID: \(info.library_uuid.uuidString.lowercased())")
         let uid = try await client.auth.user().id.uuidString.lowercased()
+        
+        let connectedLibraries = try await fetchConnectedLibraries()
+        
+        if connectedLibraries.contains(where: { $0.library_uuid.uuidString.lowercased() == info.library_uuid.uuidString.lowercased() }) {
+            return
+        }
         // inserts the library to user by looked up UUID and pushes system_name silently.
         _ = try await client
             .from("connected_libraries")

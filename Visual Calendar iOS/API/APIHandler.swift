@@ -21,8 +21,8 @@ final class APIHandler {
     // MARK: - Setup
     init() {
         let client = SupabaseClient(
-            supabaseURL: URL(string: "https://kkmvjjzoouqqmempnxrg.supabase.co")!,
-            supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrbXZqanpvb3VxcW1lbXBueHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjgyMTEsImV4cCI6MjA3NDIwNDIxMX0.ZeziIaDzLApRnTLKQdl0MMlqR5zjaI7BpuUhPvebcco",
+            supabaseURL: URL(string: "https://wlviarpvbxdaoytfeqnm.supabase.co")!,
+            supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsdmlhcnB2YnhkYW95dGZlcW5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjIxNTk0MzksImV4cCI6MjAzNzczNTQzOX0.zoQJTA3Tu_fpe24BrxDjhMtlfxfd_3Nx8TM1t8V3PK0",
             options: SupabaseClientOptions(
                 auth: .init(
                     storage: KeychainLocalStorage(service: "com.calmtable.app", accessGroup: nil),
