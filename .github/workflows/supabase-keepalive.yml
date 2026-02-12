@@ -13,10 +13,9 @@ jobs:
     steps:
       - name: Send keep-alive ping to Supabase
         run: |
-          echo "Pinging Supabase..."
           curl -v -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/keep_alive_pings" \
             -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
             -H "Content-Type: application/json" \
             -H "Prefer: return=representation" \
-            -d '{"source":"github-actions"}'
+            -d '{}'
